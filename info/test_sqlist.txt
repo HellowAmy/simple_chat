@@ -1,0 +1,99 @@
+== 数据库操作 ==
+
+格式化输出：
+	.header on
+	.mode column
+
+打开数据库：
+	./sqlite3 test_sql.db
+	../third_party/sqlite3/sqlite3 test_wid.db 	(build测试)
+	./../third_party/sqlite3/sqlite3
+	
+创建表：
+	CREATE TABLE test_table (
+	    id INTEGER PRIMARY KEY,
+	    value TEXT
+	);
+删除表：
+	DROP TABLE IF EXISTS test_table;
+	
+查看表结构：
+	.tables			（查看所有表）
+	.schema test_table	（查看某个表的具体数据结构）
+	
+插入数据：
+	INSERT INTO test_table VALUES (1,'hellow');
+	INSERT INTO test_table VALUES (2,'word');
+	INSERT INTO test_table VALUES (3,'how');
+	INSERT INTO test_table VALUES (4,'are');
+	INSERT INTO test_table VALUES (5,'you');
+	INSERT INTO test_table VALUES (6,'my');
+	INSERT INTO test_table VALUES (7,'boy');
+
+查看数据：
+	SELECT * FROM test_table			（查看所有）
+	SELECT * FROM test_table WHERE id >=2 AND id <= 5; 	（条件查询）
+	
+删除数据：
+	DELETE FROM test_table;					（删除所有）
+	DELETE FROM test_table WHERE id >=2 AND id <= 5;	（条件删除）
+
+退出数据库：
+	.quit
+	
+== 数据库操作 ==
+
+
+
+== 历史记录 ==
+简介：
+	用于记录聊天历史，每个账号建一个数据库，每个好友建立一张表
+		库名：history_X.db		
+		表名：history_X 	
+		
+表结构：	
+        CREATE TABLE IF NOT EXISTS history (
+            send_time INTEGER PRIMARY KEY,
+            feed_back INTEGER CHECK (feed_back >= send_time),
+            non_read INTEGER CHECK (non_read >= 0 AND non_read <= 1),
+            types INTEGER CHECK (types >= 0),
+            object INTEGER CHECK (object >= 0 AND object <= 3),
+            content TEXT
+        );
+== 历史记录 ==
+
+
+
+CREATE TABLE chat_history (
+    id INTEGER PRIMARY KEY,
+    user TEXT,
+    message TEXT,
+    timestamp DATETIME
+);
+
+-- 向表格中插入一条记录
+INSERT INTO chat_history (user, message, timestamp)
+VALUES ('John', 'Hello!', DATETIME('now'));
+
+
+INSERT INTO chat_history (user, message, timestamp)
+VALUES ('John', 'Hello!', DATETIME('now'));
+
+-- 查询表格中的数据
+SELECT * FROM chat_history;
+
+
+
+
+
+----- 测试 -----
+UPDATE history SET non_read = 1 WHERE send_time = 12347;
+UPDATE history SET content = 'abasd' WHERE send_time = 12347;
+
+SELECT * FROM history_123344556;
+
+SELECT SUM(object) FROM history;
+SELECT SUM(non_read) 
+
+SELECT SUM(non_read) FROM history;
+SELECT SUM(object) FROM history;

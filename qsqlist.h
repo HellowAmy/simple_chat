@@ -49,7 +49,7 @@ class qsqlist_history : public qsqlist_base
 {
     Q_OBJECT
 public:
-    struct name_data
+    struct data_history
     {
         QString send_time;
         QString feed_back;
@@ -57,21 +57,22 @@ public:
         QString types;
         QString object;
         QString content;
+        QString extend;
     };
 public:
     explicit qsqlist_history(QObject *parent = nullptr);
 
     bool open_history(uint account);
     bool create_history(uint account);
-    bool insert_history(uint account,const tuple<uint,uint,uint,uint,uint,string> &data);
+    bool insert_history(uint account,const tuple<uint,uint,uint,uint,uint,string,string> &data);
     bool update_history(uint account,uint id,QString name,QVariant value);
     int check_non_read(uint account);
 
-    name_data get_name_data();
+    data_history get_data();
 
 private:
     QString _name_history = "../data/history_%1.db";
-    name_data _name;
+    data_history _data;
 };
 
 #endif // QSQLIST_H

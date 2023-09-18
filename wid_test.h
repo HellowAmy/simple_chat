@@ -30,6 +30,8 @@ public:
     void test_12(QWidget *parent);
     void test_13(QWidget *parent);
     void test_14(QWidget *parent);
+    void test_15(QWidget *parent);
+    void test_16(QWidget *parent);
 
 protected:
 

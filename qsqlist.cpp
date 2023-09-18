@@ -118,12 +118,13 @@ bool qsqlist_base::delete_db(QString table)
 
 qsqlist_history::qsqlist_history(QObject *parent)
 {
-    _name.send_time = "send_time";
-    _name.feed_back = "feed_back";
-    _name.non_read  = "non_read";
-    _name.types     = "types";
-    _name.object    = "object";
-    _name.content   = "content";
+    _data.send_time = "send_time";
+    _data.feed_back = "feed_back";
+    _data.non_read  = "non_read";
+    _data.types     = "types";
+    _data.object    = "object";
+    _data.content   = "content";
+    _data.extend    = "extend";
 }
 
 bool qsqlist_history::open_history(uint account)
@@ -147,29 +148,32 @@ bool qsqlist_history::create_history(uint account)
             %4 INTEGER CHECK (non_read >= 0 AND non_read <= 1),
             %5 INTEGER CHECK (types >= 0),
             %6 INTEGER CHECK (object >= 0 AND object <= 3),
-            %7 TEXT
+            %7 TEXT,
+            %8 TEXT
         );
         )");
     sql = sql.arg(account)
-                .arg(_name.send_time)
-                .arg(_name.feed_back)
-                .arg(_name.non_read)
-                .arg(_name.types)
-                .arg(_name.object)
-                .arg(_name.content);
+                .arg(_data.send_time)
+                .arg(_data.feed_back)
+                .arg(_data.non_read)
+                .arg(_data.types)
+                .arg(_data.object)
+                .arg(_data.content)
+                .arg(_data.extend);
     return (sqlite3_exec(_db,qtoc(sql),nullptr,nullptr,&_error) == SQLITE_OK ? true : false);
 }
 
-bool qsqlist_history::insert_history(uint account,const tuple<uint, uint, uint, uint, uint, string> &data)
+bool qsqlist_history::insert_history(uint account,const tuple<uint,uint,uint,uint,uint,string,string> &data)
 {
-    QString sql (R"(INSERT INTO history_%1 VALUES (%2,%3,%4,%5,%6,'%7');)");
+    QString sql (R"(INSERT INTO history_%1 VALUES (%2,%3,%4,%5,%6,'%7','%8');)");
     sql = sql.arg(account)
-              .arg(std::get<0>(data))
-              .arg(std::get<1>(data))
-              .arg(std::get<2>(data))
-              .arg(std::get<3>(data))
-              .arg(std::get<4>(data))
-              .arg(QString::fromStdString(std::get<5>(data)));
+                .arg(std::get<0>(data))
+                .arg(std::get<1>(data))
+                .arg(std::get<2>(data))
+                .arg(std::get<3>(data))
+                .arg(std::get<4>(data))
+                .arg(QString::fromStdString(std::get<5>(data)))
+                .arg(QString::fromStdString(std::get<6>(data)));
     return (sqlite3_exec(_db,qtoc(sql),nullptr,nullptr,&_error) == SQLITE_OK ? true : false);
 }
 
@@ -180,13 +184,13 @@ bool qsqlist_history::update_history(uint account,uint id, QString name, QVarian
 
     if(value.type() ==  QVariant::Int || value.type() ==  QVariant::UInt)
     {
-        sql = sql.arg(account).arg(name).arg(value.toUInt()).arg(_name.send_time).arg(id);
+        sql = sql.arg(account).arg(name).arg(value.toUInt()).arg(_data.send_time).arg(id);
     }
     else if(value.type() ==  QVariant::String)
     {
         QString flg("'%1'");
         flg = flg.arg(value.toString());
-        sql = sql.arg(account).arg(name).arg(flg).arg(_name.send_time).arg(id);
+        sql = sql.arg(account).arg(name).arg(flg).arg(_data.send_time).arg(id);
     }
 
     if(sqlite3_prepare_v2(_db,qtoc(sql),-1,&stmt,nullptr) != SQLITE_OK) return false;
@@ -214,7 +218,7 @@ int qsqlist_history::check_non_read(uint account)
     return value;
 }
 
-qsqlist_history::name_data qsqlist_history::get_name_data()
+qsqlist_history::data_history qsqlist_history::get_data()
 {
-    return _name;
+    return _data;
 }

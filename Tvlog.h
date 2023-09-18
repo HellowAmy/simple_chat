@@ -63,14 +63,14 @@ public:
     inline void set_level(Tlevel el){ _level = el; } //设置等级
 
     inline Tvlog& operator<<(Tlevel el)
-    { if(el <= _level) _ok = true; else _ok = false; return *this; };
+    { if(el <= _level) _ok = true; else _ok = false; return *this; }
 
     inline Tvlog& operator<<(std::ostream& (*end)(std::ostream&))
-    { if(_ok) std::cout<<end; return *this; };
+    { if(_ok) std::cout<<end; return *this; }
 
     template<class T>
     inline Tvlog& operator<<(const T &log)
-    { if(_ok) std::cout<<log; return *this; };
+    { if(_ok) std::cout<<log; return *this; }
 
 private:
     bool _ok = false;   //判断等级是否符合
@@ -106,14 +106,14 @@ public:
     inline void close_log() { _fs.close(); }                //关闭日志
 
     inline Tflog& operator<<(Tlevel el)
-    { if(el <= _level) _ok = true; else _ok = false; return *this; };
+    { if(el <= _level) _ok = true; else _ok = false; return *this; }
 
     inline Tflog& operator<<(std::ostream& (*end)(std::ostream&))
-    { if(_ok &&_fs.is_open()){ _fs<<end; update_file(); } return *this; };
+    { if(_ok &&_fs.is_open()){ _fs<<end; update_file(); } return *this; }
 
     template<class T>
     inline Tflog& operator<<(const T &log)
-    { if(_ok &&_fs.is_open()) _fs<<log; return *this; };
+    { if(_ok &&_fs.is_open()) _fs<<log; return *this; }
 
 private:
     bool _ok = false;       //判断等级是否符合
@@ -316,9 +316,11 @@ void print_con(Tit begin,Tit end,int len,const std::string &flg)
 
 
 //== QT扩展 ==
+#ifdef QT_VERSION
 #include <QDebug>
-#define qlog(txt)  qDebug()<<"[Qt] ["<<__FILE__<<": <"<<__LINE__<<"> ] <<<< ["<<#txt<<":"<<txt<<"]"
-#define Q$(value) "["#value": "<<value.toStdString()<<"] "
+#define qlog(txt)  qDebug()<<"[Qt] ["<<__FILE__<<": <"<<__LINE__<<"> ] <<<< "<<txt
+#define Q$(value) "[ "#value":"<<value.toStdString()<<"] "
+#endif
 //== QT扩展 ==
 
 

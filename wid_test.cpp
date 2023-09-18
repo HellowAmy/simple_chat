@@ -17,6 +17,10 @@
 #include "wid_friend_list.h"
 #include "wid_friend_info.h"
 #include "qsqlist.h"
+#include "include/nlohmann/json.hpp"
+//#include "qweb_socket.h"
+
+#include <unistd.h>
 
 #include <QTimer>
 #include <QDateTime>
@@ -48,7 +52,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 14;
+    int val = 16;
 
     if(val == 1)        test_1(parent); //线条按钮
     else if(val == 2)   test_2(parent); //自动换行
@@ -65,6 +69,8 @@ wid_test::wid_test(QWidget *parent)
     else if(val == 12)   test_12(parent);   //信息区域
     else if(val == 13)   test_13(parent);   //测数据库
     else if(val == 14)   test_14(parent);   //测历史库
+    else if(val == 15)   test_15(parent);   //网络连接
+    else if(val == 16)   test_16(parent);   //传输格式
 
 
     vlogd("== end ==");
@@ -595,17 +601,17 @@ void wid_test::test_14(QWidget *parent)
     }
 
     {
-        int ret = sql.insert_history(friends,{12345,12345,0,2,2,"aghusdhasd"});
+        int ret = sql.insert_history(friends,{12345,12345,0,2,2,"aghusdhasd","NULL"});
         if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
         qlog("insert_history: "<<ret);
     }
     {
-        int ret = sql.insert_history(friends,{12346,123499,0,1,0,"aghusdhasd111"});
+        int ret = sql.insert_history(friends,{12346,123499,0,1,0,"aghusdhasd111","hellow"});
         if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
         qlog("insert_history: "<<ret);
     }
     {
-        int ret = sql.insert_history(friends,{12347,123459,0,1,3,"aghusd222hasd"});
+        int ret = sql.insert_history(friends,{12347,123459,0,1,3,"aghusd222hasd","word"});
         if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
         qlog("insert_history: "<<ret);
     }
@@ -633,27 +639,31 @@ void wid_test::test_14(QWidget *parent)
     }
 
     {
-        int ret = sql.update_history(friends,12345,sql.get_name_data().feed_back,12399);
+        int ret = sql.update_history(friends,12345,sql.get_data().feed_back,12399);
         qlog("update_history: "<<ret);
     }
     {
-        int ret = sql.update_history(friends,12345,sql.get_name_data().non_read,1);
+        int ret = sql.update_history(friends,12345,sql.get_data().non_read,1);
         qlog("update_history: "<<ret);
     }
     {
-        int ret = sql.update_history(friends,12345,sql.get_name_data().types,0);
+        int ret = sql.update_history(friends,12345,sql.get_data().types,0);
         qlog("update_history: "<<ret);
     }
     {
-        int ret = sql.update_history(friends,12345,sql.get_name_data().object,3);
+        int ret = sql.update_history(friends,12345,sql.get_data().object,3);
         qlog("update_history: "<<ret);
     }
     {
-        int ret = sql.update_history(friends,12345,sql.get_name_data().content,"aaabbb");
+        int ret = sql.update_history(friends,12345,sql.get_data().content,"aaabbb");
         qlog("update_history: "<<ret);
     }
     {
-        int ret = sql.update_history(friends,12346,sql.get_name_data().non_read,1);
+        int ret = sql.update_history(friends,12345,sql.get_data().extend,"are you ok");
+        qlog("update_history: "<<ret);
+    }
+    {
+        int ret = sql.update_history(friends,12346,sql.get_data().non_read,1);
         qlog("update_history: "<<ret);
     }
 
@@ -694,5 +704,110 @@ void wid_test::test_14(QWidget *parent)
         qlog("close_db: "<<ret);
         qlog("close_db: "<<sql.get_error());
     }
+}
+
+void wid_test::test_15(QWidget *parent)
+{
+//    void func_bind(function<void(const sp_channe&, const sp_http&)> open,
+//                   function<void(const sp_channe&, const string&)> message,
+//                   function<void(const sp_channe&)> close)
+
+//    if(fork() == 0)
+//    {
+//        vlogi("== sk ==");
+//        qweb_server sk;
+//        function fn_open = [](const sp_channe&, const sp_http& http){
+//            HttpRequest* p = http.get();
+//            qlog("fn_open"<<p->path);
+//        };
+//        function fn_message = [&](const sp_channe&, const string& msg){
+//            qlog("fn_message: " << msg);
+//            if(msg == "close") sk.get_sv()->stop();
+//        };
+//        function fn_close = [&](const sp_channe&){
+//            qlog("fn_close");
+//        };
+
+//        sk.func_bind(fn_open,fn_message,fn_close);
+//        sk.open();
+//    }
+//    else
+//    {
+//        vlogi("== ck ==");
+//        bool loop = true;
+
+//        function fn_open = [](){
+//            qlog("ck-fn_open");
+//        };
+//        function fn_message = [](const string& msg){
+//            qlog("ck-fn_message: " << msg);
+//        };
+//        function fn_close = [&](){
+//            qlog("ck-fn_close");
+//            loop = false;
+//        };
+
+//        qweb_client ck;
+//        ck.func_bind(fn_open,fn_message,fn_close);
+//        ck.open();
+
+//        while(loop)
+//        {
+//            string str; std::cin>>str;
+////            if(str == "close")
+//        };
+//    }
+
+//    qlog("== web end ==");
+
+
+}
+
+void wid_test::test_16(QWidget *parent)
+{
+    this->hide();
+
+    nlohmann::json js = nlohmann::json::parse(
+R"({
+  "pi": 3.141,
+  "happy": true,
+  "name": "Niels",
+  "nothing": null,
+  "answer": {
+    "everything": 42
+  },
+  "list": [1, 0, 2],
+  "object": {
+    "currency": "USD",
+    "value": 42.99
+  }
+}
+
+)");
+
+    vlogi(js.dump(4));
+
+
+    vlogi($(js["name"]) << $(js["pi"]) );
+    js["name"] = "new name";
+    js["pi"] = 123.44;
+    js["new ip"] = 3.33;
+    js["new ipaaa"] = 3.33;
+
+    try
+    {
+        int hu = js["pi11"].get<int>();
+    }
+    catch(...)
+    {
+        vlogi("123 catch");
+    }
+
+
+//    vlogi($(hu));
+
+    vlogi($(js["name"]) << $(js["pi"]) <<$(js["bb"]));
+
+    vlogi(js.dump(4));
 }
 

@@ -14,6 +14,7 @@ CONFIG += console
 SOURCES += \
     include/sqlist3/sqlite3.c \
     main.cpp \
+    make_json.cpp \
     qarea_wid.cpp \
     qbar_line.cpp \
     qbutt_line.cpp \
@@ -37,6 +38,7 @@ SOURCES += \
 
 HEADERS += \
     Tvlog.h \
+    file_version.h \
     include/hv/AsyncHttpClient.h \
     include/hv/Buffer.h \
     include/hv/Channel.h \
@@ -106,7 +108,10 @@ HEADERS += \
     include/hv/sha1.h \
     include/hv/singleton.h \
     include/hv/wsdef.h \
+    include/nlohmann/json.hpp \
+    include/nlohmann/json_fwd.hpp \
     include/sqlist3/sqlite3.h \
+    make_json.h \
     qarea_wid.h \
     qbar_line.h \
     qbutt_line.h \
@@ -118,6 +123,7 @@ HEADERS += \
     qsqlist.h \
     qweb_client.h \
 #    qweb_socket.h \
+    web_protocol.h \
     wid_chat.h \
     wid_chat_input.h \
     wid_chat_output.h \

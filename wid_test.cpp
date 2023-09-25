@@ -18,7 +18,9 @@
 #include "wid_friend_info.h"
 #include "qsqlist.h"
 #include "include/nlohmann/json.hpp"
-//#include "qweb_socket.h"
+#include "make_json.h"
+#include "qweb_client.h"
+#include "web_protocol.h"
 
 #include <unistd.h>
 
@@ -52,7 +54,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 16;
+    int val = 15;
 
     if(val == 1)        test_1(parent); //线条按钮
     else if(val == 2)   test_2(parent); //自动换行
@@ -71,6 +73,9 @@ wid_test::wid_test(QWidget *parent)
     else if(val == 14)   test_14(parent);   //测历史库
     else if(val == 15)   test_15(parent);   //网络连接
     else if(val == 16)   test_16(parent);   //传输格式
+    else if(val == 17)   test_17(parent);   //格式生成
+    else if(val == 18)   test_18(parent);   //发送测试
+    else if(val == 19)   test_19(parent);   //协议统一
 
 
     vlogd("== end ==");
@@ -708,9 +713,33 @@ void wid_test::test_14(QWidget *parent)
 
 void wid_test::test_15(QWidget *parent)
 {
-//    void func_bind(function<void(const sp_channe&, const sp_http&)> open,
-//                   function<void(const sp_channe&, const string&)> message,
-//                   function<void(const sp_channe&)> close)
+    this->hide();
+
+    qweb_client *th = new qweb_client;
+    connect(th,&qweb_client::sn_open,this,[=](){
+        vlogi("sn_open");
+        th->ask_login(895075270,"123456");//895075270
+    });
+    connect(th,&qweb_client::sn_message,this,[=](const string &msg){
+        vlogi($(msg));
+
+    });
+    connect(th,&qweb_client::sn_close,this,[=](){
+        vlogi("sn_close");
+    });
+
+    {
+        bool ok = th->open();
+        vlogi(ok);
+    }
+
+
+
+
+
+    //    void func_bind(function<void(const sp_channe&, const sp_http&)> open,
+    //                   function<void(const sp_channe&, const string&)> message,
+    //                   function<void(const sp_channe&)> close)
 
 //    if(fork() == 0)
 //    {
@@ -809,5 +838,148 @@ R"({
     vlogi($(js["name"]) << $(js["pi"]) <<$(js["bb"]));
 
     vlogi(js.dump(4));
+}
+
+void wid_test::test_17(QWidget *parent)
+{
+//    make_json mk;
+
+//    connect(&mk,&make_json::sn_send_json,this,[](std::string str){
+//        json js = json::parse(str);
+
+//        vlogi($(str));
+//        vlogi($(js.dump(4)));
+//    });
+
+//    {
+//        bool ok = mk.send_swap_json(123456789,333456789,"Text","你好");
+//        qlog(ok);
+//    }
+//    {
+//        bool ok = mk.send_swap_json(123456789,666666789,"Text","head");
+//        qlog(ok);
+//    }
+//    {
+//        bool ok = mk.send_swap_json(123456789,222226789,"Img","word");
+//        qlog(ok);
+//    }
+}
+
+void wid_test::test_18(QWidget *parent)
+{
+
+
+    qweb_client th;
+
+}
+
+void wid_test::test_19(QWidget *parent)
+{
+    using namespace protocol;
+
+    {
+        vlogi("\n");
+        string sjson = set_login(123456789,"123456");
+        vlogi($(sjson));
+
+        string stream;
+        string type;
+        if(check_json(sjson,stream,type))
+        {
+            vlogi($(stream) $(type));
+
+            int64 ac;
+            string passwd;
+            if(get_login(sjson,ac,passwd))
+            {
+                vlogi($(ac) $(passwd));
+            }
+        }
+    }
+
+    {
+        vlogi("\n");
+        string sjson = set_login_back(true);
+        vlogi($(sjson));
+
+        string stream;
+        string type;
+        if(check_json(sjson,stream,type))
+        {
+            vlogi($(stream) $(type));
+
+            bool ok;
+            if(get_login_back(sjson,ok))
+            {
+                vlogi($(ok));
+            }
+        }
+    }
+
+    {
+        vlogi("\n");
+        string sjson = set_swap_msg(123456789,999956789,1000000,"Text","123456");
+        vlogi($(sjson));
+
+        string stream;
+        string type;
+        if(check_json(sjson,stream,type))
+        {
+            vlogi($(stream) $(type));
+
+            int64 ac_to;
+            int64 ac_from;
+            int64 time;
+            string type;
+            string content;
+            if(get_swap_msg(sjson,ac_to,ac_from,time,type,content))
+            {
+                vlogi($(ac_to) $(ac_from) $(time) $(type) $(content));
+            }
+        }
+    }
+
+
+
+//        string stream;
+//        string type;
+//        if(check_json(sjson,stream,type))
+//        {
+//            if(stream == _cc_)
+//            {
+
+//            }
+//            else if(stream == _cs_)
+//            {
+//                if(type == account_login1)
+//                {
+//                    bool ok = get_account_login1(sjson);
+//                    vlogi($(stream) $(type));
+//                    vlogi($(account_login1) $(ok));
+//                }
+//            }
+
+//        }
+//    }
+
+//    {
+
+
+//        uint ac;
+//        string sjson = set_account_login2(123456);
+//        bool ok = get_account_login2(sjson,ac);
+//        vlogi($(account_login2) $(ok) $(ac));
+//    }
+
+
+////    {
+////        uint ac;
+////        string sjson = web_protocol::set_account_login(123456);
+////        web_protocol::get_account_login(sjson,ac);
+////        vlogi($(ac));
+////    }
+
+
+
 }
 

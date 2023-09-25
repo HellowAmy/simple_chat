@@ -5,7 +5,9 @@ CONFIG -= qt
 
 SOURCES += \
         ../../include/sqlist3/sqlite3.c \
-        main.cpp
+        main.cpp \
+        make_tools.cpp \
+        sqlist_op.cpp
 
 HEADERS += \
     ../../include/hv/AsyncHttpClient.h \
@@ -78,7 +80,10 @@ HEADERS += \
     ../../include/hv/singleton.h \
     ../../include/hv/wsdef.h \
     ../../include/sqlist3/sqlite3.h \
-    inter_server.h
+    format.h \
+    inter_server.h \
+    make_tools.h \
+    sqlist_op.h
 
 unix:!macx: LIBS += -L$$PWD/../../lib/ -lhv
 

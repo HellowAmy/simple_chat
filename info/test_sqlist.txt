@@ -8,12 +8,14 @@
 	./sqlite3 test_sql.db
 	../third_party/sqlite3/sqlite3 test_wid.db 	(build测试)
 	./../third_party/sqlite3/sqlite3
+	/home/red/open/github/simple_chat/third_party/sqlite3/sqlite3
 	
 创建表：
 	CREATE TABLE test_table (
 	    id INTEGER PRIMARY KEY,
 	    value TEXT
 	);
+	
 删除表：
 	DROP TABLE IF EXISTS test_table;
 	
@@ -30,8 +32,11 @@
 	INSERT INTO test_table VALUES (6,'my');
 	INSERT INTO test_table VALUES (7,'boy');
 
+统计数据：
+	SELECT COUNT(*) FROM test_table;
+
 查看数据：
-	SELECT * FROM test_table			（查看所有）
+	SELECT * FROM test_table				（查看所有）
 	SELECT * FROM test_table WHERE id >=2 AND id <= 5; 	（条件查询）
 	
 删除数据：
@@ -47,7 +52,7 @@
 
 == 历史记录 ==
 简介：
-	用于记录聊天历史，每个账号建一个数据库，每个好友建立一张表
+	用于客户端记录聊天历史，每个账号建一个数据库，每个好友建立一张表
 		库名：history_X.db		
 		表名：history_X 	
 		
@@ -61,6 +66,29 @@
             content TEXT
         );
 == 历史记录 ==
+
+
+== 账号管理 ==
+简介：
+	用于服务器管理账号信息，多表联合管理
+
+表结构：
+	ac_passwd：账号密码，存在的表结构主表，约束附加表数量
+		CREATE TABLE ac_passwd (
+		    account INTEGER PRIMARY KEY CHECK (account >= 100000000 AND account <= 999999999),
+		    passwd TEXT CHECK (LENGTH(passwd) >= 6 AND LENGTH(passwd) <= 18)
+		);   
+		
+	ac_friends：账号好友，ac_passwd表的附加表，记录每个账号的好友关系
+		CREATE TABLE ac_friends (
+		    account INTEGER ,
+		    friends INTEGER ,
+		    CHECK (account != friends),
+		    FOREIGN KEY (account) REFERENCES ac_passwd (account),
+		    FOREIGN KEY (friends) REFERENCES ac_passwd (account)
+		);
+
+== 账号管理 ==
 
 
 
@@ -90,10 +118,35 @@ SELECT * FROM chat_history;
 UPDATE history SET non_read = 1 WHERE send_time = 12347;
 UPDATE history SET content = 'abasd' WHERE send_time = 12347;
 
+|:895023031 |:123456
+|:895047172 |:123456
+|:895051539 |:123456
+|:895058270 |:123456
+|:895066604 |:123456
+|:895075270 |:123456
+|:895079418 |:123456
+|:895089004 |:123456
+|:895095544 |:123456
+|:895106418 |:123456
+|:895111325 |:123456
+|:895119256 |:123456
+|:895120696 |:123456
+|:895143193 |:123456
+|:895149846 |:123456
+|:895150027 |:123456
+|:895151498 |:123456
+
 SELECT * FROM history_123344556;
 
+SELECT * FROM ac_passwd WHERE account = 999854739;
+
+SELECT * FROM ac_passwd WHERE account = 895075270;
+
+SELECT COUNT(*) FROM ac_passwd;
+SELECT * FROM ac_passwd;
+.schema ac_passwd
 SELECT SUM(object) FROM history;
 SELECT SUM(non_read) 
-
+SELECT COUNT(*) FROM ac_passwd;
 SELECT SUM(non_read) FROM history;
 SELECT SUM(object) FROM history;

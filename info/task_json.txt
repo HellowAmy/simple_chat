@@ -1,0 +1,21 @@
+//! 
+//! 交换数据 ： __sjson_swap
+//! 
+//! 头部验证
+//! 版本判断
+//! 目标账号
+//! 发送账号
+//! 转发类型 [Swap,Request]
+//! 任务类型 [Text,Img,File]
+//! 消息内容
+//! 扩展内容
+{
+    "head"      : "SMCH_HEAD",
+    "version"   : 1,
+    "target"    : 0,
+    "source"    : 0,
+    "type"      : "Swap",  
+    "task"      : "Text",
+    "content"   : "",
+    "extend"    : {}
+}

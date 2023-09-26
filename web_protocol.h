@@ -74,11 +74,32 @@ static bool check_swap(const string &sjson,int64 &target,int64 &source)
     bool ret = false;
     try {
         json js = json::parse(sjson);
-        target = js["target"].get<int64>();
-        source = js["source"].get<int64>();
+        target = js["extend"]["target"].get<int64>();
+        source = js["extend"]["source"].get<int64>();
         ret = true;
     } catch(...){}
     return ret;
+}
+
+static string set_json_vec(const vector<string> &vec)
+{
+    string str;
+    try {
+        json js;
+        js["vec"] = vec;
+        str = js.dump();
+    } catch(...){}
+    return str;
+}
+
+static vector<string> get_json_vec(const string &sjson)
+{
+    vector<string> vec;
+    try {
+        json js = json::parse(sjson);
+        vec = js["vec"].get<vector<string>>();
+    } catch(...){}
+    return vec;
 }
 
 template<class T>
@@ -126,22 +147,25 @@ static T get_extend(json &js,const string &index)
 #define CS_ERR_NOT_TASK         2
 #define CS_ERR_NOT_STREAM       3
 #define CS_ERR_SWAP_SJSON       4
+#define CS_ERR_SELECT_DATA      5
 #define CS_LOGIN_NOT_AC         10
 #define CS_LOGIN_PASSWD_ERR     11
+#define CS_SELECT_ERR           20
 
 
 #define CS_ERR_PARSE_JSON_S         ""
 #define CS_ERR_NOT_TASK_S           "not find task function from transmit"
 #define CS_ERR_NOT_STREAM_S         "not find stream from transmit"
 #define CS_ERR_SWAP_SJSON_S         "swap error form add cache failed"
+#define CS_ERR_SELECT_DATA_S        "select data error from server"
 
 #define CS_LOGIN_NOT_AC_S           "login account not exist"
 #define CS_LOGIN_PASSWD_ERR_S       "login password is error"
 
 //!
-//! error_info  : 错误反馈
+//! error_info : 错误反馈
 //!
-//! extend      :
+//! extend :
 //!     int error       错误代码
 //!     string info     错误信息
 //!
@@ -153,9 +177,9 @@ CS_MAKE_TYPE(error_info,_sc_,
 )
 
 //!
-//! login   : 登陆账号
+//! login : 登陆账号
 //!
-//! extend  :
+//! extend :
 //!     uint account    账号
 //!     string passwd   密码
 //!
@@ -163,7 +187,6 @@ CS_MAKE_TYPE(error_info,_sc_,
 //!     bool ok         确认
 //!     string info     提示信息
 //!
-
 CS_MAKE_TYPE(login,_cs_,
         CS_ARGV( CS_1(int64,account),CS_1(string,passwd)  ),
         CS_BODY( CS_2(int64,account) CS_2(string,passwd)  ),
@@ -178,31 +201,84 @@ CS_MAKE_TYPE(login_back,_sc_,
         )
 
 //!
-//! swap_msg    : 发送消息
-//! extend      :
-//!     uint target     目标账号
-//!     uint source     源址账号
-//!     long long time  发送时间
-//!     string type     消息类型 [Text,Img,File]
-//!     string content  消息内容
+//! friends_list : 好友列表
+//!
+//! extend :
+//!     uint account        账号
 //!
 //! back :
-//!     uint target     目标账号
-//!     uint source     源址账号
-//!     long long time  确认时间
-//!     bool ok         反馈成功
+//!     string svec_fs      存储好友列表的数组
+//!     bool ok             确认
+//!
+//!     ( svec是存储vector的json数据格式，需要通过get_json_vec函数获取 )
+//!
+CS_MAKE_TYPE(friends_list,_cs_,
+             CS_ARGV( CS_1(int64,account)  ),
+             CS_BODY( CS_2(int64,account)  ),
+             CS_ARGV(,CS_3(int64,account)  ),
+             CS_BODY( CS_4(int64,account)  )
+)
+CS_MAKE_TYPE(friends_list_back,_sc_,
+             CS_ARGV( CS_1(string,svec_fs),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(string,svec_fs) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(string,svec_fs),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(string,svec_fs) CS_4(bool,ok)  )
+)
+
+//!
+//! friends_status : 好友状态
+//!
+//! extend :
+//!     uint ac_friends     好友账号
+//!
+//! back :
+//!     uint ac_friends     好友账号
+//!     string nickname     昵称
+//!     string icon         头像
+//!     bool online         在线
+//!     bool ok             确认
+//!
+CS_MAKE_TYPE(friends_status,_cs_,
+             CS_ARGV( CS_1(int64,ac_friends)  ),
+             CS_BODY( CS_2(int64,ac_friends)  ),
+             CS_ARGV(,CS_3(int64,ac_friends)  ),
+             CS_BODY( CS_4(int64,ac_friends)  )
+)
+CS_MAKE_TYPE(friends_status_back,_sc_,
+             CS_ARGV( CS_1(int64,ac_friends),CS_1(string,nickname),CS_1(string,icon),CS_1(bool,online),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,ac_friends) CS_2(string,nickname) CS_2(string,icon) CS_2(bool,online) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,ac_friends),CS_3(string,nickname),CS_3(string,icon),CS_3(bool,online),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,ac_friends) CS_4(string,nickname) CS_4(string,icon) CS_4(bool,online) CS_4(bool,ok)  )
+)
+
+//!
+//! swap_msg : 发送消息
+//!
+//! extend :
+//!     uint target         目标账号
+//!     uint source         源址账号
+//!     long long time_to   发送时间
+//!     string type         消息类型 [Text,Img,File]
+//!     string content      消息内容
+//!
+//! back :
+//!     uint target         目标账号
+//!     uint source         源址账号
+//!     long long time_to   发送时间
+//!     long long time_ok   确认时间
+//!     bool ok             反馈成功
 //!
 CS_MAKE_TYPE(swap_msg,_cc_,
-        CS_ARGV( CS_1(int64,target),CS_1(int64,source),CS_1(int64,time),CS_1(string,type),CS_1(string,content)  ),
-        CS_BODY( CS_2(int64,target) CS_2(int64,source) CS_2(int64,time) CS_2(string,type) CS_2(string,content)  ),
-        CS_ARGV(,CS_3(int64,target),CS_3(int64,source),CS_3(int64,time),CS_3(string,type),CS_3(string,content)  ),
-        CS_BODY( CS_4(int64,target) CS_4(int64,source) CS_4(int64,time) CS_4(string,type) CS_4(string,content)  )
+        CS_ARGV( CS_1(int64,target),CS_1(int64,source),CS_1(int64,time_to),CS_1(string,type),CS_1(string,content)  ),
+        CS_BODY( CS_2(int64,target) CS_2(int64,source) CS_2(int64,time_to) CS_2(string,type) CS_2(string,content)  ),
+        CS_ARGV(,CS_3(int64,target),CS_3(int64,source),CS_3(int64,time_to),CS_3(string,type),CS_3(string,content)  ),
+        CS_BODY( CS_4(int64,target) CS_4(int64,source) CS_4(int64,time_to) CS_4(string,type) CS_4(string,content)  )
         )
-CS_MAKE_TYPE(swap_msg_back,_sc_,
-        CS_ARGV( CS_1(int64,target),CS_1(int64,source),CS_1(int64,time),CS_1(bool,ok)  ),
-        CS_BODY( CS_2(int64,target) CS_2(int64,source) CS_2(int64,time) CS_2(bool,ok)  ),
-        CS_ARGV(,CS_3(int64,target),CS_3(int64,source),CS_3(int64,time),CS_3(bool,ok)  ),
-        CS_BODY( CS_4(int64,target) CS_4(int64,source) CS_4(int64,time) CS_4(bool,ok)  )
+CS_MAKE_TYPE(swap_msg_back,_cc_,
+        CS_ARGV( CS_1(int64,target),CS_1(int64,source),CS_1(int64,time_to),CS_1(int64,time_ok),CS_1(bool,ok)  ),
+        CS_BODY( CS_2(int64,target) CS_2(int64,source) CS_2(int64,time_to) CS_2(int64,time_ok) CS_2(bool,ok)  ),
+        CS_ARGV(,CS_3(int64,target),CS_3(int64,source),CS_3(int64,time_to),CS_3(int64,time_ok),CS_3(bool,ok)  ),
+        CS_BODY( CS_4(int64,target) CS_4(int64,source) CS_4(int64,time_to) CS_4(int64,time_ok) CS_4(bool,ok)  )
         )
 
 

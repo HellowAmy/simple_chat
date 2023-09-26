@@ -54,7 +54,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 15;
+    int val = 19;
 
     if(val == 1)        test_1(parent); //线条按钮
     else if(val == 2)   test_2(parent); //自动换行
@@ -879,37 +879,38 @@ void wid_test::test_19(QWidget *parent)
 
     {
         vlogi("\n");
-        string sjson = set_login(123456789,"123456");
-        vlogi($(sjson));
-
+        string sjson = set_login(123456789, "password123");
         string stream;
         string type;
         if(check_json(sjson,stream,type))
         {
             vlogi($(stream) $(type));
-
-            int64 ac;
-            string passwd;
-            if(get_login(sjson,ac,passwd))
-            {
-                vlogi($(ac) $(passwd));
-            }
+        }
+    }
+    {
+        vlogi("\n");
+        string sjson = set_swap_msg(123456789,222456789,20010404,"Text","hellow");
+        int64 target;
+        int64 source;
+        if(check_swap(sjson,target,source))
+        {
+            vlogi($(target) $(source));
         }
     }
 
     {
         vlogi("\n");
-        string sjson = set_login_back(true);
-        vlogi($(sjson));
+        string sjson = set_login(123456789, "password123");
 
-        string stream;
-        string type;
-        if(check_json(sjson,stream,type))
+        int64 account;
+        string passwd;
+        if (get_login(sjson, account, passwd))
         {
-            vlogi($(stream) $(type));
+            vlogi($(account) $(passwd));
 
+            string ssjson = set_login_back(true);
             bool ok;
-            if(get_login_back(sjson,ok))
+            if (get_login_back(ssjson, ok))
             {
                 vlogi($(ok));
             }
@@ -935,6 +936,86 @@ void wid_test::test_19(QWidget *parent)
             if(get_swap_msg(sjson,ac_to,ac_from,time,type,content))
             {
                 vlogi($(ac_to) $(ac_from) $(time) $(type) $(content));
+            }
+        }
+    }
+
+    {
+        vlogi("\n");
+        string sjson = set_friends_list(123456789);
+
+        int64 account;
+        if(get_friends_list(sjson,account))
+        {
+            vlogi($(account));
+
+            string ss = set_json_vec({"123","456","abc","999"});
+            string sjson1 = set_friends_list_back(ss,true);
+
+            string svec;
+            bool ret;
+            if(get_friends_list_back(sjson1,svec,ret))
+            {
+                vlogi($(svec) $(ret));
+
+                vector<string> vec = get_json_vec(svec);
+                for(auto a:vec)
+                {
+                    vlogi($(a));
+                }
+            }
+        }
+    }
+
+    {
+        vlogi("\n");
+        string sjson = set_swap_msg(123456789,222456789,20010404,"Text","hellow");
+
+        int64 target;
+        int64 source;
+        int64 time_to;
+        string type;
+        string content;
+
+        if(get_swap_msg(sjson,target,source,time_to,type,content))
+        {
+            vlogi($(target) $(source) $(time_to) $(type) $(content));
+
+            string ssjson = set_swap_msg_back(source,target,time_to,time_to+100,true);
+
+            int64 target;
+            int64 source;
+            int64 time_to;
+            int64 time_ok;
+            bool ok;
+            if(get_swap_msg_back(ssjson,target,source,time_to,time_ok,ok))
+            {
+                vlogi($(target) $(source) $(time_to) $(time_ok) $(ok));
+            }
+        }
+    }
+
+    {
+        vlogi("\n");
+        string sjson = set_friends_status(123456789);
+
+        int64 ac_friends;
+
+        if (get_friends_status(sjson, ac_friends))
+        {
+            vlogi($(ac_friends));
+
+            string ssjson = set_friends_status_back(123456789, "John", "icon1.jpg", true, true);
+
+            int64 svec_friends;
+            string nickname;
+            string icon;
+            bool online;
+            bool ok;
+
+            if (get_friends_status_back(ssjson, svec_friends, nickname, icon, online, ok))
+            {
+                vlogi($(svec_friends) $(nickname) $(icon) $(online) $(ok));
             }
         }
     }

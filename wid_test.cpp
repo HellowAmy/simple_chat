@@ -21,6 +21,10 @@
 #include "make_json.h"
 #include "qweb_client.h"
 #include "web_protocol.h"
+#include "swap_files.h"
+#include "qweb_files.h"
+
+#include <filesystem>
 
 #include <unistd.h>
 
@@ -54,7 +58,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 15;
+    int val = 21;
 
     if(val == 1)        test_1(parent); //线条按钮
     else if(val == 2)   test_2(parent); //自动换行
@@ -76,6 +80,9 @@ wid_test::wid_test(QWidget *parent)
     else if(val == 17)   test_17(parent);   //格式生成
     else if(val == 18)   test_18(parent);   //发送测试
     else if(val == 19)   test_19(parent);   //协议统一
+
+    else if(val == 20)   test_20(parent);   //文件测试
+    else if(val == 21)   test_21(parent);   //文件传输
 
 
     vlogd("== end ==");
@@ -715,6 +722,16 @@ void wid_test::test_15(QWidget *parent)
 {
     this->hide();
 
+
+//    std::filesystem fss;
+
+
+
+
+
+
+
+
     int v = 100000000;
 
     for(int i=v;i<v+5;i++)
@@ -1171,6 +1188,101 @@ void wid_test::test_19(QWidget *parent)
     }
 
     //== files ==
+
+}
+
+void wid_test::test_20(QWidget *parent)
+{
+    this->hide();
+
+    int64 id = 123456789;
+    string s1 = "/home/red/open/load/clion.png";
+    string s2 = "/home/red/open/load/CLion202322.tar.gz";
+    string s3 = "/home/red/open/load/none.txt";
+    string ss = "/home/red/open/load/123456789";
+    string ss1 = "/home/red/open/load/save_12345";
+
+    swap_files s;
+    {
+        auto ok = s.is_can_read(s1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.is_can_read(ss1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.is_exists(s1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.is_file(s1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.get_file_size(s1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.get_filename(s1);
+        vlogi($(ok));
+    }
+
+//    return; //函数测试部分
+
+
+
+    //收发测试部分
+    auto fn = [&](bool &stop,int64 id,const string &buf){
+
+        bool ok = s.add_recv_buf(id,buf);
+        if(ok == false) vlogi($(ok));
+
+        static size_t co = 0;
+        co += buf.size();
+        if(co%100000 == 0)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            vlogi("sleep_for:" );
+        }
+    };
+
+    {
+        bool ok = s.send_file(fn,id,s1);
+        vlogi($(ok));
+    }
+    {
+        s.close_recv_buf(id);
+        s.move_recv_map(id);
+    }
+
+}
+
+void wid_test::test_21(QWidget *parent)
+{
+    this->hide();
+
+    string s1 = "/home/red/open/load/clion.png";
+    string s2 = "/home/red/open/load/CLion202322.tar.gz";
+
+    qweb_files *th = new qweb_files;
+    connect(th,&qweb_files::sn_open,this,[=](){
+        vlogi("sn_open");
+
+        bool ok = th->upload_file(123456999,789876324,s2);
+        vlogi($(ok));
+    });
+
+    connect(th,&qweb_files::sn_close,this,[=](){
+        vlogi("sn_close");
+    });
+
+
+    th->open();
+
+
+
+
 
 }
 

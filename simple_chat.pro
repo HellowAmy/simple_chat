@@ -129,6 +129,7 @@ HEADERS += \
     qweb_client.h \
 #    qweb_socket.h \
     qweb_files.h \
+    swap_files.h \
     web_protocol.h \
     wid_chat.h \
     wid_chat_input.h \

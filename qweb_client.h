@@ -26,7 +26,7 @@ public:
     explicit qweb_client(QObject *parent = nullptr);
     ~qweb_client();
 
-    int open(string ip = "127.0.0.1",int port = 4444,string txt = protocol::_head_);
+    int open(string ip = CS_SERVER_ADDRESS,int port = CS_PORT_TASKS,string txt = protocol::_head_);
 
     //!
     //! 登陆逻辑：

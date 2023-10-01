@@ -11,6 +11,10 @@ typedef nlohmann::json json;
 using std::string;
 using std::vector;
 
+#define CS_SERVER_ADDRESS "127.0.0.1"
+#define CS_PORT_TASKS 4444
+#define CS_PORT_FILES 4433
+
 
 //!
 //! head        :""  协议,判断是否为本程序协议
@@ -441,7 +445,7 @@ CS_MAKE_TYPE(files_create_upload_back,_sc_,
 //!
 //! extend :
 //!     uint swap_name      临时命名
-//!     bool swap_data      交换文件 [ 用于判断是单独上传，还是用于交换 ]
+//!     bool is_swap        交换文件 [ 用于判断是单独上传，还是用于交换 ]
 //!     bool finish         上传反馈
 //!
 //! back :
@@ -449,10 +453,10 @@ CS_MAKE_TYPE(files_create_upload_back,_sc_,
 //!     bool ok             反馈成功
 //!
 CS_MAKE_TYPE(files_finish_upload,_cs_,
-             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,swap_data),CS_1(bool,finish)  ),
-             CS_BODY( CS_2(int64,swap_name) CS_2(bool,swap_data) CS_2(bool,finish)  ),
-             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,swap_data),CS_3(bool,finish)  ),
-             CS_BODY( CS_4(int64,swap_name) CS_4(bool,swap_data) CS_4(bool,finish)  )
+             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,is_swap),CS_1(bool,finish)  ),
+             CS_BODY( CS_2(int64,swap_name) CS_2(bool,is_swap) CS_2(bool,finish)  ),
+             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,is_swap),CS_3(bool,finish)  ),
+             CS_BODY( CS_4(int64,swap_name) CS_4(bool,is_swap) CS_4(bool,finish)  )
              )
 CS_MAKE_TYPE(files_finish_upload_back,_sc_,
              CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),

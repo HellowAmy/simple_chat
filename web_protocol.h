@@ -11,6 +11,7 @@ typedef nlohmann::json json;
 using std::string;
 using std::vector;
 
+
 //!
 //! head        :""  协议,判断是否为本程序协议
 //! version     :""  版本,兼容协议的修改
@@ -102,6 +103,35 @@ static vector<string> get_json_vec(const string &sjson)
     return vec;
 }
 
+static string set_ac_info_json(int64 ac_friends,const string &nickname,const string &icon,bool online)
+{
+    string str;
+    try {
+        json js;
+        js["ac_friends"] = ac_friends;
+        js["nickname"] = nickname;
+        js["icon"] = icon;
+        js["online"] = online;
+        str = js.dump();
+    } catch(...){}
+    return str;
+}
+
+static bool get_ac_info_json(const string &sjson,int64 &ac_friends,string &nickname,string &icon,bool &online)
+{
+    bool ret = false;
+    try {
+        json js = json::parse(sjson);
+        ac_friends = js["ac_friends"];
+        nickname = js["nickname"];
+        icon = js["icon"];
+        online = js["online"];
+        ret = true;
+    } catch(...){}
+    return ret;
+}
+
+
 template<class T>
 static void set_extend(json &js,const string &index,T value)
 {
@@ -115,6 +145,8 @@ static T get_extend(json &js,const string &index)
     T name = tm[index];
     return name;
 }
+
+
 
 
 
@@ -170,11 +202,11 @@ static T get_extend(json &js,const string &index)
 //!     string info     错误信息
 //!
 CS_MAKE_TYPE(error_info,_sc_,
-        CS_ARGV( CS_1(int,error),CS_1(string,info)  ),
-        CS_BODY( CS_2(int,error) CS_2(string,info)  ),
-        CS_ARGV(,CS_3(int,error),CS_3(string,info)  ),
-        CS_BODY( CS_4(int,error) CS_4(string,info)  )
-)
+             CS_ARGV( CS_1(int,error),CS_1(string,info)  ),
+             CS_BODY( CS_2(int,error) CS_2(string,info)  ),
+             CS_ARGV(,CS_3(int,error),CS_3(string,info)  ),
+             CS_BODY( CS_4(int,error) CS_4(string,info)  )
+             )
 
 //!
 //! login : 登陆账号
@@ -188,17 +220,17 @@ CS_MAKE_TYPE(error_info,_sc_,
 //!     string info     提示信息
 //!
 CS_MAKE_TYPE(login,_cs_,
-        CS_ARGV( CS_1(int64,account),CS_1(string,passwd)  ),
-        CS_BODY( CS_2(int64,account) CS_2(string,passwd)  ),
-        CS_ARGV(,CS_3(int64,account),CS_3(string,passwd)  ),
-        CS_BODY( CS_4(int64,account) CS_4(string,passwd)  )
-        )
+             CS_ARGV( CS_1(int64,account),CS_1(string,passwd)  ),
+             CS_BODY( CS_2(int64,account) CS_2(string,passwd)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(string,passwd)  ),
+             CS_BODY( CS_4(int64,account) CS_4(string,passwd)  )
+             )
 CS_MAKE_TYPE(login_back,_sc_,
-        CS_ARGV( CS_1(bool,ok)  ),
-        CS_BODY( CS_2(bool,ok)  ),
-        CS_ARGV(,CS_3(bool,ok)  ),
-        CS_BODY( CS_4(bool,ok)  )
-        )
+             CS_ARGV( CS_1(bool,ok)  ),
+             CS_BODY( CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(bool,ok)  ),
+             CS_BODY( CS_4(bool,ok)  )
+             )
 
 //!
 //! friends_list : 好友列表
@@ -217,39 +249,43 @@ CS_MAKE_TYPE(friends_list,_cs_,
              CS_BODY( CS_2(int64,account)  ),
              CS_ARGV(,CS_3(int64,account)  ),
              CS_BODY( CS_4(int64,account)  )
-)
+             )
 CS_MAKE_TYPE(friends_list_back,_sc_,
              CS_ARGV( CS_1(string,svec_fs),CS_1(bool,ok)  ),
              CS_BODY( CS_2(string,svec_fs) CS_2(bool,ok)  ),
              CS_ARGV(,CS_3(string,svec_fs),CS_3(bool,ok)  ),
              CS_BODY( CS_4(string,svec_fs) CS_4(bool,ok)  )
-)
+             )
 
 //!
 //! friends_status : 好友状态
 //!
 //! extend :
-//!     uint ac_friends     好友账号
+//!     string svec_ac_fs   好友列表的数组
 //!
 //! back :
-//!     uint ac_friends     好友账号
-//!     string nickname     昵称
-//!     string icon         头像
-//!     bool online         在线
+//!     string svec_ac_info 好友列表的数组
 //!     bool ok             确认
 //!
+//!     | svec_ac_info存储json格式： 使用 set_ac_info_json 和 get_ac_info_json 函数解析 )
+//!     | uint ac_friends     好友账号
+//!     | string nickname     昵称
+//!     | string icon         头像
+//!     | bool online         在线
+//!
+//!
 CS_MAKE_TYPE(friends_status,_cs_,
-             CS_ARGV( CS_1(int64,ac_friends)  ),
-             CS_BODY( CS_2(int64,ac_friends)  ),
-             CS_ARGV(,CS_3(int64,ac_friends)  ),
-             CS_BODY( CS_4(int64,ac_friends)  )
-)
+             CS_ARGV( CS_1(string,svec_ac_fs)  ),
+             CS_BODY( CS_2(string,svec_ac_fs)  ),
+             CS_ARGV(,CS_3(string,svec_ac_fs)  ),
+             CS_BODY( CS_4(string,svec_ac_fs)  )
+             )
 CS_MAKE_TYPE(friends_status_back,_sc_,
-             CS_ARGV( CS_1(int64,ac_friends),CS_1(string,nickname),CS_1(string,icon),CS_1(bool,online),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(int64,ac_friends) CS_2(string,nickname) CS_2(string,icon) CS_2(bool,online) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(int64,ac_friends),CS_3(string,nickname),CS_3(string,icon),CS_3(bool,online),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(int64,ac_friends) CS_4(string,nickname) CS_4(string,icon) CS_4(bool,online) CS_4(bool,ok)  )
-)
+             CS_ARGV( CS_1(string,svec_ac_info),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(string,svec_ac_info) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(string,svec_ac_info),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(string,svec_ac_info) CS_4(bool,ok)  )
+             )
 
 //!
 //! swap_msg : 发送消息
@@ -269,17 +305,19 @@ CS_MAKE_TYPE(friends_status_back,_sc_,
 //!     bool ok             反馈成功
 //!
 CS_MAKE_TYPE(swap_msg,_cc_,
-        CS_ARGV( CS_1(int64,target),CS_1(int64,source),CS_1(int64,time_to),CS_1(string,type),CS_1(string,content)  ),
-        CS_BODY( CS_2(int64,target) CS_2(int64,source) CS_2(int64,time_to) CS_2(string,type) CS_2(string,content)  ),
-        CS_ARGV(,CS_3(int64,target),CS_3(int64,source),CS_3(int64,time_to),CS_3(string,type),CS_3(string,content)  ),
-        CS_BODY( CS_4(int64,target) CS_4(int64,source) CS_4(int64,time_to) CS_4(string,type) CS_4(string,content)  )
-        )
+             CS_ARGV( CS_1(int64,target),CS_1(int64,source),CS_1(int64,time_to),CS_1(string,type),CS_1(string,content)  ),
+             CS_BODY( CS_2(int64,target) CS_2(int64,source) CS_2(int64,time_to) CS_2(string,type) CS_2(string,content)  ),
+             CS_ARGV(,CS_3(int64,target),CS_3(int64,source),CS_3(int64,time_to),CS_3(string,type),CS_3(string,content)  ),
+             CS_BODY( CS_4(int64,target) CS_4(int64,source) CS_4(int64,time_to) CS_4(string,type) CS_4(string,content)  )
+             )
 CS_MAKE_TYPE(swap_msg_back,_cc_,
-        CS_ARGV( CS_1(int64,target),CS_1(int64,source),CS_1(int64,time_to),CS_1(int64,time_ok),CS_1(bool,ok)  ),
-        CS_BODY( CS_2(int64,target) CS_2(int64,source) CS_2(int64,time_to) CS_2(int64,time_ok) CS_2(bool,ok)  ),
-        CS_ARGV(,CS_3(int64,target),CS_3(int64,source),CS_3(int64,time_to),CS_3(int64,time_ok),CS_3(bool,ok)  ),
-        CS_BODY( CS_4(int64,target) CS_4(int64,source) CS_4(int64,time_to) CS_4(int64,time_ok) CS_4(bool,ok)  )
-        )
+             CS_ARGV( CS_1(int64,target),CS_1(int64,source),CS_1(int64,time_to),CS_1(int64,time_ok),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,target) CS_2(int64,source) CS_2(int64,time_to) CS_2(int64,time_ok) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,target),CS_3(int64,source),CS_3(int64,time_to),CS_3(int64,time_ok),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,target) CS_4(int64,source) CS_4(int64,time_to) CS_4(int64,time_ok) CS_4(bool,ok)  )
+             )
+
+
 
 
 //===== test =====
@@ -302,6 +340,212 @@ CS_MAKE_TYPE(swap_msg_back,_cc_,
 //               CS_BODY(CS_4(uint,account) CS_4(string,passwd))
 //               )
 //===== test =====
+
+
+
+
+//===== files =====
+
+#define CS_FILES_JSON 0x01
+#define CS_FILES_BINARY 0x02
+
+#define CS_BIT_FLG 1
+#define CS_BIT_ID 8
+
+template <class T_ct>
+static string ct_s(T_ct ct)
+{ return string((char*)&ct,sizeof(T_ct)); }
+
+template <class T_ct>
+static T_ct st_c(const string &str)
+{ return *(T_ct*)str.c_str(); }
+
+static char check_files_flg(const string &msg)
+{
+    char flg = 0x00;
+    if(msg.size() < 0) return flg;
+    flg = msg[0];
+    return flg;
+}
+
+static string set_files_json(const string &sjson)
+{
+    char flg = CS_FILES_JSON;
+    string str = flg + sjson;
+    return str;
+}
+static bool get_files_json(const string &msg,string &str)
+{
+    if(msg.size() == 0) return false;
+    str = string(msg.begin()+1,msg.end());
+    return true;
+}
+
+static string set_files_binary(int64 id,const string &sjson)
+{
+    char flg = CS_FILES_BINARY;
+    string str_id = ct_s(id);
+    string str = flg + str_id + sjson;
+    return str;
+}
+static bool get_files_binary(const string &msg,int64 &id,string &buf)
+{
+    bool ret = false;
+    if(msg.size() < CS_BIT_FLG + CS_BIT_ID) return ret;
+
+    try {
+        string str_id(msg.begin() +CS_BIT_FLG,msg.begin() +CS_BIT_FLG +CS_BIT_ID);
+        id = st_c<int64>(str_id);
+
+        string str_msg(msg.begin() +CS_BIT_FLG +CS_BIT_ID,msg.end());
+        buf = str_msg;
+        ret = true;
+    } catch(...) {}
+    return ret;
+}
+
+
+//!
+//! files_create_upload : 上传文件
+//!
+//! extend :
+//!     uint time           时间序号
+//!     uint target         目标账号
+//!     uint source         源址账号
+//!     uint length_max     文件长度
+//!     string filename     文件名称
+//!
+//! back :
+//!     uint time           时间序号
+//!     uint swap_name      临时命名
+//!     bool ok             反馈成功
+//!
+//!     [ swap_name: source +target +time +N ，N为避免重复的数字，用于服务器创建唯一标识，用于整个文件传输过程定位 ]
+//!
+CS_MAKE_TYPE(files_create_upload,_cs_,
+             CS_ARGV( CS_1(int64,time),CS_1(int64,target),CS_1(int64,source),CS_1(int64,length_max),CS_1(string,filename)  ),
+             CS_BODY( CS_2(int64,time) CS_2(int64,target) CS_2(int64,source) CS_2(int64,length_max) CS_2(string,filename)  ),
+             CS_ARGV(,CS_3(int64,time),CS_3(int64,target),CS_3(int64,source),CS_3(int64,length_max),CS_3(string,filename)  ),
+             CS_BODY( CS_4(int64,time) CS_4(int64,target) CS_4(int64,source) CS_4(int64,length_max) CS_4(string,filename)  )
+             )
+CS_MAKE_TYPE(files_create_upload_back,_sc_,
+             CS_ARGV( CS_1(int64,time),CS_1(int64,swap_name),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,time) CS_2(int64,swap_name) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,time),CS_3(int64,swap_name),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,time) CS_4(int64,swap_name) CS_4(bool,ok)  )
+             )
+
+
+//!
+//! files_finish_upload : 上传完成
+//!
+//! extend :
+//!     uint swap_name      临时命名
+//!     bool swap_data      交换文件 [ 用于判断是单独上传，还是用于交换 ]
+//!     bool finish         上传反馈
+//!
+//! back :
+//!     uint swap_name      临时命名
+//!     bool ok             反馈成功
+//!
+CS_MAKE_TYPE(files_finish_upload,_cs_,
+             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,swap_data),CS_1(bool,finish)  ),
+             CS_BODY( CS_2(int64,swap_name) CS_2(bool,swap_data) CS_2(bool,finish)  ),
+             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,swap_data),CS_3(bool,finish)  ),
+             CS_BODY( CS_4(int64,swap_name) CS_4(bool,swap_data) CS_4(bool,finish)  )
+             )
+CS_MAKE_TYPE(files_finish_upload_back,_sc_,
+             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,swap_name) CS_4(bool,ok)  )
+             )
+
+
+//!
+//! files_create_download : 下载文件
+//!
+//! extend :
+//!     uint swap_name      临时命名 [ 由上传客户端提供 ]
+//!
+//! back :
+//!     uint swap_name      临时命名
+//!     uint length_max     文件长度
+//!     string filename     文件名称
+//!     bool ok             反馈成功
+//!
+CS_MAKE_TYPE(files_create_download,_cs_,
+             CS_ARGV( CS_1(int64,swap_name)  ),
+             CS_BODY( CS_2(int64,swap_name)  ),
+             CS_ARGV(,CS_3(int64,swap_name)  ),
+             CS_BODY( CS_4(int64,swap_name)  )
+             )
+CS_MAKE_TYPE(files_create_download_back,_sc_,
+             CS_ARGV( CS_1(int64,length_max),CS_1(string,filename),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,length_max) CS_2(string,filename) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,length_max),CS_3(string,filename),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,length_max) CS_4(string,filename) CS_4(bool,ok)  )
+             )
+
+//!
+//! files_begin_download : 开始下载
+//!
+//! extend :
+//!     uint swap_name      临时命名
+//!
+//! back :
+//!
+CS_MAKE_TYPE(files_begin_download,_cs_,
+             CS_ARGV( CS_1(int64,swap_name)  ),
+             CS_BODY( CS_2(int64,swap_name)  ),
+             CS_ARGV(,CS_3(int64,swap_name)  ),
+             CS_BODY( CS_4(int64,swap_name)  )
+             )
+
+//!
+//! files_finish_download : 下载结束 [ 服务器下发 ]
+//!
+//! extend :
+//!     uint swap_name      临时命名
+//!     bool ok             反馈成功
+//!
+CS_MAKE_TYPE(files_finish_download,_sc_,
+             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,swap_name) CS_4(bool,ok)  )
+             )
+
+
+//!
+//! files_cancel_download : 取消下载
+//!
+//! extend :
+//!     uint swap_name      临时命名
+//!
+//! back :
+//!     uint swap_name      临时命名
+//!     bool ok             反馈成功
+//!
+CS_MAKE_TYPE(files_cancel_download,_cs_,
+             CS_ARGV( CS_1(int64,swap_name)  ),
+             CS_BODY( CS_2(int64,swap_name)  ),
+             CS_ARGV(,CS_3(int64,swap_name)  ),
+             CS_BODY( CS_4(int64,swap_name)  )
+             )
+
+CS_MAKE_TYPE(files_cancel_download_back,_sc_,
+             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,swap_name) CS_4(bool,ok)  )
+             )
+
+
+//===== files =====
+
+
+
 
 } // protocol
 

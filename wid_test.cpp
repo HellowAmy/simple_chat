@@ -54,7 +54,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 19;
+    int val = 15;
 
     if(val == 1)        test_1(parent); //线条按钮
     else if(val == 2)   test_2(parent); //自动换行
@@ -715,81 +715,24 @@ void wid_test::test_15(QWidget *parent)
 {
     this->hide();
 
-    qweb_client *th = new qweb_client;
-    connect(th,&qweb_client::sn_open,this,[=](){
-        vlogi("sn_open");
-        th->ask_login(895075270,"123456");//895075270
-    });
-    connect(th,&qweb_client::sn_message,this,[=](const string &msg){
-        vlogi($(msg));
+    int v = 100000000;
 
-    });
-    connect(th,&qweb_client::sn_close,this,[=](){
-        vlogi("sn_close");
-    });
-
+    for(int i=v;i<v+5;i++)
     {
-        bool ok = th->open();
-        vlogi(ok);
+        qweb_client *th = new qweb_client;
+        connect(th,&qweb_client::sn_open,this,[=](){
+            vlogi("sn_open");
+            th->ask_login(i,"123456");
+        });
+        connect(th,&qweb_client::sn_close,this,[=](){
+            vlogi("sn_close");
+        });
+
+        {
+            bool ok = th->open();
+            vlogi(ok);
+        }
     }
-
-
-
-
-
-    //    void func_bind(function<void(const sp_channe&, const sp_http&)> open,
-    //                   function<void(const sp_channe&, const string&)> message,
-    //                   function<void(const sp_channe&)> close)
-
-//    if(fork() == 0)
-//    {
-//        vlogi("== sk ==");
-//        qweb_server sk;
-//        function fn_open = [](const sp_channe&, const sp_http& http){
-//            HttpRequest* p = http.get();
-//            qlog("fn_open"<<p->path);
-//        };
-//        function fn_message = [&](const sp_channe&, const string& msg){
-//            qlog("fn_message: " << msg);
-//            if(msg == "close") sk.get_sv()->stop();
-//        };
-//        function fn_close = [&](const sp_channe&){
-//            qlog("fn_close");
-//        };
-
-//        sk.func_bind(fn_open,fn_message,fn_close);
-//        sk.open();
-//    }
-//    else
-//    {
-//        vlogi("== ck ==");
-//        bool loop = true;
-
-//        function fn_open = [](){
-//            qlog("ck-fn_open");
-//        };
-//        function fn_message = [](const string& msg){
-//            qlog("ck-fn_message: " << msg);
-//        };
-//        function fn_close = [&](){
-//            qlog("ck-fn_close");
-//            loop = false;
-//        };
-
-//        qweb_client ck;
-//        ck.func_bind(fn_open,fn_message,fn_close);
-//        ck.open();
-
-//        while(loop)
-//        {
-//            string str; std::cin>>str;
-////            if(str == "close")
-//        };
-//    }
-
-//    qlog("== web end ==");
-
-
 }
 
 void wid_test::test_16(QWidget *parent)
@@ -897,7 +840,19 @@ void wid_test::test_19(QWidget *parent)
             vlogi($(target) $(source));
         }
     }
+    {
+        string s = set_ac_info_json(123,"nicknamesss","iconsss",true);
+        int64 ac_friends;
+        string nickname;
+        string icon;
+        bool online;
+        if(get_ac_info_json(s,ac_friends,nickname,icon,online))
+        {
+            vlogi($(ac_friends) $(nickname) $(icon) $(icon));
+        }
+    }
 
+    //== json ==
     {
         vlogi("\n");
         string sjson = set_login(123456789, "password123");
@@ -997,70 +952,225 @@ void wid_test::test_19(QWidget *parent)
 
     {
         vlogi("\n");
-        string sjson = set_friends_status(123456789);
+        vector<string> vec;
+        vec.push_back(set_ac_info_json(123,"nickname11","icon11",true));
+        vec.push_back(set_ac_info_json(123456,"nickname22","icon22",false));
+        vec.push_back(set_ac_info_json(999,"nickname33","icon33",true));
 
-        int64 ac_friends;
+        string vec_s = set_json_vec(vec);
 
-        if (get_friends_status(sjson, ac_friends))
+        string sjson = set_friends_status(vec_s);
+
+        string vec_gs;
+        if (get_friends_status(sjson,vec_gs))
         {
-            vlogi($(ac_friends));
+            vlogi($(vec_gs));
+            auto vec = get_json_vec(vec_gs);
 
-            string ssjson = set_friends_status_back(123456789, "John", "icon1.jpg", true, true);
-
-            int64 svec_friends;
-            string nickname;
-            string icon;
-            bool online;
-            bool ok;
-
-            if (get_friends_status_back(ssjson, svec_friends, nickname, icon, online, ok))
+            for(auto a:vec)
             {
-                vlogi($(svec_friends) $(nickname) $(icon) $(online) $(ok));
+                vlogi($(a));
+
+                int64 ac_friends;
+                string nickname;
+                string icon;
+                bool online;
+                if(get_ac_info_json(a,ac_friends,nickname,icon,online))
+                {
+                    vlogi($(ac_friends) $(nickname) $(icon) $(online));
+                }
+            }
+        }
+    }
+
+    {
+        vlogi("\n");
+        string svec_ac_fs = "your_friends_status_data_here";
+
+
+//        set_ac_info_json();
+//        get_ac_info_json()
+        string sjson = set_friends_status(svec_ac_fs);
+
+        string svec_ac_info;
+        if (get_friends_status(sjson, svec_ac_info))
+        {
+            vlogi(svec_ac_info);
+
+            string ssjson = set_friends_status_back(svec_ac_info, true);
+
+            bool ok;
+            if (get_friends_status_back(ssjson, svec_ac_info, ok))
+            {
+                vlogi(svec_ac_info + " " + $(ok));
+            }
+        }
+    }
+
+
+    //== files ==
+    vlogi("files ======================\n");
+
+    {
+        string s = set_files_json("{123456}");
+        if(check_files_flg(s) == CS_FILES_JSON) vlogi("CS_FILES_JSON");
+        else if(check_files_flg(s) == CS_FILES_BINARY) vlogi("CS_FILES_BINARY");
+
+        string sjson;
+        if(get_files_json(s,sjson))
+        {
+            vlogi($(sjson));
+        }
+    }
+
+    {
+        string b = "0x990x080x77";
+        string s = set_files_binary(12344418739845834,b);
+        vlogi($(s.size()) $(b.size()));
+
+        if(check_files_flg(s) == CS_FILES_JSON) vlogi("CS_FILES_JSON");
+        else if(check_files_flg(s) == CS_FILES_BINARY) vlogi("CS_FILES_BINARY");
+
+        int64 id;
+        string sjson;
+        if(get_files_binary(s,id,sjson))
+        {
+            vlogi($(id) $(sjson));
+        }
+    }
+
+    {
+        vlogi("\n");
+        int64 time = 123456789; // 替换为你的时间值
+        int64 target = 987654321; // 替换为目标值
+        int64 source = 555555555; // 替换为源值
+        int64 length_max = 1024; // 替换为最大长度值
+        string filename = "example.txt"; // 替换为文件名
+
+        // 创建发送文件上传请求的 JSON 字符串
+        string upload_json = set_files_create_upload(time, target, source, length_max, filename);
+
+        int64 gtime;
+        int64 gtarget;
+        int64 gsource;
+        int64 glength_max;
+        string gfilename;
+        bool upload_ok;
+        if (get_files_create_upload(upload_json, gtime, gtarget, gsource,glength_max,gfilename))
+        {
+            vlogi($(gtime) $(gtarget) $(glength_max) $(gfilename) $(upload_ok));
+        }
+
+        // 创建返回文件上传结果的 JSON 字符串
+        string upload_back_json = set_files_create_upload_back(time, 12399999001, true);
+
+        int64 upload_back_time;
+        int64 upload_back_swap_name;
+        bool upload_back_ok;
+        if (get_files_create_upload_back(upload_back_json, upload_back_time, upload_back_swap_name, upload_back_ok))
+        {
+            vlogi($(upload_back_time) $(upload_back_swap_name) $(upload_back_ok));
+        }
+    }
+
+
+    {
+        vlogi("\n");
+        string sjson = set_files_finish_upload(123456789, true, true);
+
+        int64 swap_name;
+        bool swap_data;
+        bool finish;
+
+        if (get_files_finish_upload(sjson, swap_name, swap_data, finish))
+        {
+            vlogi($(swap_name) $(swap_data) $(finish));
+
+            string ssjson = set_files_finish_upload_back(swap_name, true);
+
+            bool ok;
+            if (get_files_finish_upload_back(ssjson, swap_name, ok))
+            {
+                vlogi($(swap_name) $(ok));
             }
         }
     }
 
 
 
-//        string stream;
-//        string type;
-//        if(check_json(sjson,stream,type))
-//        {
-//            if(stream == _cc_)
-//            {
+    {
+        vlogi("\n");
+        int64 swap_name = 123456789; // 替换为你的交换名称值
 
-//            }
-//            else if(stream == _cs_)
-//            {
-//                if(type == account_login1)
-//                {
-//                    bool ok = get_account_login1(sjson);
-//                    vlogi($(stream) $(type));
-//                    vlogi($(account_login1) $(ok));
-//                }
-//            }
+        // 创建发送文件下载请求的 JSON 字符串
+        string download_json = set_files_create_download(swap_name);
 
-//        }
-//    }
+        int64 download_swap_name;
+        if (get_files_create_download(download_json, download_swap_name))
+        {
+            vlogi($(download_swap_name));
+        }
 
-//    {
+        // 创建返回文件下载请求结果的 JSON 字符串
+        int64 length_max = 1024; // 替换为文件最大长度值
+        string filename = "downloaded_file.txt"; // 替换为下载的文件名
+        string download_back_json = set_files_create_download_back(length_max, filename, true);
 
+        int64 download_back_length_max;
+        string download_back_filename;
+        bool download_back_ok;
+        if (get_files_create_download_back(download_back_json, download_back_length_max, download_back_filename, download_back_ok))
+        {
+            vlogi($(download_back_length_max) $(download_back_filename) $(download_back_ok));
+        }
+    }
 
-//        uint ac;
-//        string sjson = set_account_login2(123456);
-//        bool ok = get_account_login2(sjson,ac);
-//        vlogi($(account_login2) $(ok) $(ac));
-//    }
+    {
+        vlogi("\n");
+        string sjson = set_files_begin_download(123456789);
 
+        int64 swap_name;
 
-////    {
-////        uint ac;
-////        string sjson = web_protocol::set_account_login(123456);
-////        web_protocol::get_account_login(sjson,ac);
-////        vlogi($(ac));
-////    }
+        if (get_files_begin_download(sjson, swap_name))
+        {
+            vlogi($(swap_name));
+        }
+    }
 
+    {
+        vlogi("\n");
+        string sjson = set_files_finish_download(123456789, true);
 
+        int64 swap_name;
+        bool ok;
+
+        if (get_files_finish_download(sjson, swap_name, ok))
+        {
+            vlogi($(swap_name) $(ok));
+        }
+    }
+
+    {
+        vlogi("\n");
+        string sjson = set_files_cancel_download(123456789);
+
+        int64 swap_name;
+
+        if (get_files_cancel_download(sjson, swap_name))
+        {
+            vlogi($(swap_name));
+
+            string ssjson = set_files_cancel_download_back(swap_name, true);
+
+            bool ok;
+            if (get_files_cancel_download_back(ssjson, swap_name, ok))
+            {
+                vlogi($(swap_name) $(ok));
+            }
+        }
+    }
+
+    //== files ==
 
 }
 

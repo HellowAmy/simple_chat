@@ -6,6 +6,9 @@ CONFIG += c++17
 
 CONFIG += console
 
+QMAKE_CXXFLAGS += -Wno-unused-variable
+QMAKE_CXXFLAGS += -Wno-unused-parameter
+
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -26,6 +29,7 @@ SOURCES += \
     qsqlist.cpp \
     qweb_client.cpp \
 #    qweb_socket.cpp \
+    qweb_files.cpp \
     wid_chat.cpp \
     wid_chat_input.cpp \
     wid_chat_output.cpp \
@@ -111,6 +115,7 @@ HEADERS += \
     include/nlohmann/json.hpp \
     include/nlohmann/json_fwd.hpp \
     include/sqlist3/sqlite3.h \
+    inter_client.h \
     make_json.h \
     qarea_wid.h \
     qbar_line.h \
@@ -123,6 +128,7 @@ HEADERS += \
     qsqlist.h \
     qweb_client.h \
 #    qweb_socket.h \
+    qweb_files.h \
     web_protocol.h \
     wid_chat.h \
     wid_chat_input.h \

@@ -6,25 +6,50 @@
 #include <string>
 #include <functional>
 #include <map>
-
+#include <memory>
+#include <mutex>
 
 #include "Tvlog.h"
-//#include "inter_client.h"
 
 typedef long long int64;
 using std::string;
 using std::fstream;
 using std::function;
 using std::map;
+using std::shared_ptr;
+using std::mutex;
+
+typedef std::function<bool(int64 id,const string &data)> Tfn_send_cb;
 
 class swap_files
 {
 public:
-    struct fs_status
+    struct fs_recv
     {
-        int64 length_max;
-        string filename;
-        fstream *fs;
+        fs_recv(int64 n1,int64 n2,string n3,shared_ptr<fstream> n4)
+            : count_recv(n1),length_max(n2),filename(n3),sp_fs(n4) {}
+
+        int64 count_recv;           //累加接收
+        int64 length_max;           //文件长度
+        string filename;            //文件名称
+        shared_ptr<fstream> sp_fs;  //写入句柄
+    };
+
+    struct fs_send
+    {
+        fs_send(int64 n1,int64 n2,string n3,shared_ptr<fstream> n4,Tfn_send_cb n5)
+            : count_send(n1),length_max(n2),filename(n3),sp_fs(n4),fn_send_cb(n5) {}
+
+        int64 count_send;           //累加发送
+        int64 length_max;           //文件长度
+        string filename;            //文件名称
+        shared_ptr<fstream> sp_fs;  //读取句柄
+
+        //发送回调：自定义发送文件
+        //参数：[id: 唯一id，用于定位写入流] [data: 读取的数据]
+        //返回值：true时继续发送，false时终止发送，需要重新调用发送函数
+        //typedef std::function<bool(int64 id,const string &data)> Tfn_send_cb;
+        Tfn_send_cb fn_send_cb;
     };
 
 public:
@@ -82,102 +107,127 @@ public:
         return make_none_repeat_file(in_path,filename);
     }
 
-    //发送函数，一次性完成
-    bool send_file(std::function<void(bool&,int64,const string&)> func_send, int64 id,const string &filename)
+
+    //== 发送函数 ：多次完成 ==
+    bool open_file_send(int64 id,const string &filename,Tfn_send_cb fn_send_cb)
     {
-        bool is_send = true;
-        if(is_file(filename) == false) return false;
-        if(is_can_read(filename) == false) return false;
+        std::unique_lock<std::mutex> lock(_mut_send);
+        if(_map_send.find(id) != _map_send.end()) return false;
 
-        fstream fs(filename,std::ios::in | std::ios::binary);
-
-        if(fs.is_open())
+        shared_ptr sp_fs = std::make_shared<fstream>(filename,std::ios::in | std::ios::binary);
+        if(sp_fs->is_open())
         {
+            _map_send.emplace(id,std::make_shared<fs_send>(0, get_file_size(filename), filename,sp_fs,fn_send_cb));
+            return true;
+        }
+        else return false;
+    }
+
+    bool add_data_send(int64 id,bool &is_send)
+    {
+        auto it =_map_send.find(id);
+        if(it != _map_send.end())
+        {
+            auto sp_send = it->second;
+
             char buf[1024];
-            size_t count = 0;
-
-            while(fs.eof() == false && is_send)
+            while(sp_send->sp_fs->eof() == false)
             {
-                fs.read(buf,sizeof(buf));
-                size_t size_read = fs.gcount();
-                count += size_read;
+                {
+                    std::unique_lock<std::mutex> lock(_mut_send);
+                    sp_send->sp_fs->read(buf,sizeof(buf));
+                }
+                size_t size_read = sp_send->sp_fs->gcount();
+                sp_send->count_send += size_read;
 
-                func_send(is_send,id,string(buf,size_read));
+                is_send = sp_send->fn_send_cb(id,string(buf,size_read));
                 if(is_send == false) break;
             }
-            fs.close();
         }
+        else return false;
 
-        return is_send;
+        return true;
     }
 
-    //== 接收函数 ： 多次完成 ==
-    bool open_recv_file(int64 id,int64 length_max,const string &filename)
+    void close_file_send(int64 id)
     {
-        if(_map_read.find(id) != _map_read.end()) return false;
-
-        fs_status *fst = new fs_status;
-        fst->length_max = length_max;
-        fst->filename = filename;
-        fst->fs = new fstream(filename,std::ios::out | std::ios::binary);
-
-        auto it = _map_read.emplace(id,fst);
-        return it.second;
-    }
-
-    bool add_recv_buf(int64 id,const string &data)
-    {
-        bool is_revc = true;
-
-        auto it = _map_read.find(id);
-        if(it != _map_read.end())
+        std::unique_lock<std::mutex> lock(_mut_send);
+        auto it = _map_send.find(id);
+        if(it != _map_send.end())
         {
-            fs_status *fst = it->second;
-            fst->fs->write(data.c_str(),data.size());
-            is_revc = fst->fs->good();
+            auto sp_send = it->second;
+            sp_send->sp_fs->close();
         }
-        else is_revc = false;
+    }
+    //== 发送函数 ：多次完成 ==
 
-        return is_revc;
+
+
+    //== 接收函数 ：多次完成 ==
+    bool open_file_recv(int64 id,int64 length_max, const string &filename)
+    {
+        std::unique_lock<std::mutex> lock(_mut_recv);
+        if(_map_recv.find(id) != _map_recv.end()) return false;
+
+        shared_ptr sp_fs = std::make_shared<fstream>(filename,std::ios::out | std::ios::binary);
+        if(sp_fs->is_open())
+        {
+            _map_recv.emplace(id,std::make_shared<fs_recv>(0, length_max, filename,sp_fs));
+            return true;
+        }
+        else return false;
     }
 
-    fstream* find_fs(int64 id)
+    bool add_data_recv(int64 id,const string &data)
     {
-        auto it = _map_read.find(id);
-        if(it != _map_read.end())
+        auto it = _map_recv.find(id);
+        if(it != _map_recv.end())
         {
-            fs_status *fst = it->second;
-            return fst->fs;
+            auto sp_send = it->second;
+            {
+                std::unique_lock<std::mutex> lock(_mut_recv);
+                sp_send->sp_fs->write(data.c_str(),data.size());
+            }
+            bool ok = sp_send->sp_fs->good();
+            if(ok) sp_send->count_recv += data.size();
+            return ok;
         }
+        else return false;
+    }
+
+    void close_file_recv(int64 id)
+    {
+        std::unique_lock<std::mutex> lock(_mut_recv);
+        auto it = _map_recv.find(id);
+        if(it != _map_recv.end())
+        {
+            auto sp_send = it->second;
+            sp_send->sp_fs->close();
+        }
+    }
+    //== 接收函数 ：多次完成 ==
+
+    std::shared_ptr<fs_recv> find_fs_recv(int64 id)
+    {
+        auto it = _map_recv.find(id);
+        if(it != _map_recv.end())
+        { return it->second; }
         else return nullptr;
     }
 
-    void close_recv_buf(int64 id)
+    std::shared_ptr<fs_send> find_fs_send(int64 id)
     {
-        auto it = _map_read.find(id);
-        if(it != _map_read.end())
-        {
-            fs_status *fst = it->second;
-            fst->fs->close();
-        }
-        move_recv_map(id);
+        auto it = _map_send.find(id);
+        if(it != _map_send.end())
+        { return it->second; }
+        else return nullptr;
     }
-
-    void move_recv_map(int64 id)
-    {
-        auto it =_map_read.find(id);
-        if(it != _map_read.end())
-        {
-            fs_status *fst = it->second;
-            delete fst->fs;
-            delete fst;
-            _map_read.erase(it);
-        }
-    }
-    //== 接收函数 ： 多次完成 ==
 
 protected:
-    map<int64,fs_status*> _map_read;
+    mutex _mut_recv;
+    mutex _mut_send;
+    map<int64,std::shared_ptr<fs_recv>> _map_recv;
+    map<int64,std::shared_ptr<fs_send>> _map_send;
 };
 
 #endif // SWAP_FILES_H

@@ -34,7 +34,7 @@ public:
         _rec.min_delay = 1000;
         _rec.max_delay = 2000;
         _rec.delay_policy = 1;
-        _wc.setReconnect(&_rec);
+//        _wc.setReconnect(&_rec);
 
         string temp = "ws://"+ip+":"+hv::to_string(port)+"/"+txt;
         return _wc.open(temp.c_str());

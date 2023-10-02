@@ -1232,29 +1232,28 @@ void wid_test::test_20(QWidget *parent)
 
 
 
-    //收发测试部分
-    auto fn = [&](bool &stop,int64 id,const string &buf){
+//    //收发测试部分
+//    auto fn = [&](bool &stop,int64 id,const string &buf){
 
-        bool ok = s.add_recv_buf(id,buf);
-        if(ok == false) vlogi($(ok));
+//        bool ok = s.add_data_recv(id,buf);
+//        if(ok == false) vlogi($(ok));
 
-        static size_t co = 0;
-        co += buf.size();
-        if(co%100000 == 0)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            vlogi("sleep_for:" );
-        }
-    };
+//        static size_t co = 0;
+//        co += buf.size();
+//        if(co%100000 == 0)
+//        {
+//            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+//            vlogi("sleep_for:" );
+//        }
+//    };
 
-    {
-        bool ok = s.send_file(fn,id,s1);
-        vlogi($(ok));
-    }
-    {
-        s.close_recv_buf(id);
-        s.move_recv_map(id);
-    }
+//    {
+//        bool ok = s.open_file_recv(fn,id,s1);
+//        vlogi($(ok));
+//    }
+//    {
+//        s.close_file_recv(id);
+//    }
 
 }
 
@@ -1264,21 +1263,43 @@ void wid_test::test_21(QWidget *parent)
 
     string s1 = "/home/red/open/load/clion.png";
     string s2 = "/home/red/open/load/CLion202322.tar.gz";
+    string s3 = "/home/red/open/load/none.txt";
 
-    qweb_files *th = new qweb_files;
-    connect(th,&qweb_files::sn_open,this,[=](){
-        vlogi("sn_open");
+    for(int i=0;i<15;i++)
+    {
+        int64 time = 123456789;
+        int64 account = 1122334455;
+        qweb_files *th = new qweb_files;
+        connect(th,&qweb_files::sn_open,this,[=](){
+            vlogi("sn_open");
 
-        bool ok = th->upload_file(123456999,789876324,s2);
-        vlogi($(ok));
-    });
+            bool ok = th->upload_file(time+i,account+i,s2);
+            vlogi($(ok));
+        });
 
-    connect(th,&qweb_files::sn_close,this,[=](){
-        vlogi("sn_close");
-    });
+        connect(th,&qweb_files::sn_close,this,[=](){
+            vlogi("sn_close");
+        });
 
+        th->open();
+    }
 
-    th->open();
+//    int64 time = 123456789;
+//    int64 account = 1122334455;
+//    qweb_files *th = new qweb_files;
+//    connect(th,&qweb_files::sn_open,this,[=](){
+//        vlogi("sn_open");
+
+//        bool ok = th->upload_file(time,account,s1);
+//        vlogi($(ok));
+//    });
+
+//    connect(th,&qweb_files::sn_close,this,[=](){
+//        vlogi("sn_close");
+//    });
+
+//    th->open();
+
 
 
 

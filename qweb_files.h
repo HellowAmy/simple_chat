@@ -5,6 +5,7 @@
 #include <QQueue>
 #include <QMap>
 #include <QIterator>
+#include <QTimer>
 #include <functional>
 #include <thread>
 #include <condition_variable>
@@ -23,11 +24,13 @@ class qweb_files : public QObject
 {
     Q_OBJECT
 public:
+    enum en_status { e_first,e_pause,e_sending,e_end };
     struct fs_status
     {
+        en_status state;    //传输状态
         bool stop;          //是否停止
         bool swap;          //是否交换
-        int64 swap_name;    //临时文件
+        int64 swap_id;      //临时文件
         string filename;    //文件名称
     };
 
@@ -58,8 +61,10 @@ protected:
     inter_client _wc;       //网络链接
     swap_files _swap_fs;    //文件传输
 
-    QMap<string,function<void(const string&)>> _map_fn; //任务函数索引
-    QMap<int64,fs_status> _map_upload_filename;         //发送文件名索引
+//    QTimer t;
+
+    std::map<string,function<void(const string&)>> _map_fn;     //任务函数索引
+    std::map<int64,fs_status> _map_upload_status;               //发送文件名索引
 
     void sl_open();
     void sl_message(const string &msg);

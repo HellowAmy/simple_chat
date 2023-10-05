@@ -2,4 +2,18 @@ build/*
 !build/
 */build*/*
 *.user
+/temp_swap_file
+/temp_swap_file/
+/temp_swap_file/*
+third_party/*.o
+third_party/**/*.o
+third_party/**/*.output
+third_party/**/*.link
+third_party/**/*.http
+third_party/**/*.test
+third_party/*.test
+third_party/**/.libs/
+third_party/**/bin/
+third_party/json/tests/
+third_party/json/docs/
 

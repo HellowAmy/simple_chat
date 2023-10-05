@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <functional>
 #include <thread>
+#include <queue>
 #include <condition_variable>
 
 #include "include/hv/WebSocketClient.h"
@@ -24,13 +25,9 @@ class qweb_files : public QObject
 {
     Q_OBJECT
 public:
-    enum en_status { e_first,e_pause,e_sending,e_end };
     struct fs_status
     {
-        en_status state;    //传输状态
         bool stop;          //是否停止
-        bool swap;          //是否交换
-        int64 swap_id;      //临时文件
         string filename;    //文件名称
     };
 
@@ -45,7 +42,17 @@ public:
     //!     2.获取创建反馈，发送文件数据，发送完成提交结果
     //!     3.获取结果反馈，完成文件上传
     //!
-    bool upload_file(int64 time, int64 source, const string &path);
+    bool upload_file(int64 time, const string &path);
+
+
+    //!
+    //! 下载文件：
+    //!     1.下载文件创建
+    //!     2.获取文件信息反馈，建立文件写入流
+    //!     3.发送准备完成文件ID，等待服务器下发数据分段
+    //!     4.获取服务器下发完成反馈，结束文件下载
+    //!
+    bool download_file(int64 id);
 
     //!     uint time           时间序号
     //!     uint target         目标账号
@@ -56,13 +63,14 @@ public:
 signals:
     void sn_open();
     void sn_close();
+//    void sn_file_recv(int64 id);
 
 protected:
+    string _path_temp_save; //保存路径
     inter_client _wc;       //网络链接
     swap_files _swap_fs;    //文件传输
 
-//    QTimer t;
-
+//    std::queue<int64> _que_recv_ask;
     std::map<string,function<void(const string&)>> _map_fn;     //任务函数索引
     std::map<int64,fs_status> _map_upload_status;               //发送文件名索引
 
@@ -74,11 +82,14 @@ protected:
     bool send_data(int64 id,const string &msg);
     bool check_high_line();
 
+    void task_recv_binary_data(int64 id,const string &data);
 
     void task_files_create_upload_back(const string &sjson);
     void task_files_finish_upload_back(const string &sjson);
+
     void task_files_create_download_back(const string &sjson);
     void task_files_finish_download(const string &sjson);
+
     void task_files_cancel_download_back(const string &sjson);
 
 };

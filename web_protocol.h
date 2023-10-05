@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 typedef long long int64;
 typedef nlohmann::json json;
@@ -356,6 +357,8 @@ CS_MAKE_TYPE(swap_msg_back,_cc_,
 #define CS_BIT_FLG 1
 #define CS_BIT_ID 8
 
+#define CS_SENDBUF_HIGH_LINE    (1U << 23)  // 8M
+
 template <class T_ct>
 static string ct_s(T_ct ct)
 { return string((char*)&ct,sizeof(T_ct)); }
@@ -401,8 +404,8 @@ static bool get_files_binary(const string &msg,int64 &id,string &buf)
         string str_id(msg.begin() +CS_BIT_FLG,msg.begin() +CS_BIT_FLG +CS_BIT_ID);
         id = st_c<int64>(str_id);
 
-        string str_msg(msg.begin() +CS_BIT_FLG +CS_BIT_ID,msg.end());
-        buf = str_msg;
+        buf.resize(msg.end() - (msg.begin() +CS_BIT_FLG +CS_BIT_ID));
+        std::copy(msg.begin() +CS_BIT_FLG +CS_BIT_ID,msg.end(),buf.begin());
         ret = true;
     } catch(...) {}
     return ret;
@@ -414,8 +417,6 @@ static bool get_files_binary(const string &msg,int64 &id,string &buf)
 //!
 //! extend :
 //!     uint time           时间序号
-//!     uint target         目标账号
-//!     uint source         源址账号
 //!     uint length_max     文件长度
 //!     string filename     文件名称
 //!
@@ -427,10 +428,10 @@ static bool get_files_binary(const string &msg,int64 &id,string &buf)
 //!     [ swap_name: source +target +time +N ，N为避免重复的数字，用于服务器创建唯一标识，用于整个文件传输过程定位 ]
 //!
 CS_MAKE_TYPE(files_create_upload,_cs_,
-             CS_ARGV( CS_1(int64,time),CS_1(int64,target),CS_1(int64,source),CS_1(int64,length_max),CS_1(string,filename)  ),
-             CS_BODY( CS_2(int64,time) CS_2(int64,target) CS_2(int64,source) CS_2(int64,length_max) CS_2(string,filename)  ),
-             CS_ARGV(,CS_3(int64,time),CS_3(int64,target),CS_3(int64,source),CS_3(int64,length_max),CS_3(string,filename)  ),
-             CS_BODY( CS_4(int64,time) CS_4(int64,target) CS_4(int64,source) CS_4(int64,length_max) CS_4(string,filename)  )
+             CS_ARGV( CS_1(int64,time),CS_1(int64,length_max),CS_1(string,filename)  ),
+             CS_BODY( CS_2(int64,time) CS_2(int64,length_max) CS_2(string,filename)  ),
+             CS_ARGV(,CS_3(int64,time),CS_3(int64,length_max),CS_3(string,filename)  ),
+             CS_BODY( CS_4(int64,time) CS_4(int64,length_max) CS_4(string,filename)  )
              )
 CS_MAKE_TYPE(files_create_upload_back,_sc_,
              CS_ARGV( CS_1(int64,time),CS_1(int64,swap_name),CS_1(bool,ok)  ),
@@ -445,7 +446,6 @@ CS_MAKE_TYPE(files_create_upload_back,_sc_,
 //!
 //! extend :
 //!     uint swap_name      临时命名
-//!     bool is_swap        交换文件 [ 用于判断是单独上传，还是用于交换 ]
 //!     bool finish         上传反馈
 //!
 //! back :
@@ -453,10 +453,10 @@ CS_MAKE_TYPE(files_create_upload_back,_sc_,
 //!     bool ok             反馈成功
 //!
 CS_MAKE_TYPE(files_finish_upload,_cs_,
-             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,is_swap),CS_1(bool,finish)  ),
-             CS_BODY( CS_2(int64,swap_name) CS_2(bool,is_swap) CS_2(bool,finish)  ),
-             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,is_swap),CS_3(bool,finish)  ),
-             CS_BODY( CS_4(int64,swap_name) CS_4(bool,is_swap) CS_4(bool,finish)  )
+             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,finish)  ),
+             CS_BODY( CS_2(int64,swap_name) CS_2(bool,finish)  ),
+             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,finish)  ),
+             CS_BODY( CS_4(int64,swap_name) CS_4(bool,finish)  )
              )
 CS_MAKE_TYPE(files_finish_upload_back,_sc_,
              CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
@@ -485,10 +485,10 @@ CS_MAKE_TYPE(files_create_download,_cs_,
              CS_BODY( CS_4(int64,swap_name)  )
              )
 CS_MAKE_TYPE(files_create_download_back,_sc_,
-             CS_ARGV( CS_1(int64,length_max),CS_1(string,filename),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(int64,length_max) CS_2(string,filename) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(int64,length_max),CS_3(string,filename),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(int64,length_max) CS_4(string,filename) CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,swap_name),CS_1(int64,length_max),CS_1(string,filename),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,swap_name) CS_2(int64,length_max) CS_2(string,filename) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,swap_name),CS_3(int64,length_max),CS_3(string,filename),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,swap_name) CS_4(int64,length_max) CS_4(string,filename) CS_4(bool,ok)  )
              )
 
 //!
@@ -496,14 +496,15 @@ CS_MAKE_TYPE(files_create_download_back,_sc_,
 //!
 //! extend :
 //!     uint swap_name      临时命名
+//!     bool ok             准备成功
 //!
 //! back :
 //!
 CS_MAKE_TYPE(files_begin_download,_cs_,
-             CS_ARGV( CS_1(int64,swap_name)  ),
-             CS_BODY( CS_2(int64,swap_name)  ),
-             CS_ARGV(,CS_3(int64,swap_name)  ),
-             CS_BODY( CS_4(int64,swap_name)  )
+             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,swap_name) CS_4(bool,ok)  )
              )
 
 //!
@@ -512,6 +513,8 @@ CS_MAKE_TYPE(files_begin_download,_cs_,
 //! extend :
 //!     uint swap_name      临时命名
 //!     bool ok             反馈成功
+//!
+//! back :
 //!
 CS_MAKE_TYPE(files_finish_download,_sc_,
              CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
@@ -537,7 +540,6 @@ CS_MAKE_TYPE(files_cancel_download,_cs_,
              CS_ARGV(,CS_3(int64,swap_name)  ),
              CS_BODY( CS_4(int64,swap_name)  )
              )
-
 CS_MAKE_TYPE(files_cancel_download_back,_sc_,
              CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
              CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),

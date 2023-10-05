@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <queue>
 
 #include "Tvlog.h"
 
@@ -18,9 +19,14 @@ using std::function;
 using std::map;
 using std::shared_ptr;
 using std::mutex;
+using std::queue;
 
 typedef std::function<bool(int64 id,const string &data)> Tfn_send_cb;
 
+//!
+//! 类说明： 提供发送与接收网络传输文件的读写管理，支持多文件多文件多线程
+//!             利用唯一 ID 绑定文件流
+//!
 class swap_files
 {
 public:
@@ -109,7 +115,7 @@ public:
 
 
     //== 发送函数 ：多次完成 ==
-    bool open_file_send(int64 id,const string &filename,Tfn_send_cb fn_send_cb)
+    bool open_file_send(int64 id,const string &filename,Tfn_send_cb fn_send_cb,bool ready = true)
     {
         std::unique_lock<std::mutex> lock(_mut_send);
         if(_map_send.find(id) != _map_send.end()) return false;
@@ -117,14 +123,16 @@ public:
         shared_ptr sp_fs = std::make_shared<fstream>(filename,std::ios::in | std::ios::binary);
         if(sp_fs->is_open())
         {
-            _map_send.emplace(id,std::make_shared<fs_send>(0, get_file_size(filename), filename,sp_fs,fn_send_cb));
-            return true;
+            if(ready) add_send_queue(id);
+            auto it = _map_send.emplace(id,std::make_shared<fs_send>(0,get_file_size(filename),filename,sp_fs,fn_send_cb));
+            return it.second;
         }
         else return false;
     }
 
-    bool add_data_send(int64 id,bool &is_send)
+    bool add_data_send(int64 id)
     {
+        bool is_send = true;
         auto it =_map_send.find(id);
         if(it != _map_send.end())
         {
@@ -144,9 +152,7 @@ public:
                 if(is_send == false) break;
             }
         }
-        else return false;
-
-        return true;
+        return is_send;
     }
 
     void close_file_send(int64 id)
@@ -157,6 +163,7 @@ public:
         {
             auto sp_send = it->second;
             sp_send->sp_fs->close();
+            _map_send.erase(it);
         }
     }
     //== 发送函数 ：多次完成 ==
@@ -172,8 +179,8 @@ public:
         shared_ptr sp_fs = std::make_shared<fstream>(filename,std::ios::out | std::ios::binary);
         if(sp_fs->is_open())
         {
-            _map_recv.emplace(id,std::make_shared<fs_recv>(0, length_max, filename,sp_fs));
-            return true;
+            auto it = _map_recv.emplace(id,std::make_shared<fs_recv>(0, length_max, filename,sp_fs));
+            return it.second;
         }
         else return false;
     }
@@ -203,9 +210,11 @@ public:
         {
             auto sp_send = it->second;
             sp_send->sp_fs->close();
+            _map_recv.erase(it);
         }
     }
     //== 接收函数 ：多次完成 ==
+
 
     std::shared_ptr<fs_recv> find_fs_recv(int64 id)
     {
@@ -223,11 +232,52 @@ public:
         else return nullptr;
     }
 
+    void add_send_queue(int64 id)
+    {
+        std::unique_lock<std::mutex> lock(_mut_send_que);
+        _que_send.push(id);
+    }
+
+    int64 remove_send_queue()
+    {
+        std::unique_lock<std::mutex> lock(_mut_send_que);
+        int64 id = _que_send.back(); _que_send.pop();
+        return id;
+    }
+
+    size_t get_send_size_queue()
+    { return _que_send.size(); }
+
+    //自动发送打开的文件数据
+    //  fn_finish_cb : [finish: 是否完成] [id: 文件标识] [return: 是否继续传输]
+    int64 start_send_queue(std::function<bool(bool finish,int64 id)> fn_finish_cb)
+    {
+        int size_que = _que_send.size();
+        for(int i=0;i<size_que;i++)
+        {
+            int64 id = remove_send_queue();
+            bool ok = add_data_send(id);
+            bool is_send = fn_finish_cb(ok,id);
+            vlogi($(size_que) $(i) $(id));
+
+            //[未完成：加入队列继续发送] [完成：关闭文件]
+            if(is_send && ok == false) { add_send_queue(id); }
+            else { close_file_send(id); }
+        }
+        vlogi($(size_que) );
+        return _que_send.size();
+    }
+
+
+
+
 protected:
     mutex _mut_recv;
     mutex _mut_send;
+    mutex _mut_send_que;
     map<int64,std::shared_ptr<fs_recv>> _map_recv;
     map<int64,std::shared_ptr<fs_send>> _map_send;
+    queue<int64> _que_send;
 };
 
 #endif // SWAP_FILES_H

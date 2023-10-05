@@ -722,16 +722,6 @@ void wid_test::test_15(QWidget *parent)
 {
     this->hide();
 
-
-//    std::filesystem fss;
-
-
-
-
-
-
-
-
     int v = 100000000;
 
     for(int i=v;i<v+5;i++)
@@ -1065,17 +1055,15 @@ void wid_test::test_19(QWidget *parent)
         string filename = "example.txt"; // 替换为文件名
 
         // 创建发送文件上传请求的 JSON 字符串
-        string upload_json = set_files_create_upload(time, target, source, length_max, filename);
+        string upload_json = set_files_create_upload(time, length_max, filename);
 
         int64 gtime;
-        int64 gtarget;
-        int64 gsource;
         int64 glength_max;
         string gfilename;
         bool upload_ok;
-        if (get_files_create_upload(upload_json, gtime, gtarget, gsource,glength_max,gfilename))
+        if (get_files_create_upload(upload_json,gtime,glength_max,gfilename))
         {
-            vlogi($(gtime) $(gtarget) $(glength_max) $(gfilename) $(upload_ok));
+            vlogi($(gtime) $(glength_max) $(gfilename) $(upload_ok));
         }
 
         // 创建返回文件上传结果的 JSON 字符串
@@ -1093,15 +1081,15 @@ void wid_test::test_19(QWidget *parent)
 
     {
         vlogi("\n");
-        string sjson = set_files_finish_upload(123456789, true, true);
+        string sjson = set_files_finish_upload(123456789, true);
 
         int64 swap_name;
         bool swap_data;
         bool finish;
 
-        if (get_files_finish_upload(sjson, swap_name, swap_data, finish))
+        if (get_files_finish_upload(sjson, swap_name, finish))
         {
-            vlogi($(swap_name) $(swap_data) $(finish));
+            vlogi($(swap_name) $(finish));
 
             string ssjson = set_files_finish_upload_back(swap_name, true);
 
@@ -1129,14 +1117,16 @@ void wid_test::test_19(QWidget *parent)
         }
 
         // 创建返回文件下载请求结果的 JSON 字符串
+        int64 id = 1024; // 替换为文件最大长度值
         int64 length_max = 1024; // 替换为文件最大长度值
         string filename = "downloaded_file.txt"; // 替换为下载的文件名
-        string download_back_json = set_files_create_download_back(length_max, filename, true);
+        string download_back_json = set_files_create_download_back(id,length_max, filename, true);
 
+        int64 download_id;
         int64 download_back_length_max;
         string download_back_filename;
         bool download_back_ok;
-        if (get_files_create_download_back(download_back_json, download_back_length_max, download_back_filename, download_back_ok))
+        if (get_files_create_download_back(download_back_json,download_id, download_back_length_max, download_back_filename, download_back_ok))
         {
             vlogi($(download_back_length_max) $(download_back_filename) $(download_back_ok));
         }
@@ -1144,11 +1134,11 @@ void wid_test::test_19(QWidget *parent)
 
     {
         vlogi("\n");
-        string sjson = set_files_begin_download(123456789);
+        string sjson = set_files_begin_download(123456789,true);
 
         int64 swap_name;
-
-        if (get_files_begin_download(sjson, swap_name))
+        bool ok;
+        if (get_files_begin_download(sjson, swap_name,ok))
         {
             vlogi($(swap_name));
         }
@@ -1261,11 +1251,12 @@ void wid_test::test_21(QWidget *parent)
 {
     this->hide();
 
+#if 0
     string s1 = "/home/red/open/load/clion.png";
     string s2 = "/home/red/open/load/CLion202322.tar.gz";
     string s3 = "/home/red/open/load/none.txt";
 
-    for(int i=0;i<15;i++)
+    for(int i=0;i<5;i++)
     {
         int64 time = 123456789;
         int64 account = 1122334455;
@@ -1273,7 +1264,7 @@ void wid_test::test_21(QWidget *parent)
         connect(th,&qweb_files::sn_open,this,[=](){
             vlogi("sn_open");
 
-            bool ok = th->upload_file(time+i,account+i,s2);
+            bool ok = th->upload_file(time+i,s1);
             vlogi($(ok));
         });
 
@@ -1284,26 +1275,77 @@ void wid_test::test_21(QWidget *parent)
         th->open();
     }
 
-//    int64 time = 123456789;
-//    int64 account = 1122334455;
-//    qweb_files *th = new qweb_files;
-//    connect(th,&qweb_files::sn_open,this,[=](){
-//        vlogi("sn_open");
+#else
 
-//        bool ok = th->upload_file(time,account,s1);
-//        vlogi($(ok));
-//    });
+//    vector<int64> vec {490645973,751498503,167392342,822058707};
+//    vector<int64> vec {822058707};
 
-//    connect(th,&qweb_files::sn_close,this,[=](){
-//        vlogi("sn_close");
-//    });
+//    std::vector<int64> vec = {
+//        167392342,
+//        232304622,
+//        239478879,
+//        464308397,
+//        490645973,
+//        531637645,
+//        751498503,
+//        755361055,
+//        822058707,
+//        933347679
+//    };
 
-//    th->open();
+    std::vector<int64> vec = {
+        232304622,
+        464308397,
+        531637645,
+        755361055,
+        822058707
+    };
+
+    qweb_files *th = new qweb_files;
+    connect(th,&qweb_files::sn_open,this,[=](){
+        vlogi("sn_open");
+
+        for(int i=0;i<vec.size();i++)
+        {
+            bool ok = th->download_file(vec[i]);
+            vlogi($(ok));
+        }
+    });
+
+    connect(th,&qweb_files::sn_close,this,[=](){
+        vlogi("sn_close");
+    });
+    th->open();
 
 
+//    auto fn_th = [=](int64 id){
+//        qweb_files *th = new qweb_files;
+//        connect(th,&qweb_files::sn_open,this,[=](){
+//            vlogi("sn_open");
 
+//            bool ok = th->download_file(id);
+//            vlogi($(ok));
+//        });
+
+//        connect(th,&qweb_files::sn_close,this,[=](){
+//            vlogi("sn_close");
+//        });
+
+//        th->open();
+//    };
+
+//    for(int i=0;i<vec.size();i++)
+//    {
+//        try{
+//            std::thread th(fn_th,vec[i]);
+//            th.detach();
+//        }catch(...){}
+
+//    }
+#endif
 
 
 
 }
+
 

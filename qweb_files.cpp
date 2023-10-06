@@ -20,36 +20,42 @@ qweb_files::qweb_files(QObject *parent)
     ADD_MAP(files_cancel_download_back);
 
 
-    //文件分段触发回调
+    //分段上传结果反馈
+    auto fn_finish = [=](bool finish,int64 id) {
+
+        //停止和或者完整传输，完成上传
+        bool is_end = false;
+        auto it_stop = _map_upload_status.find(id);
+        if(it_stop->second.stop || finish)
+        {
+            _map_upload_status.erase(it_stop);
+            is_end = true;
+        }
+
+        //完成上传并反馈
+        if(is_end)
+        {
+            _fs_swap.close_file_send_channel(get_id_channel(),id);
+
+            string s = set_files_finish_upload(id,is_end);
+            send_msg(s);
+            return false;
+        }
+        return true;
+    };
+
+    //文件发送，分段触发写入回调
     typedef std::shared_ptr<hv::WebSocketChannel> TSocketChannelPtr;
     _wc.get_wc()->onWriteComplete = [=](const TSocketChannelPtr& channel, hv::Buffer* buf) {
 
-        //分段上传结果反馈
-        auto fn_finish = [=](bool finish,int64 id) {
-
-            //停止和或者完整传输，完成上传
-            bool is_end = false;
-            auto it_stop = _map_upload_status.find(id);
-            if(it_stop->second.stop || finish)
-            {
-                _map_upload_status.erase(it_stop);
-                is_end = true;
-            }
-
-            //完成上传并反馈
-            if(is_end)
-            {
-                string s = set_files_finish_upload(id,is_end);
-                send_msg(s);
-                return false;
-            }
-            return true;
-        };
-
         //发送提示：利用ping/pong出发write发送回调，控制发送文件流量
         if(channel->isWriteComplete()
-            && _swap_fs.get_send_size_queue() > 0)
-        { _swap_fs.start_send_queue(fn_finish); }
+            && (_fs_swap.get_sending() == false)
+            && (_fs_swap.get_send_size_queue() > 0))
+        {
+            _fs_swap.start_send_queue(fn_finish);
+            vlogi("send part");
+        }
     };
 }
 
@@ -60,12 +66,12 @@ int qweb_files::open(string ip, int port, string txt)
 
 bool qweb_files::upload_file(int64 time, const string &path)
 {
-    if(swap_files::is_exists(path) == false
-        || swap_files::is_can_read(path) == false
-        || swap_files::is_file(path) == false) return false;
+    if(files_info::is_exists(path) == false
+        || files_info::is_can_read(path) == false
+        || files_info::is_file(path) == false) return false;
 
-    int64 file_size = swap_files::get_file_size(path);
-    string filename = swap_files::get_filename(path);
+    int64 file_size = files_info::get_file_size(path);
+    string filename = files_info::get_filename(path);
     string s = set_files_create_upload(time,file_size,filename);
     bool ok = send_msg(s);
 
@@ -78,6 +84,11 @@ bool qweb_files::download_file(int64 id)
 {
     string s = set_files_create_download(id);
     return send_msg(s);
+}
+
+int64 qweb_files::get_id_channel()
+{
+    return _wc.get_wc()->channel->id();
 }
 
 bool qweb_files::send_msg(const string &sjson)
@@ -96,14 +107,13 @@ bool qweb_files::send_data(int64 id, const string &msg)
 
 bool qweb_files::check_high_line()
 {
-    size_t size = _wc.get_wc()->channel->writeBufsize();
-    if(size >= CS_SENDBUF_HIGH_LINE) return true;
+    if(_wc.get_wc()->channel->writeBufsize() > 0) return true;
     return false;
 }
 
 void qweb_files::task_recv_binary_data(int64 id, const string &data)
 {
-    bool ok = _swap_fs.add_data_recv(id,data);
+    bool ok = _fs_swap.add_data_recv(id,data);
     if(ok == false) vlogw("err: task_recv_binary_data ");
 }
 
@@ -132,8 +142,11 @@ void qweb_files::task_files_create_upload_back(const string &sjson)
                 auto it_id = _map_upload_status.emplace(id,it->second);
                 if(it_id.second)
                 {
-                    bool ok_open = _swap_fs.open_file_send(id,it->second.filename,func_send);
-                    vlogi("open:" $(id) $(ok_open));
+                    bool ok_open = _fs_swap.open_file_send_channel(get_id_channel(),id,it->second.filename,func_send);
+                    _fs_swap.add_send_queue(id);
+//                    bool ok_open = _swap_fs.open_file_send(id,it->second.filename,func_send);
+//                    vlogi("open:" $(id) $(ok_open));
+                    vlogif(ok_open,$(id) $(ok_open) $(get_id_channel()));
 
                     if(ok_open)
                     {
@@ -176,19 +189,24 @@ void qweb_files::task_files_create_download_back(const string &sjson)
     {
         if(ok)
         {
-            string new_name = swap_files::make_none_repeat_file(_path_temp_save,filename);
+            string new_name = files_info::make_none_repeat_file(_path_temp_save,filename);
             string abs_path = _path_temp_save + new_name;
-            bool ok_open = _swap_fs.open_file_recv(swap_id,length_max,abs_path);
+            bool ok_open = _fs_swap.open_file_recv_channel(get_id_channel(),swap_id,length_max,abs_path);
+//            bool ok_open = _swap_fs.open_file_recv(swap_id,length_max,abs_path);
 
+            vlogif(ok_open, $(abs_path) $(ok_open));
 
-            vlogd("download_back" $(abs_path) $(ok_open));
-            if(ok_open == false) vloge("download_back" $(swap_id));
+//            vlogd("download_back" $(abs_path) $(ok_open));
+//            if(ok_open == false) vloge("download_back" $(swap_id));
 
             string s = set_files_begin_download(swap_id,ok_open);
             send_msg(s);
         }
-        vlogd("download_back" $(swap_id) $(length_max) $(ok));
+
+        vlogif(ok,$(filename) $(length_max) $(swap_id));
+//        vlogd("download_back" $(swap_id) $(length_max) $(ok));
     }
+    else vlogw("err: task_files_create_download_back");
 }
 
 void qweb_files::task_files_finish_download(const string &sjson)
@@ -199,8 +217,14 @@ void qweb_files::task_files_finish_download(const string &sjson)
     {
         if(ok)
         {
-            _swap_fs.close_file_recv(swap_id);
-            vlogd("finishi: " $(swap_id) $(ok));
+            int64 count;
+            int64 length;
+            bool ok_recv = _fs_swap.check_length_recv(swap_id,&count,&length);
+            _fs_swap.close_file_recv_channel(get_id_channel(),swap_id);
+
+//            _swap_fs.close_file_recv(swap_id);
+            vlogif(ok_recv, $(swap_id) $(ok) $(ok_recv) $(count) $(length));
+//            vlogd("finishi: " $(swap_id) $(ok) $(ok_recv));
         }
         else
         {
@@ -219,6 +243,9 @@ void qweb_files::task_files_cancel_download_back(const string &sjson)
 
 void qweb_files::sl_open()
 {
+    bool ok = _fs_swap.add_id_channel(get_id_channel());
+
+    vlogif(ok,$(ok) $(get_id_channel()));
     emit sn_open();
 }
 
@@ -264,5 +291,17 @@ void qweb_files::sl_message(const string &msg)
 
 void qweb_files::sl_close()
 {
+    auto it = _fs_swap.get_channel_map();
+    vlogi($(it.size()));
+    for(auto a:it)
+    {
+        shared_ptr<files_channel::fs_channel> sp = a.second;
+        vlogi($(sp->_set_recv.size()) $(sp->_set_send.size()));
+    }
+
+
+    _fs_swap.remove_id_channel(get_id_channel());
+    _map_upload_status.clear();
+
     emit sn_close();
 }

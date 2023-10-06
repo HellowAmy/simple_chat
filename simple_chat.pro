@@ -43,6 +43,7 @@ SOURCES += \
 HEADERS += \
     Tvlog.h \
     file_version.h \
+    files_transfer.h \
     include/hv/AsyncHttpClient.h \
     include/hv/Buffer.h \
     include/hv/Channel.h \
@@ -129,7 +130,7 @@ HEADERS += \
     qweb_client.h \
 #    qweb_socket.h \
     qweb_files.h \
-    swap_files.h \
+#    swap_files.h \
     web_protocol.h \
     wid_chat.h \
     wid_chat_input.h \

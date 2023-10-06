@@ -316,10 +316,13 @@ void print_con(Tit begin,Tit end,int len,const std::string &flg)
 
 
 //== QT扩展 ==
+
+
 #ifdef QT_VERSION
 #include <QDebug>
 #define qlog(txt)  qDebug()<<"[Qt] ["<<__FILE__<<": <"<<__LINE__<<"> ] <<<< "<<txt
 #define Q$(value) "[ "#value":"<<value.toStdString()<<"] "
+#define vlogif(ok,...) (ok ? vlogd(__VA_ARGS__) : vloge(__VA_ARGS__))
 #endif
 //== QT扩展 ==
 

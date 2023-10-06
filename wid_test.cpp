@@ -1251,97 +1251,142 @@ void wid_test::test_21(QWidget *parent)
 {
     this->hide();
 
-#if 0
+#if 1
     string s1 = "/home/red/open/load/clion.png";
     string s2 = "/home/red/open/load/CLion202322.tar.gz";
     string s3 = "/home/red/open/load/none.txt";
 
-    for(int i=0;i<5;i++)
+    int v1 = 2;
+
+
+    if(v1 == 1)
     {
-        int64 time = 123456789;
-        int64 account = 1122334455;
         qweb_files *th = new qweb_files;
+        int64 time = 123456789;
         connect(th,&qweb_files::sn_open,this,[=](){
             vlogi("sn_open");
 
-            bool ok = th->upload_file(time+i,s1);
-            vlogi($(ok));
+            for(int i=0;i<5;i++)
+            {
+                bool ok = th->upload_file(time+i,s1);
+                vlogi($(ok));
+            }
         });
 
         connect(th,&qweb_files::sn_close,this,[=](){
             vlogi("sn_close");
         });
-
         th->open();
     }
+    else if(v1 == 2)
+    {
+        for(int i=0;i<5;i++)
+        {
+            int64 time = 123456789;
+            qweb_files *th = new qweb_files;
+            connect(th,&qweb_files::sn_open,this,[=](){
+                vlogi("sn_open");
+
+                bool ok = th->upload_file(time+i,s2);
+                vlogi($(ok));
+            });
+
+            connect(th,&qweb_files::sn_close,this,[=](){
+                vlogi("sn_close");
+            });
+
+            th->open();
+        }
+    }
+
+
+
+
+
 
 #else
+    int v1 = 4;
+    int v2 = 2;
 
-//    vector<int64> vec {490645973,751498503,167392342,822058707};
-//    vector<int64> vec {822058707};
+    vector<int64> vec_in;
 
-//    std::vector<int64> vec = {
-//        167392342,
-//        232304622,
-//        239478879,
-//        464308397,
-//        490645973,
-//        531637645,
-//        751498503,
-//        755361055,
-//        822058707,
-//        933347679
-//    };
+    if(v1 == 1)
+    {
+        vector<int64> vec {822058707};
+        vec_in = vec;
+    }
+    else if(v1 == 2)
+    {
+        vector<int64> vec {490645973,751498503,167392342,822058707};
+        vec_in = vec;
+    }
+    else if(v1 == 3)
+    {
+        std::vector<int64> vec = {
+            232304622,
+            464308397,
+            531637645,
+            755361055,
+            822058707
+        };
+        vec_in = vec;
+    }
+    else if(v1 == 4)
+    {
+        std::vector<int64> vec = {
+            167392342,
+            232304622,
+            239478879,
+            464308397,
+            490645973,
+            531637645,
+            751498503,
+            755361055,
+            822058707,
+            933347679
+        };
+        vec_in = vec;
+    }
 
-    std::vector<int64> vec = {
-        232304622,
-        464308397,
-        531637645,
-        755361055,
-        822058707
-    };
+    if(v2 == 1)
+    {
+        qweb_files *th = new qweb_files;
+        connect(th,&qweb_files::sn_open,this,[=](){
+            vlogi("sn_open");
 
-    qweb_files *th = new qweb_files;
-    connect(th,&qweb_files::sn_open,this,[=](){
-        vlogi("sn_open");
+            for(int i=0;i<vec_in.size();i++)
+            {
+                bool ok = th->download_file(vec_in[i]);
+                vlogi($(ok));
+            }
+        });
 
-        for(int i=0;i<vec.size();i++)
+        connect(th,&qweb_files::sn_close,this,[=](){
+            vlogi("sn_close");
+        });
+        th->open();
+    }
+    else if(v2 == 2)
+    {
+        for(auto a:vec_in)
         {
-            bool ok = th->download_file(vec[i]);
-            vlogi($(ok));
+            qweb_files *th = new qweb_files;
+            connect(th,&qweb_files::sn_open,this,[=](){
+                vlogi("sn_open");
+
+                bool ok = th->download_file(a);
+                vlogi($(ok));
+            });
+
+            connect(th,&qweb_files::sn_close,this,[=](){
+                vlogi("sn_close");
+            });
+            th->open();
         }
-    });
 
-    connect(th,&qweb_files::sn_close,this,[=](){
-        vlogi("sn_close");
-    });
-    th->open();
+    }
 
 
-//    auto fn_th = [=](int64 id){
-//        qweb_files *th = new qweb_files;
-//        connect(th,&qweb_files::sn_open,this,[=](){
-//            vlogi("sn_open");
-
-//            bool ok = th->download_file(id);
-//            vlogi($(ok));
-//        });
-
-//        connect(th,&qweb_files::sn_close,this,[=](){
-//            vlogi("sn_close");
-//        });
-
-//        th->open();
-//    };
-
-//    for(int i=0;i<vec.size();i++)
-//    {
-//        try{
-//            std::thread th(fn_th,vec[i]);
-//            th.detach();
-//        }catch(...){}
-
-//    }
 #endif
 
 

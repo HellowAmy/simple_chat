@@ -357,7 +357,7 @@ CS_MAKE_TYPE(swap_msg_back,_cc_,
 #define CS_BIT_FLG 1
 #define CS_BIT_ID 8
 
-#define CS_SENDBUF_HIGH_LINE    (1U << 23)  // 8M
+//#define CS_SENDBUF_HIGH_LINE    (1U << 23)  // 8M
 
 template <class T_ct>
 static string ct_s(T_ct ct)

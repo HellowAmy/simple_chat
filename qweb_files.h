@@ -14,7 +14,8 @@
 #include "include/hv/WebSocketClient.h"
 #include "web_protocol.h"
 #include "inter_client.h"
-#include "swap_files.h"
+//#include "swap_files.h"
+#include "files_transfer.h"
 
 using namespace protocol;
 using std::function;
@@ -68,11 +69,13 @@ signals:
 protected:
     string _path_temp_save; //保存路径
     inter_client _wc;       //网络链接
-    swap_files _swap_fs;    //文件传输
+    files_channel _fs_swap; //文件传输
 
 //    std::queue<int64> _que_recv_ask;
     std::map<string,function<void(const string&)>> _map_fn;     //任务函数索引
     std::map<int64,fs_status> _map_upload_status;               //发送文件名索引
+
+    int64 get_id_channel();
 
     void sl_open();
     void sl_message(const string &msg);

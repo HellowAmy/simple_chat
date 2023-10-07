@@ -1046,37 +1046,39 @@ void wid_test::test_19(QWidget *parent)
         }
     }
 
-    {
-        vlogi("\n");
-        int64 time = 123456789; // 替换为你的时间值
-        int64 target = 987654321; // 替换为目标值
-        int64 source = 555555555; // 替换为源值
-        int64 length_max = 1024; // 替换为最大长度值
-        string filename = "example.txt"; // 替换为文件名
+//    {
+//        vlogi("\n");
+//        int64 time = 123456789; // 替换为你的时间值
+//        int64 target = 987654321; // 替换为目标值
+//        int64 source = 555555555; // 替换为源值
+//        int64 length_max = 1024; // 替换为最大长度值
+//        string filename = "example.txt"; // 替换为文件名
 
-        // 创建发送文件上传请求的 JSON 字符串
-        string upload_json = set_files_create_upload(time, length_max, filename);
 
-        int64 gtime;
-        int64 glength_max;
-        string gfilename;
-        bool upload_ok;
-        if (get_files_create_upload(upload_json,gtime,glength_max,gfilename))
-        {
-            vlogi($(gtime) $(glength_max) $(gfilename) $(upload_ok));
-        }
+//        // 创建发送文件上传请求的 JSON 字符串
+//        string upload_json = set_files_create_upload(time, length_max, filename,true);
 
-        // 创建返回文件上传结果的 JSON 字符串
-        string upload_back_json = set_files_create_upload_back(time, 12399999001, true);
+//        int64 gtime;
+//        int64 glength_max;
+//        string gfilename;
+//        bool upload_ok;
+//        bool is_swap;
+//        if (get_files_create_upload(upload_json,gtime,glength_max,gfilename,is_swap))
+//        {
+//            vlogi($(gtime) $(glength_max) $(gfilename) $(upload_ok));
+//        }
 
-        int64 upload_back_time;
-        int64 upload_back_swap_name;
-        bool upload_back_ok;
-        if (get_files_create_upload_back(upload_back_json, upload_back_time, upload_back_swap_name, upload_back_ok))
-        {
-            vlogi($(upload_back_time) $(upload_back_swap_name) $(upload_back_ok));
-        }
-    }
+//        // 创建返回文件上传结果的 JSON 字符串
+//        string upload_back_json = set_files_create_upload_back(time, 12399999001, true);
+
+//        int64 upload_back_time;
+//        int64 upload_back_swap_name;
+//        bool upload_back_ok;
+//        if (get_files_create_upload_back(upload_back_json, upload_back_time, upload_back_swap_name, upload_back_ok))
+//        {
+//            vlogi($(upload_back_time) $(upload_back_swap_name) $(upload_back_ok));
+//        }
+//    }
 
 
     {
@@ -1103,46 +1105,48 @@ void wid_test::test_19(QWidget *parent)
 
 
 
-    {
-        vlogi("\n");
-        int64 swap_name = 123456789; // 替换为你的交换名称值
+//    {
+//        vlogi("\n");
+//        int64 swap_name = 123456789; // 替换为你的交换名称值
 
-        // 创建发送文件下载请求的 JSON 字符串
-        string download_json = set_files_create_download(swap_name);
+//        // 创建发送文件下载请求的 JSON 字符串
+//        string download_json = set_files_create_download(swap_name,"filename",true);
 
-        int64 download_swap_name;
-        if (get_files_create_download(download_json, download_swap_name))
-        {
-            vlogi($(download_swap_name));
-        }
+//        int64 download_swap_name;
+//        string filenamedd;
+//        bool is_swap;
+//        if (get_files_create_download(download_json, download_swap_name,filenamedd,is_swap))
+//        {
+//            vlogi($(download_swap_name));
+//        }
 
-        // 创建返回文件下载请求结果的 JSON 字符串
-        int64 id = 1024; // 替换为文件最大长度值
-        int64 length_max = 1024; // 替换为文件最大长度值
-        string filename = "downloaded_file.txt"; // 替换为下载的文件名
-        string download_back_json = set_files_create_download_back(id,length_max, filename, true);
+//        // 创建返回文件下载请求结果的 JSON 字符串
+//        int64 id = 1024; // 替换为文件最大长度值
+//        int64 length_max = 1024; // 替换为文件最大长度值
+//        string filename = "downloaded_file.txt"; // 替换为下载的文件名
+//        string download_back_json = set_files_create_download_back(id,length_max, filename, true);
 
-        int64 download_id;
-        int64 download_back_length_max;
-        string download_back_filename;
-        bool download_back_ok;
-        if (get_files_create_download_back(download_back_json,download_id, download_back_length_max, download_back_filename, download_back_ok))
-        {
-            vlogi($(download_back_length_max) $(download_back_filename) $(download_back_ok));
-        }
-    }
+//        int64 download_id;
+//        int64 download_back_length_max;
+//        string download_back_filename;
+//        bool download_back_ok;
+//        if (get_files_create_download_back(download_back_json,download_id, download_back_length_max, download_back_filename, download_back_ok))
+//        {
+//            vlogi($(download_back_length_max) $(download_back_filename) $(download_back_ok));
+//        }
+//    }
 
-    {
-        vlogi("\n");
-        string sjson = set_files_begin_download(123456789,true);
+//    {
+//        vlogi("\n");
+//        string sjson = set_files_begin_download(123456789,true);
 
-        int64 swap_name;
-        bool ok;
-        if (get_files_begin_download(sjson, swap_name,ok))
-        {
-            vlogi($(swap_name));
-        }
-    }
+//        int64 swap_name;
+//        bool ok;
+//        if (get_files_begin_download(sjson, swap_name,ok))
+//        {
+//            vlogi($(swap_name));
+//        }
+//    }
 
     {
         vlogi("\n");
@@ -1157,25 +1161,25 @@ void wid_test::test_19(QWidget *parent)
         }
     }
 
-    {
-        vlogi("\n");
-        string sjson = set_files_cancel_download(123456789);
+//    {
+//        vlogi("\n");
+//        string sjson = set_files_cancel_download(123456789);
 
-        int64 swap_name;
+//        int64 swap_name;
 
-        if (get_files_cancel_download(sjson, swap_name))
-        {
-            vlogi($(swap_name));
+//        if (get_files_cancel_download(sjson, swap_name))
+//        {
+//            vlogi($(swap_name));
 
-            string ssjson = set_files_cancel_download_back(swap_name, true);
+//            string ssjson = set_files_cancel_download_back(swap_name, true);
 
-            bool ok;
-            if (get_files_cancel_download_back(ssjson, swap_name, ok))
-            {
-                vlogi($(swap_name) $(ok));
-            }
-        }
-    }
+//            bool ok;
+//            if (get_files_cancel_download_back(ssjson, swap_name, ok))
+//            {
+//                vlogi($(swap_name) $(ok));
+//            }
+//        }
+//    }
 
     //== files ==
 
@@ -1256,19 +1260,18 @@ void wid_test::test_21(QWidget *parent)
     string s2 = "/home/red/open/load/CLion202322.tar.gz";
     string s3 = "/home/red/open/load/none.txt";
 
-    int v1 = 2;
+    int v1 = 3;
 
 
     if(v1 == 1)
     {
         qweb_files *th = new qweb_files;
-        int64 time = 123456789;
         connect(th,&qweb_files::sn_open,this,[=](){
             vlogi("sn_open");
 
-            for(int i=0;i<5;i++)
+            for(int i=0;i<3;i++)
             {
-                bool ok = th->upload_file(time+i,s1);
+                bool ok = th->upload_file(s1);
                 vlogi($(ok));
             }
         });
@@ -1282,12 +1285,11 @@ void wid_test::test_21(QWidget *parent)
     {
         for(int i=0;i<5;i++)
         {
-            int64 time = 123456789;
             qweb_files *th = new qweb_files;
             connect(th,&qweb_files::sn_open,this,[=](){
                 vlogi("sn_open");
 
-                bool ok = th->upload_file(time+i,s2);
+                bool ok = th->upload_file(s2);
                 vlogi($(ok));
             });
 
@@ -1298,6 +1300,21 @@ void wid_test::test_21(QWidget *parent)
             th->open();
         }
     }
+    else if(v1 == 3)
+    {
+        qweb_files *th = new qweb_files;
+        connect(th,&qweb_files::sn_open,this,[=](){
+            vlogi("sn_open");
+
+            bool ok = th->upload_file("../data/head_icon/icon_default11.png","../data/head_icon/icon_default_abc.png");
+            vlogi($(ok));
+        });
+
+        connect(th,&qweb_files::sn_close,this,[=](){
+            vlogi("sn_close");
+        });
+        th->open();
+    }
 
 
 
@@ -1305,58 +1322,63 @@ void wid_test::test_21(QWidget *parent)
 
 
 #else
-    int v1 = 4;
-    int v2 = 2;
+    int v1 = 0;
+    int v2 = 3;
 
     vector<int64> vec_in;
 
     if(v1 == 1)
     {
-        vector<int64> vec {822058707};
+        vector<int64> vec {163771921};
         vec_in = vec;
     }
     else if(v1 == 2)
     {
-        vector<int64> vec {490645973,751498503,167392342,822058707};
+        vector<int64> vec {914706802,954800530,163771921};
         vec_in = vec;
     }
     else if(v1 == 3)
     {
         std::vector<int64> vec = {
-            232304622,
-            464308397,
-            531637645,
-            755361055,
-            822058707
+            385829787,
+            439569126,
+            542914090,
+            653827348,
+            957535652
         };
         vec_in = vec;
     }
     else if(v1 == 4)
     {
         std::vector<int64> vec = {
-            167392342,
-            232304622,
-            239478879,
-            464308397,
-            490645973,
-            531637645,
-            751498503,
-            755361055,
-            822058707,
-            933347679
+            163771921,
+            385829787,
+            439569126,
+            542914090,
+            638888544,
+            653827348,
+            720373364,
+            726822961,
+            747847284,
+            749993000,
+            914706802,
+            954800530,
+            957535652
         };
         vec_in = vec;
     }
 
+    string path = "../temp_file/";
     if(v2 == 1)
     {
+
         qweb_files *th = new qweb_files;
         connect(th,&qweb_files::sn_open,this,[=](){
             vlogi("sn_open");
 
             for(int i=0;i<vec_in.size();i++)
             {
-                bool ok = th->download_file(vec_in[i]);
+                bool ok = th->download_file(path + std::to_string(vec_in[i]));
                 vlogi($(ok));
             }
         });
@@ -1374,7 +1396,7 @@ void wid_test::test_21(QWidget *parent)
             connect(th,&qweb_files::sn_open,this,[=](){
                 vlogi("sn_open");
 
-                bool ok = th->download_file(a);
+                bool ok = th->download_file(path + std::to_string(a));
                 vlogi($(ok));
             });
 
@@ -1383,7 +1405,20 @@ void wid_test::test_21(QWidget *parent)
             });
             th->open();
         }
+    }
+    else if(v2 == 3)
+    {
+        qweb_files *th = new qweb_files;
+        connect(th,&qweb_files::sn_open,this,[=](){
+            vlogi("sn_open");
 
+            bool ok = th->download_file("../data/head_icon/icon_default.png","../data/head_icon/icon_default11.png");
+        });
+
+        connect(th,&qweb_files::sn_close,this,[=](){
+            vlogi("sn_close");
+        });
+        th->open();
     }
 
 

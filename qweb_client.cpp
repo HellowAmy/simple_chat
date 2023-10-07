@@ -68,7 +68,7 @@ void qweb_client::task_login_back(const string &sjson)
         }
     }
 
-    (ok_send ? vlogd($(ok_send)) : vlogw("err: " << $(sjson)));
+    vlogif(ok_send,$(ok_send) $(sjson));
 }
 
 void qweb_client::task_friends_list_back(const string &sjson)
@@ -86,7 +86,7 @@ void qweb_client::task_friends_list_back(const string &sjson)
         }
     }
 
-    (ok_send ? vlogd($(ok_send)) : vlogw("err: " << $(sjson)));
+    vlogif(ok_send,$(ok_send) $(sjson));
 }
 
 void qweb_client::task_friends_status_back(const string &sjson)
@@ -107,6 +107,7 @@ void qweb_client::task_friends_status_back(const string &sjson)
                 bool online;
                 if(get_ac_info_json(a,ac_friends,nickname,icon,online))
                 {
+                    emit sn_ac_status(ac_friends,nickname,icon,online);
                     vlogi($(ac_friends) $(nickname) $(icon) $(online));
                 }
             }
@@ -114,7 +115,7 @@ void qweb_client::task_friends_status_back(const string &sjson)
         }
     }
 
-    (ok_send ? vlogd($(ok_send)) : vlogw("err: " << $(sjson)));
+    vlogif(ok_send,$(ok_send) $(sjson));
 }
 
 void qweb_client::task_error_info(const string &sjson)
@@ -128,7 +129,7 @@ void qweb_client::task_error_info(const string &sjson)
         vlogi($(error) $(info));
     }
 
-    (ok_send ? vlogd($(ok_send)) : vlogw("err: " << $(sjson)));
+    vlogif(ok_send,$(ok_send) $(sjson));
 }
 
 bool qweb_client::send_msg(const string &sjson)

@@ -23,7 +23,7 @@ using std::mutex;
 using std::queue;
 
 typedef std::function<bool(int64 id,const string &data)> Tfn_send_cb;
-
+typedef std::function<void(int64 id,int64 prog,int64 count,int64 length)> Tfn_prog_cb;
 
 class files_info
 {
@@ -84,37 +84,47 @@ public:
 class files_io : public files_info
 {
 public:
+
+    //!
+    //! 进度反馈：反馈发送文件的进度
+    //!     参数：[id: 唯一id，用于定位写入流] [prog: 进度白分比]
+    //!     typedef std::function<void(int64 id,short prog)> Tfn_prog_cb;
+    //!
+    //! 发送回调：自定义发送文件
+    //!     参数：[id: 唯一id，用于定位写入流] [data: 读取的数据]
+    //!     返回值：true时继续发送，false时终止发送，需要重新调用发送函数
+    //!     typedef std::function<bool(int64 id,const string &data)> Tfn_send_cb;
+    //!
     struct fs_recv
     {
-        fs_recv(int64 n1,int64 n2,string n3,shared_ptr<fstream> n4)
-            : count_recv(n1),length_max(n2),filename(n3),sp_fs(n4) {}
+        fs_recv(int64 n1,int64 n2,int64 n3,string n4,shared_ptr<fstream> n5,Tfn_prog_cb n6)
+            : prog(n1),count_recv(n2),length_max(n3),filename(n4),sp_fs(n5),prog_cb(n6) {}
 
+        int64 prog;                 //进度记录
         int64 count_recv;           //累加接收
         int64 length_max;           //文件长度
         string filename;            //文件名称
         shared_ptr<fstream> sp_fs;  //写入句柄
+        Tfn_prog_cb prog_cb;        //进度反馈
     };
 
     struct fs_send
     {
-        fs_send(int64 n1,int64 n2,string n3,shared_ptr<fstream> n4,Tfn_send_cb n5)
-            : count_send(n1),length_max(n2),filename(n3),sp_fs(n4),fn_send_cb(n5) {}
+        fs_send(int64 n1,int64 n2,int64 n3,string n4,shared_ptr<fstream> n5,Tfn_prog_cb n6,Tfn_send_cb n7)
+            : prog(n1),count_send(n2),length_max(n3),filename(n4),sp_fs(n5),prog_cb(n6),fn_send_cb(n7) {}
 
+        int64 prog;                 //进度记录
         int64 count_send;           //累加发送
         int64 length_max;           //文件长度
         string filename;            //文件名称
         shared_ptr<fstream> sp_fs;  //读取句柄
-
-        //发送回调：自定义发送文件
-        //参数：[id: 唯一id，用于定位写入流] [data: 读取的数据]
-        //返回值：true时继续发送，false时终止发送，需要重新调用发送函数
-        //typedef std::function<bool(int64 id,const string &data)> Tfn_send_cb;
-        Tfn_send_cb fn_send_cb;
+        Tfn_prog_cb prog_cb;        //进度回调
+        Tfn_send_cb fn_send_cb;     //发送回调
     };
 
 public:
     //== 发送函数 ：多次完成 ==
-    bool open_file_send(int64 id,const string &filename,Tfn_send_cb fn_send_cb)
+    bool open_file_send(int64 id,const string &filename,Tfn_send_cb fn_send_cb,Tfn_prog_cb prog_cb = nullptr)
     {
         std::unique_lock<std::mutex> lock(_mut_send);
         if(_map_send.find(id) != _map_send.end()) return false;
@@ -122,7 +132,8 @@ public:
         shared_ptr sp_fs = std::make_shared<fstream>(filename,std::ios::in | std::ios::binary);
         if(sp_fs->is_open())
         {
-            auto it = _map_send.emplace(id,std::make_shared<fs_send>(0,get_file_size(filename),filename,sp_fs,fn_send_cb));
+            int64 length = get_file_size(filename);
+            auto it = _map_send.emplace(id,std::make_shared<fs_send>(0,0,length,filename,sp_fs,prog_cb,fn_send_cb));
             return it.second;
         }
         else return false;
@@ -147,6 +158,12 @@ public:
                 sp_send->count_send += size_read;
 
                 is_send = sp_send->fn_send_cb(id,string(buf,size_read));
+                int prog = sp_send->count_send * 100 / sp_send->length_max;
+                if(prog > sp_send->prog)
+                {
+                    if(sp_send->prog_cb) sp_send->prog_cb(id,prog,sp_send->count_send,sp_send->length_max);
+                    sp_send->prog = prog;
+                }
                 if(is_send == false) break;
             }
         }
@@ -169,7 +186,7 @@ public:
 
 
     //== 接收函数 ：多次完成 ==
-    bool open_file_recv(int64 id,int64 length_max, const string &filename)
+    bool open_file_recv(int64 id,int64 length_max, const string &filename,Tfn_prog_cb prog_cb = nullptr)
     {
         std::unique_lock<std::mutex> lock(_mut_recv);
         if(_map_recv.find(id) != _map_recv.end()) return false;
@@ -177,7 +194,7 @@ public:
         shared_ptr sp_fs = std::make_shared<fstream>(filename,std::ios::out | std::ios::binary);
         if(sp_fs->is_open())
         {
-            auto it = _map_recv.emplace(id,std::make_shared<fs_recv>(0, length_max, filename,sp_fs));
+            auto it = _map_recv.emplace(id,std::make_shared<fs_recv>(0,0,length_max,filename,sp_fs,prog_cb));
             return it.second;
         }
         else return false;
@@ -188,16 +205,23 @@ public:
         auto it = _map_recv.find(id);
         if(it != _map_recv.end())
         {
-            auto sp_send = it->second;
+            auto sp_recv = it->second;
             {
                 std::unique_lock<std::mutex> lock(_mut_recv);
-                sp_send->sp_fs->write(data.c_str(),data.size());
+                sp_recv->sp_fs->write(data.c_str(),data.size());
             }
-            bool ok = sp_send->sp_fs->good();
-            if(ok) sp_send->count_recv += data.size();
+            bool ok = sp_recv->sp_fs->good();
+            if(ok) sp_recv->count_recv += data.size();
+
+            int prog = sp_recv->count_recv * 100 / sp_recv->length_max;
+            if(prog > sp_recv->prog)
+            {
+                if(sp_recv->prog_cb) sp_recv->prog_cb(id,prog,sp_recv->count_recv,sp_recv->length_max);
+                sp_recv->prog = prog;
+            }
             return ok;
         }
-        else return false;
+        return false;
     }
 
     void close_file_recv(int64 id)
@@ -206,8 +230,8 @@ public:
         auto it = _map_recv.find(id);
         if(it != _map_recv.end())
         {
-            auto sp_send = it->second;
-            sp_send->sp_fs->close();
+            auto sp_recv = it->second;
+            sp_recv->sp_fs->close();
             _map_recv.erase(it);
         }
     }
@@ -231,25 +255,25 @@ public:
         else return nullptr;
     }
 
-    bool check_length_recv(int64 id,int64 *count = nullptr,int64 *length = nullptr)
+    bool check_length_recv(int64 id,int64 &count,int64 &length)
     {
         auto it = find_fs_recv(id);
         if(it != nullptr)
         {
-            if(count) *count = it->count_recv;
-            if(length) *length = it->length_max;
+            count = it->count_recv;
+            length = it->length_max;
             if(it->count_recv == it->length_max) return true;
         }
         return false;
     }
 
-    bool check_length_send(int64 id,int64 *count = nullptr,int64 *length = nullptr)
+    bool check_length_send(int64 id,int64 &count,int64 &length)
     {
         auto it = find_fs_send(id);
         if(it != nullptr)
         {
-            if(count) *count = it->count_send;
-            if(length) *length = it->length_max;
+            count = it->count_send;
+            length = it->length_max;
             if(it->count_send == it->length_max) return true;
         }
         return false;
@@ -263,71 +287,71 @@ protected:
     map<int64,std::shared_ptr<fs_send>> _map_send;
 };
 
-class files_auto : public files_io
-{
-public:
+//class files_auto : public files_io
+//{
+//public:
 
-    //== 自动发送接口 ==
-    bool get_sending()
-    { return _sending.load(); }
+//    //== 自动发送接口 ==
+////    bool get_sending()
+////    { return _sending.load(); }
 
-    void add_send_queue(int64 id)
-    {
-        std::unique_lock<std::mutex> lock(_mut_send_que);
-        _que_send.push(id);
-    }
+////    void add_send_queue(int64 id)
+////    {
+////        std::unique_lock<std::mutex> lock(_mut_send_que);
+////        _que_send.push(id);
+////    }
 
-    int64 remove_send_queue()
-    {
-        std::unique_lock<std::mutex> lock(_mut_send_que);
-        int64 id = _que_send.back(); _que_send.pop();
-        return id;
-    }
+////    int64 remove_send_queue()
+////    {
+////        std::unique_lock<std::mutex> lock(_mut_send_que);
+////        int64 id = _que_send.back(); _que_send.pop();
+////        return id;
+////    }
 
-    size_t get_send_size_queue()
-    { return _que_send.size(); }
+////    size_t get_send_size_queue()
+////    { return _que_send.size(); }
 
-    //检查连续发送范围是否越界
-    bool check_linit_flux(bool ok,int64 id,int64 flux = 2*1024*1024)
-    {
-        auto it = find_fs_send(id);
-        if(it != nullptr && (it->count_send % flux == 0))
-        { return false; }
-        return ok;
-    }
+//    //检查连续发送范围是否越界
+//    bool check_linit_flux(bool ok,int64 id,int64 flux = 2*1024*1024)
+//    {
+//        auto it = find_fs_send(id);
+//        if(it != nullptr && (it->count_send % flux == 0))
+//        { return false; }
+//        return ok;
+//    }
 
-    //! 自动发送打开的文件数据
-    //!     fn_finish_cb : [finish: 是否完成] [id: 文件标识] [return: 是否继续传输]
-    //!     fn_add_data_send : [id: 文件标识] [return: 是否完成]
-    //!
-    //!     fn_add_data_send 回调可用于 add_data_send 和 add_data_send_limit_flux 两个发送版本
-    //!
-    int64 start_send_queue(std::function<bool(bool finish,int64 id)> fn_finish_cb)
-    {
-        _sending = true;
-        int size_que = _que_send.size();
-        for(int i=0;i<size_que;i++)
-        {
-            int64 id = remove_send_queue();
-            bool ok = add_data_send(id);
-            bool is_send = fn_finish_cb(ok,id);
+////    //! 自动发送打开的文件数据
+////    //!     fn_finish_cb : [finish: 是否完成] [id: 文件标识] [return: 是否继续传输]
+////    //!     fn_add_data_send : [id: 文件标识] [return: 是否完成]
+////    //!
+////    //!     fn_add_data_send 回调可用于 add_data_send 和 add_data_send_limit_flux 两个发送版本
+////    //!
+////    int64 start_send_queue(std::function<bool(bool finish,int64 id)> fn_finish_cb)
+////    {
+////        _sending = true;
+////        int size_que = _que_send.size();
+////        for(int i=0;i<size_que;i++)
+////        {
+////            int64 id = remove_send_queue();
+////            bool ok = add_data_send(id);
+////            bool is_send = fn_finish_cb(ok,id);
 
-            //[未完成：加入队列继续发送] [完成：关闭文件]
-            if(is_send && ok == false) { add_send_queue(id); }
-            else { close_file_send(id); }
-        }
-        _sending = false;
-        return _que_send.size();
-    }
-    //== 自动发送接口 ==
+////            //[未完成：加入队列继续发送] [完成：关闭文件]
+////            if(is_send && ok == false) { add_send_queue(id); }
+////            else { close_file_send(id); }
+////        }
+////        _sending = false;
+////        return _que_send.size();
+////    }
+//    //== 自动发送接口 ==
 
-protected:
-    std::atomic_bool _sending = false;
-    mutex _mut_send_que;
-    queue<int64> _que_send;
-};
+//protected:
+////    std::atomic_bool _sending = false;
+////    mutex _mut_send_que;
+////    queue<int64> _que_send;
+//};
 
-class files_channel : public files_auto
+class files_channel : public files_io
 {
 public:
     struct fs_channel
@@ -338,11 +362,21 @@ public:
     };
 
 public:
+    //检查连续发送范围是否越界
+    bool check_linit_flux(bool ok,int64 id,int64 flux = 2*1024*1024)
+    {
+        auto it = find_fs_send(id);
+        if(it != nullptr && (it->count_send % flux == 0))
+        { return false; }
+        return ok;
+    }
+
     //== 管理函数--断线时快速关闭文件 ==
     // files_io::open_file_send 函数的管理版本
-    bool open_file_send_channel(int64 id_channel,int64 id_file,const string &filename,Tfn_send_cb fn_send_cb)
+    bool open_file_send_channel(int64 id_channel,int64 id_file,const string &filename,
+                                Tfn_send_cb fn_send_cb,Tfn_prog_cb prog_cb = nullptr)
     {
-        bool ok_open = open_file_send(id_file,filename,fn_send_cb);
+        bool ok_open = open_file_send(id_file,filename,fn_send_cb,prog_cb);
         bool ok_file = add_file_send(id_channel,id_file);
 
         if(ok_open && ok_file) return true;
@@ -355,9 +389,10 @@ public:
     }
 
     // files_io::open_file_recv 函数的管理版本
-    bool open_file_recv_channel(int64 id_channel,int64 id_file,int64 length_max, const string &filename)
+    bool open_file_recv_channel(int64 id_channel,int64 id_file,int64 length_max, const string &filename,
+                                Tfn_prog_cb prog_cb = nullptr)
     {
-        bool ok_open = open_file_recv(id_file,length_max,filename);
+        bool ok_open = open_file_recv(id_file,length_max,filename,prog_cb);
         bool ok_file = add_file_recv(id_channel,id_file);
         if(ok_open && ok_file) return true;
         else

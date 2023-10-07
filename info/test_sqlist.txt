@@ -35,6 +35,10 @@
 统计数据：
 	SELECT COUNT(*) FROM test_table;
 
+更新数据：
+	UPDATE test_table SET value = 'hello';			（更新所有）
+	UPDATE test_table SET value = 'hello' WHERE id = 101;	（指定条件）
+
 查看数据：
 	SELECT * FROM test_table				（查看所有）
 	SELECT * FROM test_table WHERE id >=2 AND id <= 5; 	（条件查询）
@@ -73,14 +77,14 @@
 	用于服务器管理账号信息，多表联合管理
 
 表结构：
-	ac_passwd：账号密码，存在的表结构主表，约束附加表数量
-		CREATE TABLE ac_passwd (
+	ac_passwd：账号密码，存在的表结构主表，约束附加表数量	
+	CREATE TABLE ac_passwd (
 		    account INTEGER PRIMARY KEY CHECK (account >= 100000000 AND account <= 999999999),
 		    passwd TEXT CHECK (LENGTH(passwd) >= 6 AND LENGTH(passwd) <= 18)
-		);   
-		
+		);
+
 	ac_friends：账号好友，ac_passwd表的附加表，记录每个账号的好友关系
-		CREATE TABLE ac_friends (
+	CREATE TABLE ac_friends (
 		    account INTEGER ,
 		    friends INTEGER ,
 		    CHECK (account != friends),
@@ -88,9 +92,29 @@
 		    FOREIGN KEY (friends) REFERENCES ac_passwd (account)
 		);
 
+	ac_info：账号信息，记录账号信息以及图像图片
+	CREATE TABLE ac_info (
+		    account INTEGER PRIMARY KEY,
+		    phone INTEGER CHECK (phone >= 0) ,
+		    age INTEGER CHECK (age >= 0 AND age <= 200) ,
+		    sex INTEGER CHECK (sex >= 0 AND sex <= 3) ,
+		    nickname TEXT,
+		    location TEXT,
+		    icon TEXT,
+		    FOREIGN KEY (account) REFERENCES ac_passwd (account)
+		);
 == 账号管理 ==
 
 
+
+============================================================================
+
+
+
+ac_passwd
+SELECT * FROM ac_friends;
+SELECT * FROM ac_info;
+SELECT * FROM ac_passwd;
 
 CREATE TABLE chat_history (
     id INTEGER PRIMARY KEY,
@@ -98,6 +122,11 @@ CREATE TABLE chat_history (
     message TEXT,
     timestamp DATETIME
 );
+../data/head_icon/icon_default.png
+
+UPDATE ac_info SET icon = 'icon_default.png';
+UPDATE history SET non_read = 1 WHERE send_time = 12347;
+UPDATE history SET content = 'abasd' WHERE send_time = 12347;
 
 -- 向表格中插入一条记录
 INSERT INTO chat_history (user, message, timestamp)
@@ -137,6 +166,11 @@ UPDATE history SET content = 'abasd' WHERE send_time = 12347;
 |:895151498 |:123456
 
 SELECT * FROM history_123344556;
+
+ac_passwd
+SELECT * FROM ac_friends;
+SELECT * FROM ac_info;
+SELECT * FROM ac_passwd;
 
 SELECT * FROM ac_passwd WHERE account = 999854739;
 

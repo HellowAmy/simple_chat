@@ -416,137 +416,146 @@ static bool get_files_binary(const string &msg,int64 &id,string &buf)
 //! files_create_upload : 上传文件
 //!
 //! extend :
-//!     uint time           时间序号
-//!     uint length_max     文件长度
-//!     string filename     文件名称
+//!     uint length_file    文件长度
+//!     string abs_file     文件路径
+//!     string save_file    保存路径
 //!
 //! back :
-//!     uint time           时间序号
-//!     uint swap_name      临时命名
+//!     uint id             临时命名
+//!     string abs_file     文件路径
 //!     bool ok             反馈成功
 //!
-//!     [ swap_name: source +target +time +N ，N为避免重复的数字，用于服务器创建唯一标识，用于整个文件传输过程定位 ]
-//!
 CS_MAKE_TYPE(files_create_upload,_cs_,
-             CS_ARGV( CS_1(int64,time),CS_1(int64,length_max),CS_1(string,filename)  ),
-             CS_BODY( CS_2(int64,time) CS_2(int64,length_max) CS_2(string,filename)  ),
-             CS_ARGV(,CS_3(int64,time),CS_3(int64,length_max),CS_3(string,filename)  ),
-             CS_BODY( CS_4(int64,time) CS_4(int64,length_max) CS_4(string,filename)  )
+             CS_ARGV( CS_1(int64,length_file),CS_1(string,abs_file),CS_1(string,save_file)  ),
+             CS_BODY( CS_2(int64,length_file) CS_2(string,abs_file) CS_2(string,save_file)  ),
+             CS_ARGV(,CS_3(int64,length_file),CS_3(string,abs_file),CS_3(string,save_file)  ),
+             CS_BODY( CS_4(int64,length_file) CS_4(string,abs_file) CS_4(string,save_file)  )
              )
 CS_MAKE_TYPE(files_create_upload_back,_sc_,
-             CS_ARGV( CS_1(int64,time),CS_1(int64,swap_name),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(int64,time) CS_2(int64,swap_name) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(int64,time),CS_3(int64,swap_name),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(int64,time) CS_4(int64,swap_name) CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,id),CS_1(string,abs_file),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,id) CS_2(string,abs_file) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,id),CS_3(string,abs_file),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,id) CS_4(string,abs_file) CS_4(bool,ok)  )
              )
 
+//!
+//! files_begin_upload : 开始上传 [ 客户端请求 ] [ 分段请求 ]
+//!
+//! extend :
+//!     uint id         临时命名
+//!
+//! back :
+//!     uint id         临时命名
+//!
+CS_MAKE_TYPE(files_begin_upload,_cs_,
+             CS_ARGV( CS_1(int64,id)  ),
+             CS_BODY( CS_2(int64,id)  ),
+             CS_ARGV(,CS_3(int64,id)  ),
+             CS_BODY( CS_4(int64,id)  )
+             )
+CS_MAKE_TYPE(files_begin_upload_back,_sc_,
+             CS_ARGV( CS_1(int64,id)  ),
+             CS_BODY( CS_2(int64,id)  ),
+             CS_ARGV(,CS_3(int64,id)  ),
+             CS_BODY( CS_4(int64,id)  )
+             )
 
 //!
 //! files_finish_upload : 上传完成
 //!
 //! extend :
-//!     uint swap_name      临时命名
+//!     uint id             临时命名
 //!     bool finish         上传反馈
 //!
 //! back :
-//!     uint swap_name      临时命名
+//!     uint id             临时命名
 //!     bool ok             反馈成功
 //!
 CS_MAKE_TYPE(files_finish_upload,_cs_,
-             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,finish)  ),
-             CS_BODY( CS_2(int64,swap_name) CS_2(bool,finish)  ),
-             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,finish)  ),
-             CS_BODY( CS_4(int64,swap_name) CS_4(bool,finish)  )
+             CS_ARGV( CS_1(int64,id),CS_1(bool,finish)  ),
+             CS_BODY( CS_2(int64,id) CS_2(bool,finish)  ),
+             CS_ARGV(,CS_3(int64,id),CS_3(bool,finish)  ),
+             CS_BODY( CS_4(int64,id) CS_4(bool,finish)  )
              )
 CS_MAKE_TYPE(files_finish_upload_back,_sc_,
-             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(int64,swap_name) CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,id),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,id) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,id),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,id) CS_4(bool,ok)  )
              )
-
 
 //!
 //! files_create_download : 下载文件
 //!
 //! extend :
-//!     uint swap_name      临时命名 [ 由上传客户端提供 ]
+//!     string abs_path     下载文件
+//!     string save_path    保存路径
 //!
 //! back :
-//!     uint swap_name      临时命名
-//!     uint length_max     文件长度
-//!     string filename     文件名称
+//!     uint id             临时命名
+//!     uint length_file    文件长度
+//!     string abs_path     下载文件
+//!     string save_path    文件名称
 //!     bool ok             反馈成功
 //!
 CS_MAKE_TYPE(files_create_download,_cs_,
-             CS_ARGV( CS_1(int64,swap_name)  ),
-             CS_BODY( CS_2(int64,swap_name)  ),
-             CS_ARGV(,CS_3(int64,swap_name)  ),
-             CS_BODY( CS_4(int64,swap_name)  )
+             CS_ARGV( CS_1(string,abs_path),CS_1(string,save_path)  ),
+             CS_BODY( CS_2(string,abs_path) CS_2(string,save_path)  ),
+             CS_ARGV(,CS_3(string,abs_path),CS_3(string,save_path)  ),
+             CS_BODY( CS_4(string,abs_path) CS_4(string,save_path)  )
              )
 CS_MAKE_TYPE(files_create_download_back,_sc_,
-             CS_ARGV( CS_1(int64,swap_name),CS_1(int64,length_max),CS_1(string,filename),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(int64,swap_name) CS_2(int64,length_max) CS_2(string,filename) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(int64,swap_name),CS_3(int64,length_max),CS_3(string,filename),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(int64,swap_name) CS_4(int64,length_max) CS_4(string,filename) CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,id),CS_1(int64,length_file),CS_1(string,abs_path),CS_1(string,save_path),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,id) CS_2(int64,length_file) CS_2(string,abs_path) CS_2(string,save_path) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,id),CS_3(int64,length_file),CS_3(string,abs_path),CS_3(string,save_path),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,id) CS_4(int64,length_file) CS_4(string,abs_path) CS_4(string,save_path) CS_4(bool,ok)  )
              )
 
 //!
-//! files_begin_download : 开始下载
+//! files_begin_download : 开始下载 [ 客户端请求 ] [ 分段请求 ]
 //!
 //! extend :
-//!     uint swap_name      临时命名
-//!     bool ok             准备成功
+//!     uint id         临时命名
 //!
 //! back :
+//!     uint id         临时命名
 //!
 CS_MAKE_TYPE(files_begin_download,_cs_,
-             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(int64,swap_name) CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,id)  ),
+             CS_BODY( CS_2(int64,id)  ),
+             CS_ARGV(,CS_3(int64,id)  ),
+             CS_BODY( CS_4(int64,id)  )
+             )
+CS_MAKE_TYPE(files_begin_download_back,_sc_,
+             CS_ARGV( CS_1(int64,id)  ),
+             CS_BODY( CS_2(int64,id)  ),
+             CS_ARGV(,CS_3(int64,id)  ),
+             CS_BODY( CS_4(int64,id)  )
              )
 
 //!
 //! files_finish_download : 下载结束 [ 服务器下发 ]
 //!
 //! extend :
-//!     uint swap_name      临时命名
-//!     bool ok             反馈成功
+//!     uint id         临时命名
+//!     bool ok         反馈成功
 //!
 //! back :
+//!     uint id         临时命名
+//!     bool ok         反馈成功
 //!
-CS_MAKE_TYPE(files_finish_download,_sc_,
-             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(int64,swap_name) CS_4(bool,ok)  )
+CS_MAKE_TYPE(files_finish_download,_cs_,
+             CS_ARGV( CS_1(int64,id),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,id) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,id),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,id) CS_4(bool,ok)  )
              )
-
-
-//!
-//! files_cancel_download : 取消下载
-//!
-//! extend :
-//!     uint swap_name      临时命名
-//!
-//! back :
-//!     uint swap_name      临时命名
-//!     bool ok             反馈成功
-//!
-CS_MAKE_TYPE(files_cancel_download,_cs_,
-             CS_ARGV( CS_1(int64,swap_name)  ),
-             CS_BODY( CS_2(int64,swap_name)  ),
-             CS_ARGV(,CS_3(int64,swap_name)  ),
-             CS_BODY( CS_4(int64,swap_name)  )
+CS_MAKE_TYPE(files_finish_download_back,_sc_,
+             CS_ARGV( CS_1(int64,id),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,id) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,id),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,id) CS_4(bool,ok)  )
              )
-CS_MAKE_TYPE(files_cancel_download_back,_sc_,
-             CS_ARGV( CS_1(int64,swap_name),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(int64,swap_name) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(int64,swap_name),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(int64,swap_name) CS_4(bool,ok)  )
-             )
-
 
 //===== files =====
 

@@ -37,11 +37,27 @@ public:
     //!
     bool ask_login(int64 account,string passwd);
 
+    //!
+    //! 上传头像：
+    //!     1.连接文件服务器
+    //!     2.上传图片
+    //!
+    bool ask_upload_icon(int64 account);
+
+    //!
+    //! 下载头像：
+    //!     1.连接文件服务器
+    //!     2.下载图片
+    //!
+    bool ask_download_icon(int64 ac_friends);
+
+
     inter_client* get_wc();
 
 signals:
     void sn_open();
     void sn_close();
+    void sn_ac_status(int64 ac_friends,string nickname,string icon,bool online);
 
 protected:
 

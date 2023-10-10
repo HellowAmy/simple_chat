@@ -11,10 +11,13 @@ qweb_client::qweb_client(QObject *parent)
               std::bind(&qweb_client::sl_message,this,std::placeholders::_1),
               std::bind(&qweb_client::sl_close,this));
 
-    ADD_MAP(login_back);
+    ADD_MAP(ac_login_back);
+    ADD_MAP(ac_register_back);
     ADD_MAP(friends_list_back);
     ADD_MAP(friends_status_back);
     ADD_MAP(error_info);
+
+    _is_online = false;
 }
 
 qweb_client::~qweb_client()
@@ -29,7 +32,7 @@ void qweb_client::sl_open()
 
 void qweb_client::sl_message(const string &sjson)
 {
-//    vlogi("sl_message: " << $(sjson));
+    vlogi("sl_message: " << $(sjson));
 
     string stream;
     string type;
@@ -54,21 +57,32 @@ void qweb_client::sl_close()
     emit sn_close();
 }
 
-void qweb_client::task_login_back(const string &sjson)
+void qweb_client::task_ac_login_back(const string &sjson)
 {
-    bool ok_send = false;
     bool ok;
-    if(get_login_back(sjson,ok))
+    if(get_ac_login_back(sjson,ok))
     {
         if(ok)
         {
             string s = set_friends_list(_account);
             send_msg(s);
-            ok_send = true;
         }
+        _is_online = ok;
     }
+    else vlogw("get_ac_login_back:" $(sjson));
 
-    vlogif(ok_send,$(ok_send) $(sjson));
+}
+
+void qweb_client::task_ac_register_back(const string &sjson)
+{
+    int64 account;
+    string passwd;
+    bool ok;
+    if(get_ac_register_back(sjson,account,passwd,ok))
+    {
+        emit sn_ac_register(account,passwd,ok);
+    }
+    else vlogw("task_ac_register_back:" $(sjson));
 }
 
 void qweb_client::task_friends_list_back(const string &sjson)
@@ -85,8 +99,8 @@ void qweb_client::task_friends_list_back(const string &sjson)
             ok_send = true;
         }
     }
+    else vlogw("task_friends_list_back:" $(sjson));
 
-    vlogif(ok_send,$(ok_send) $(sjson));
 }
 
 void qweb_client::task_friends_status_back(const string &sjson)
@@ -106,16 +120,13 @@ void qweb_client::task_friends_status_back(const string &sjson)
                 string icon;
                 bool online;
                 if(get_ac_info_json(a,ac_friends,nickname,icon,online))
-                {
-                    emit sn_ac_status(ac_friends,nickname,icon,online);
-                    vlogi($(ac_friends) $(nickname) $(icon) $(online));
-                }
+                { emit sn_ac_status(ac_friends,nickname,icon,online); }
             }
             ok_send = true;
         }
+        else vlogw("get_friends_status_back:" $(sjson) $(ok));
     }
-
-    vlogif(ok_send,$(ok_send) $(sjson));
+    else vlogw("get_friends_status_back:" $(sjson));
 }
 
 void qweb_client::task_error_info(const string &sjson)
@@ -128,8 +139,7 @@ void qweb_client::task_error_info(const string &sjson)
         ok_send = true;
         vlogi($(error) $(info));
     }
-
-    vlogif(ok_send,$(ok_send) $(sjson));
+    else vlogw("task_error_info:" $(sjson));
 }
 
 bool qweb_client::send_msg(const string &sjson)
@@ -146,12 +156,13 @@ int qweb_client::open(string ip,int port,string txt)
 bool qweb_client::ask_login(int64 account, string passwd)
 {
     _account = account;
-    string sjson = set_login(account,passwd);
+    string sjson = set_ac_login(account,passwd);
     return send_msg(sjson);
 }
 
-inter_client* qweb_client::get_wc()
+bool qweb_client::ask_register(int64 phone, int64 age, int64 sex, string nickname, string location, string passwd)
 {
-    return &_wc;
+    string sjson = set_ac_register(phone,age,sex,nickname,location,passwd);
+    return send_msg(sjson);
 }
 

@@ -87,6 +87,16 @@ static bool check_swap(const string &sjson,int64 &target,int64 &source)
     return ret;
 }
 
+static bool vec_stoi(const vector<string> &vec_str,vector<int64> &vec_int)
+{
+    bool ret = true;
+    try {
+        for(const auto &a:vec_str)
+        { vec_int.push_back(std::stoll(a)); }
+    } catch(...) { ret = false; }
+    return ret;
+}
+
 static string set_json_vec(const vector<string> &vec)
 {
     string str;
@@ -214,7 +224,7 @@ CS_MAKE_TYPE(error_info,_sc_,
              )
 
 //!
-//! login : 登陆账号
+//! ac_login : 登陆账号
 //!
 //! extend :
 //!     uint account    账号
@@ -222,19 +232,48 @@ CS_MAKE_TYPE(error_info,_sc_,
 //!
 //! back :
 //!     bool ok         确认
-//!     string info     提示信息
 //!
-CS_MAKE_TYPE(login,_cs_,
+CS_MAKE_TYPE(ac_login,_cs_,
              CS_ARGV( CS_1(int64,account),CS_1(string,passwd)  ),
              CS_BODY( CS_2(int64,account) CS_2(string,passwd)  ),
              CS_ARGV(,CS_3(int64,account),CS_3(string,passwd)  ),
              CS_BODY( CS_4(int64,account) CS_4(string,passwd)  )
              )
-CS_MAKE_TYPE(login_back,_sc_,
+CS_MAKE_TYPE(ac_login_back,_sc_,
              CS_ARGV( CS_1(bool,ok)  ),
              CS_BODY( CS_2(bool,ok)  ),
              CS_ARGV(,CS_3(bool,ok)  ),
              CS_BODY( CS_4(bool,ok)  )
+             )
+
+//!
+//! ac_register : 登陆注册
+//!
+//! extend :
+//!     uint phone          账号
+//!     uint age            年龄
+//!     uint sex            性别
+//!     string nickname     昵称
+//!     string location     地址
+//!     string icon         头像
+//!     string passwd       密码
+//!
+//! back :
+//!     uint account        账号
+//!     string passwd       密码
+//!     bool ok             确认
+//!
+CS_MAKE_TYPE(ac_register,_cs_,
+             CS_ARGV( CS_1(int64,phone),CS_1(int64,age),CS_1(int64,sex),CS_1(string,nickname),CS_1(string,location),CS_1(string,passwd)  ),
+             CS_BODY( CS_2(int64,phone) CS_2(int64,age) CS_2(int64,sex) CS_2(string,nickname) CS_2(string,location) CS_2(string,passwd)  ),
+             CS_ARGV(,CS_3(int64,phone),CS_3(int64,age),CS_3(int64,sex),CS_3(string,nickname),CS_3(string,location),CS_3(string,passwd)  ),
+             CS_BODY( CS_4(int64,phone) CS_4(int64,age) CS_4(int64,sex) CS_4(string,nickname) CS_4(string,location) CS_4(string,passwd)  )
+             )
+CS_MAKE_TYPE(ac_register_back,_sc_,
+             CS_ARGV( CS_1(int64,account),CS_1(string,passwd),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,account) CS_2(string,passwd) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(string,passwd),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,account) CS_4(string,passwd) CS_4(bool,ok)  )
              )
 
 //!

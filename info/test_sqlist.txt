@@ -109,78 +109,47 @@
 
 ============================================================================
 
+/home/red/open/github/simple_chat/third_party/sqlite3/sqlite3 account_info.db
 
-
-ac_passwd
 SELECT * FROM ac_friends;
 SELECT * FROM ac_info;
 SELECT * FROM ac_passwd;
 
-CREATE TABLE chat_history (
-    id INTEGER PRIMARY KEY,
-    user TEXT,
-    message TEXT,
-    timestamp DATETIME
-);
-../data/head_icon/icon_default.png
-
-UPDATE ac_info SET icon = 'icon_default.png';
-UPDATE history SET non_read = 1 WHERE send_time = 12347;
-UPDATE history SET content = 'abasd' WHERE send_time = 12347;
-
--- 向表格中插入一条记录
-INSERT INTO chat_history (user, message, timestamp)
-VALUES ('John', 'Hello!', DATETIME('now'));
+796304805  11012237  31   0    潘寒                     zhongg    icon_default.png
+798315362  11012215  9    0    史强                     zhongg    icon_default.png
 
 
-INSERT INTO chat_history (user, message, timestamp)
-VALUES ('John', 'Hello!', DATETIME('now'));
+//插入好友
+INSERT INTO ac_friends (account, friends) VALUES
+    (798315362, 340717797),
+    (798315362, 411821267),
+    (798315362, 412131535),
+    (798315362, 422157964),
+    (798315362, 434592263),
+    (798315362, 449749116),
+    (798315362, 500902190),
+    (798315362, 518211187),
+    (798315362, 523892629),
+    (798315362, 535181553),
+    (798315362, 607037441);
 
--- 查询表格中的数据
-SELECT * FROM chat_history;
+//好友昵称查询
+SELECT ac_friends.account, ac_friends.friends, ac_info.nickname, ac_info.icon
+FROM ac_friends
+JOIN ac_info ON ac_friends.friends = ac_info.account
+WHERE ac_friends.account = 798315362;
+
+//
+UPDATE ac_info SET icon = 'icon_796304805' WHERE account = 796304805;
+UPDATE ac_info SET icon = 'icon_default';	
+
+SELECT * FROM ac_friends WHERE account = 798315362;
+SELECT * FROM ac_friends WHERE friends = 798315362;
+
+SELECT * FROM ac_friends WHERE account = 100000003;
+SELECT * FROM ac_friends WHERE friends = 100000003;
 
 
 
 
 
------ 测试 -----
-UPDATE history SET non_read = 1 WHERE send_time = 12347;
-UPDATE history SET content = 'abasd' WHERE send_time = 12347;
-
-|:895023031 |:123456
-|:895047172 |:123456
-|:895051539 |:123456
-|:895058270 |:123456
-|:895066604 |:123456
-|:895075270 |:123456
-|:895079418 |:123456
-|:895089004 |:123456
-|:895095544 |:123456
-|:895106418 |:123456
-|:895111325 |:123456
-|:895119256 |:123456
-|:895120696 |:123456
-|:895143193 |:123456
-|:895149846 |:123456
-|:895150027 |:123456
-|:895151498 |:123456
-
-SELECT * FROM history_123344556;
-
-ac_passwd
-SELECT * FROM ac_friends;
-SELECT * FROM ac_info;
-SELECT * FROM ac_passwd;
-
-SELECT * FROM ac_passwd WHERE account = 999854739;
-
-SELECT * FROM ac_passwd WHERE account = 895075270;
-
-SELECT COUNT(*) FROM ac_passwd;
-SELECT * FROM ac_passwd;
-.schema ac_passwd
-SELECT SUM(object) FROM history;
-SELECT SUM(non_read) 
-SELECT COUNT(*) FROM ac_passwd;
-SELECT SUM(non_read) FROM history;
-SELECT SUM(object) FROM history;

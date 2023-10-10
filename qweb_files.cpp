@@ -8,6 +8,7 @@ qweb_files::qweb_files(QObject *parent)
     : QObject(parent)
 {
     _path_temp = "../temp_file/";
+    _path_icon = "../data/head_icon/";
 
     _wc.func_bind(std::bind(&qweb_files::sl_open,this),
                   std::bind(&qweb_files::sl_message,this,std::placeholders::_1),
@@ -28,6 +29,11 @@ int qweb_files::open(string ip, int port, string txt)
     return _wc.open(ip,port,txt);
 }
 
+void qweb_files::close()
+{
+    _wc.get_wc()->close();
+}
+
 bool qweb_files::upload_file(const string &abs_path,const string &save_path)
 {
     if(files_info::is_exists(abs_path) == false
@@ -39,10 +45,32 @@ bool qweb_files::upload_file(const string &abs_path,const string &save_path)
     return send_msg(s);
 }
 
+bool qweb_files::upload_icon(const string &abs_path, int64 account)
+{
+    string save_path = _path_icon + "icon_" + std::to_string(account);
+    return upload_file(abs_path,save_path);
+}
+
 bool qweb_files::download_file(const string &abs_path,const string &save_path)
 {
     string s = set_files_create_download(abs_path,save_path);
     return send_msg(s);
+}
+
+bool qweb_files::download_icon(int64 account)
+{
+    string save_path = _path_icon + "icon_" + std::to_string(account);
+    return download_file(save_path,save_path);
+}
+
+string qweb_files::get_temp_path()
+{
+    return _path_temp;
+}
+
+inter_client *qweb_files::get_wc()
+{
+    return &_wc;
 }
 
 int64 qweb_files::get_id_channel()
@@ -81,7 +109,7 @@ void qweb_files::task_files_create_upload_back(const string &sjson)
 
     //进度条
     auto func_prog = [=](int64 id,int64 prog,int64 count,int64 length){
-        vlogi($(id) $(prog));
+        emit sn_prog_upload(id,prog);
     };
 
     //解析反馈
@@ -103,11 +131,9 @@ void qweb_files::task_files_create_upload_back(const string &sjson)
                 string s = set_files_finish_upload(id,false);
                 send_msg(s);
             }
-
             emit sn_create_upload(ok_open,id,abs_file);
         }
-
-        vlogif(ok,$(abs_file) $(id));
+        else vlogw("get_files_create_upload_back" $(ok));
     }
     else vlogw("get_files_create_upload_back");
 }
@@ -141,8 +167,6 @@ void qweb_files::task_files_finish_upload_back(const string &sjson)
     {
         _fs_swap.close_file_send_channel(get_id_channel(),id);
         emit sn_finish_upload(ok,id);
-
-        vlogif(ok,"upload finish: " << $(id) $(ok));
     }
     else vlogw("task_files_begin_upload_back");
 }
@@ -151,7 +175,7 @@ void qweb_files::task_files_create_download_back(const string &sjson)
 {
     //进度条
     auto func_prog = [=](int64 id,int64 prog,int64 count,int64 length){
-        vlogi($(id) $(prog));
+        emit sn_prog_download(id,prog);
     };
 
     int64 id;
@@ -182,8 +206,7 @@ void qweb_files::task_files_create_download_back(const string &sjson)
 
             emit sn_create_download(ok_open,id,abs_path);
         }
-
-        vlogif(ok,$(abs_path) $(save_path) $(length_file) $(id));
+        else vlogw("err: task_files_create_download_back" $(ok));
     }
     else vlogw("err: task_files_create_download_back");
 }
@@ -222,8 +245,6 @@ void qweb_files::task_files_finish_download_back(const string &sjson)
 
         //下载通知
         emit sn_finish_download(is_recv_success,id);
-
-        vlogif(is_recv_success,$(ok) $(id) $(is_recv_success) $(ok_recv) $(count) $(length));
     }
     else vlogw("get_files_finish_download");
 }

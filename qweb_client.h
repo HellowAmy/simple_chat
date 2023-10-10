@@ -12,6 +12,7 @@
 #include "include/hv/WebSocketClient.h"
 #include "web_protocol.h"
 #include "inter_client.h"
+#include "qweb_files.h"
 
 
 using namespace protocol;
@@ -37,32 +38,25 @@ public:
     //!
     bool ask_login(int64 account,string passwd);
 
-    //!
-    //! 上传头像：
-    //!     1.连接文件服务器
-    //!     2.上传图片
-    //!
-    bool ask_upload_icon(int64 account);
 
     //!
-    //! 下载头像：
-    //!     1.连接文件服务器
-    //!     2.下载图片
-    //!
-    bool ask_download_icon(int64 ac_friends);
-
-
-    inter_client* get_wc();
+    //! 注册逻辑：
+    //!     1.提交信息
+    //!     2.反馈账号密码信息
+    bool ask_register(int64 phone,int64 age,int64 sex,string nickname,string location,string passwd);
 
 signals:
     void sn_open();
     void sn_close();
     void sn_ac_status(int64 ac_friends,string nickname,string icon,bool online);
+    void sn_ac_register(int64 account,string passwd,bool ok);
+
 
 protected:
 
 private:
-    int64 _account;     //保存登陆账号
+    bool _is_online;    //是否连接
+    int64 _account;     //保存账号
     inter_client _wc;   //网络链接
 
     QMap<string,function<void(const string&)>> _map_fn;
@@ -71,7 +65,8 @@ private:
     void sl_message(const string &sjson);
     void sl_close();
 
-    void task_login_back(const string &sjson);
+    void task_ac_login_back(const string &sjson);
+    void task_ac_register_back(const string &sjson);
     void task_friends_list_back(const string &sjson);
     void task_friends_status_back(const string &sjson);
     void task_error_info(const string &sjson);

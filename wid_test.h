@@ -16,6 +16,7 @@ public:
     wid_test(QWidget *parent = nullptr);
     ~wid_test();
 
+    void test_0(QWidget *parent);
     void test_1(QWidget *parent);
     void test_2(QWidget *parent);
     void test_3(QWidget *parent);
@@ -37,6 +38,10 @@ public:
     void test_19(QWidget *parent);
     void test_20(QWidget *parent);
     void test_21(QWidget *parent);
+    void test_22(QWidget *parent);
+    void test_23(QWidget *parent);
+    void test_24(QWidget *parent);
+    void test_25(QWidget *parent);
 
 protected:
 

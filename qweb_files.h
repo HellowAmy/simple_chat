@@ -29,6 +29,7 @@ public:
     explicit qweb_files(QObject *parent = nullptr);
 
     int open(string ip = CS_SERVER_ADDRESS,int port = CS_PORT_FILES,string txt = protocol::_head_);
+    void close();
 
     //!
     //! 上传文件：
@@ -39,6 +40,7 @@ public:
     //! abs_path: 上传绝对路径，save_path：服务器保存路径，为空是使用临时路径
     //!
     bool upload_file(const string &abs_path,const string &save_path = "");
+    bool upload_icon(const string &abs_path,int64 account);
 
     //!
     //! 下载文件：
@@ -50,6 +52,10 @@ public:
     //! abs_path: 服务器下载的绝对路径，save_path：客户端保存路径，为空是使用临时路径
     //!
     bool download_file(const string &abs_path,const string &save_path = "");
+    bool download_icon(int64 account);
+
+    string get_temp_path();
+    inter_client* get_wc();
 
 signals:
     void sn_open();
@@ -61,9 +67,12 @@ signals:
     void sn_finish_upload(bool ok,int64 id);
     void sn_finish_download(bool ok,int64 id);
 
+    void sn_prog_upload(int64 id,int64 prog);
+    void sn_prog_download(int64 id,int64 prog);
 
 protected:
     string _path_temp;      //保存路径
+    string _path_icon;      //头像路径
     inter_client _wc;       //网络链接
     files_channel _fs_swap; //文件传输
 

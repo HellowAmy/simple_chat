@@ -21,7 +21,7 @@ wid_friend_list::wid_friend_list(QWidget *parent)
 
     _wid_info = new wid_friend_info(this);
     _wid_info->resize(max_info);
-    _wid_info->set_icon("../pic/one.png");
+    _wid_info->set_icon("../data/head_icon/icon_796304805");
     _wid_info->set_name("帕斯的");
     _wid_info->set_extend({
         "搜索好友",
@@ -128,15 +128,7 @@ void wid_friend_list::update_connect(long long id, bool connect)
         ct_friend *ct = it.value().get();
         ct->info.connect = connect;
         ch_connect_col(ct->butt,connect);
-//        ch_keep_col(ct->butt,connect);
     }
-
-
-
-
-
-
-
 }
 
 void wid_friend_list::ch_connect_col(wid_friend_butt *butt, bool connect)

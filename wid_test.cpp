@@ -58,17 +58,18 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 21;
+    int val = 15;
 
-    if(val == 1)        test_1(parent); //线条按钮
-    else if(val == 2)   test_2(parent); //自动换行
-    else if(val == 3)   test_3(parent); //线框文字
-    else if(val == 4)   test_4(parent); //显示图片
-    else if(val == 5)   test_5(parent); //线框图片
-    else if(val == 6)   test_6(parent); //组合消息
-    else if(val == 7)   test_7(parent); //聊天输出
-    else if(val == 8)   test_8(parent); //聊天输入
-    else if(val == 9)   test_9(parent); //聊天界面
+    if(val == 0)        test_0(parent);     //主要程序
+    else if(val == 1)   test_1(parent);     //线条按钮
+    else if(val == 2)   test_2(parent);     //自动换行
+    else if(val == 3)   test_3(parent);     //线框文字
+    else if(val == 4)   test_4(parent);     //显示图片
+    else if(val == 5)   test_5(parent);     //线框图片
+    else if(val == 6)   test_6(parent);     //组合消息
+    else if(val == 7)   test_7(parent);     //聊天输出
+    else if(val == 8)   test_8(parent);     //聊天输入
+    else if(val == 9)   test_9(parent);     //聊天界面
 
     else if(val == 10)   test_10(parent);   //好友按钮
     else if(val == 11)   test_11(parent);   //好友列表
@@ -83,6 +84,10 @@ wid_test::wid_test(QWidget *parent)
 
     else if(val == 20)   test_20(parent);   //文件测试
     else if(val == 21)   test_21(parent);   //文件传输
+    else if(val == 22)   test_22(parent);   //账号注册
+    else if(val == 23)   test_23(parent);   //在线账号
+    else if(val == 24)   test_24(parent);   //头像下载
+    else if(val == 25)   test_25(parent);   //登陆成功
 
 
     vlogd("== end ==");
@@ -90,6 +95,82 @@ wid_test::wid_test(QWidget *parent)
 
 wid_test::~wid_test()
 {
+}
+
+void wid_test::test_0(QWidget *parent)
+{
+    QString name =
+R"(
+汪淼
+史强
+常伟思
+丁仪
+杨冬
+魏成
+沙瑞山
+徐冰冰
+林云
+李瑶
+叶文洁
+杨卫宁
+雷志成
+叶哲泰
+邵琳
+叶文雪
+白沐霖
+程丽华
+阮雯
+马钢
+齐猎头
+大凤
+伊文斯
+潘寒
+申玉菲
+拉菲尔
+)";
+
+    QStringList ls = name.split("\n");
+    ls.push_front("这是一个很长很长且没有什么意义的人取的名字");
+    QVector<wid_friend_list::ct_info> vec;
+    for(int i=0;i<ls.size();i++)
+    {
+        if(ls[i] != "")
+        {
+            if(i%4 == 0 && i != 0) vec.push_back({false,i,ls[i],"../pic/two.png"});
+            else vec.push_back({true,i,ls[i],"../pic/one.png"});
+        }
+    }
+
+
+    //== ==
+    wid_friend_list *wid = new wid_friend_list(this);
+    wid->set_icon("../pic/one.png");
+
+    for(auto a:vec)
+    {
+        wid->add_friend(a);
+    }
+
+    this->resize(wid->size());
+    qlog(wid->size());
+
+    QTimer::singleShot(2000,this,[=](){
+        wid->update_connect(0,false);
+        wid->update_connect(1,false);
+        wid->update_connect(2,false);
+        wid->update_connect(3,false);
+        wid->update_connect(4,false);
+    });
+
+    connect(wid,&wid_friend_list::sn_send_msg,this,[=](wid_friend_list::ct_msg ct){
+        qlog(ct.id);
+        qlog(ct.time);
+
+        QDateTime ti;
+        ti.setMSecsSinceEpoch(ct.time);
+        qlog(ti.toString());
+        qlog("\n");
+    });
 }
 
 void wid_test::test_1(QWidget *parent)
@@ -476,7 +557,7 @@ R"(汪淼
     }
 
     wid_friend_list *wid = new wid_friend_list(this);
-    wid->set_icon("../pic/one.png");
+    wid->set_icon("../data/head_icon/icon_796304805");
 
     for(auto a:vec)
     {
@@ -724,22 +805,37 @@ void wid_test::test_15(QWidget *parent)
 
     int v = 100000000;
 
-    for(int i=v;i<v+5;i++)
-    {
-        qweb_client *th = new qweb_client;
-        connect(th,&qweb_client::sn_open,this,[=](){
-            vlogi("sn_open");
-            th->ask_login(i,"123456");
-        });
-        connect(th,&qweb_client::sn_close,this,[=](){
-            vlogi("sn_close");
-        });
+//    for(int i=v;i<v+5;i++)
+//    {
+//        qweb_client *th = new qweb_client;
+//        connect(th,&qweb_client::sn_open,this,[=](){
+//            vlogi("sn_open");
+//            th->ask_login(i,"123456");
+//        });
+//        connect(th,&qweb_client::sn_close,this,[=](){
+//            vlogi("sn_close");
+//        });
 
-        {
-            bool ok = th->open();
-            vlogi(ok);
-        }
-    }
+//        {
+//            bool ok = th->open();
+//            vlogi(ok);
+//        }
+//    }
+
+    qweb_client *th = new qweb_client;
+    connect(th,&qweb_client::sn_open,this,[=](){
+        vlogi("sn_open");
+        th->ask_login(798315362,"123456");
+    });
+    connect(th,&qweb_client::sn_close,this,[=](){
+        vlogi("sn_close");
+    });
+
+    connect(th,&qweb_client::sn_ac_status,this,[=](int64 ac_friends,string nickname,string icon,bool online){
+        vlogi($(ac_friends) $(nickname)$(icon)$(online));
+    });
+    bool ok = th->open();
+    vlogi(ok);
 }
 
 void wid_test::test_16(QWidget *parent)
@@ -829,7 +925,7 @@ void wid_test::test_19(QWidget *parent)
 
     {
         vlogi("\n");
-        string sjson = set_login(123456789, "password123");
+        string sjson = set_ac_login(123456789, "password123");
         string stream;
         string type;
         if(check_json(sjson,stream,type))
@@ -862,17 +958,17 @@ void wid_test::test_19(QWidget *parent)
     //== json ==
     {
         vlogi("\n");
-        string sjson = set_login(123456789, "password123");
+        string sjson = set_ac_login(123456789, "password123");
 
         int64 account;
         string passwd;
-        if (get_login(sjson, account, passwd))
+        if (get_ac_login(sjson, account, passwd))
         {
             vlogi($(account) $(passwd));
 
-            string ssjson = set_login_back(true);
+            string ssjson = set_ac_login_back(true);
             bool ok;
-            if (get_login_back(ssjson, ok))
+            if (get_ac_login_back(ssjson, ok))
             {
                 vlogi($(ok));
             }
@@ -1425,6 +1521,139 @@ void wid_test::test_21(QWidget *parent)
 #endif
 
 
+
+}
+
+void wid_test::test_22(QWidget *parent)
+{
+    QString name =
+        R"(汪淼
+史强
+常伟思
+丁仪
+杨冬
+魏成
+沙瑞山
+徐冰冰
+林云
+李瑶
+叶文洁
+杨卫宁
+雷志成
+叶哲泰
+邵琳
+叶文雪
+白沐霖
+程丽华
+阮雯
+马钢
+齐猎头
+大凤
+伊文斯
+潘寒
+申玉菲
+拉菲尔)";
+
+    QStringList ls = name.split("\n");
+    ls.push_front("这是一个很长很长且没有什么意义的人取的名字");
+
+    QVector<string> vec;
+    for(auto a:ls)
+    {
+        vec.push_back(a.toStdString());
+    }
+
+    qweb_client *th = new qweb_client;
+    connect(th,&qweb_client::sn_open,this,[=](){
+        vlogi("sn_open");
+
+        int64 phone = 11012213;
+        int64 age = 7;
+        for(int i=0;i<vec.size();i++)
+        {
+            bool ok = th->ask_register(phone +i,age +i,(i%2 == 0?0:1),vec[i],"zhongg","123456");
+            vlogif(ok,$(ok));
+        }
+    });
+    connect(th,&qweb_client::sn_close,this,[=](){
+        vlogi("sn_close");
+    });
+    connect(th,&qweb_client::sn_ac_register,this,[=](int64 account,string passwd,bool ok){
+        vlogi("sn_open" $(account) $(passwd) $(ok));
+    });
+    {
+        bool ok = th->open();
+        vlogif(ok,$(ok));
+    }
+
+}
+
+void wid_test::test_23(QWidget *parent)
+{
+    std::vector<int64> vec = {
+        102649451,
+        105741821,
+        136250002,
+        155155809,
+        185096680,
+        281151641,
+        303756815,
+        340717797,
+        411821267,
+        412131535,
+        422157964,
+        434592263,
+        449749116,
+        500902190,
+        518211187,
+        523892629,
+        535181553,
+        607037441,
+        616660262,
+        673944815,
+        714405069,
+        796304805,
+        798315362,
+        834477711,
+        877370201,
+        886423439,
+        987491857
+    };
+    for(auto a:vec)
+    {
+        qweb_client *th = new qweb_client;
+        connect(th,&qweb_client::sn_open,this,[=](){
+            vlogi("sn_open");
+            th->ask_login(a,"123456");
+        });
+        connect(th,&qweb_client::sn_close,this,[=](){
+            vlogi("sn_close");
+        });
+        int ret = th->open();
+        vlogd("th_open:" << $(ret));
+    }
+}
+
+void wid_test::test_24(QWidget *parent)
+{
+    qweb_files *fs = new qweb_files;
+    connect(fs,&qweb_files::sn_open,[=](){
+        fs->upload_icon("../pic/icon2.jpg",796304805);
+    });
+    connect(fs,&qweb_files::sn_finish_upload,[=](bool ok,int64 id){
+        vlogif(ok,"upload" << $(id));
+        fs->download_icon(796304805);
+    });
+    connect(fs,&qweb_files::sn_finish_download,[=](bool ok,int64 id){
+        vlogif(ok,"download 1" << $(id));
+        vlogif(ok,"download 2" << $(id));
+    });
+    bool ok = fs->open();
+    vlogi("fs->open()" << $(ok));
+}
+
+void wid_test::test_25(QWidget *parent)
+{
 
 }
 

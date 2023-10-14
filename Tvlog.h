@@ -323,6 +323,8 @@ void print_con(Tit begin,Tit end,int len,const std::string &flg)
 #define qlog(txt)  qDebug()<<"[Qt] ["<<__FILE__<<": <"<<__LINE__<<"> ] <<<< "<<txt
 #define Q$(value) "[ "#value":"<<value.toStdString()<<"] "
 #define vlogif(ok,...) (ok ? vlogd(__VA_ARGS__) : vloge(__VA_ARGS__))
+#define stoqs(s) QString::fromStdString(s)
+#define qstos(s) s.toStdString()
 #endif
 //== QT扩展 ==
 

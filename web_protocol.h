@@ -172,18 +172,18 @@ static T get_extend(json &js,const string &index)
 
 #define CS_ARGV(...) __VA_ARGS__
 #define CS_BODY(...) __VA_ARGS__
-#define CS_MAKE_TYPE(in_type,in_stream,in_sarg,in_sbody,in_garg,in_gbody)     \
+#define CS_MAKE_TYPE(in_type,in_stream,in_sarg,in_sbody,in_garg,in_gbody)       \
     static string in_type = #in_type;                                           \
     static string set_##in_type(in_sarg)                                        \
     {                                                                           \
-        string sjson = make_json(in_stream,in_type);                            \
-        json js = json::parse(sjson);                                           \
+        string tm_sjson = make_json(in_stream,in_type);                         \
+        json js = json::parse(tm_sjson);                                        \
         in_sbody                                                                \
         return js.dump();                                                       \
     }                                                                           \
-    static bool get_##in_type(const string &sjson in_garg)                      \
+    static bool get_##in_type(const string &tm_sjson in_garg)                   \
     {                                                                           \
-        json js = json::parse(sjson);                                           \
+        json js = json::parse(tm_sjson);                                        \
         try{ in_gbody return true; }                                            \
         catch(...) { return false; }                                            \
     }
@@ -277,6 +277,30 @@ CS_MAKE_TYPE(ac_register_back,_sc_,
              )
 
 //!
+//! ac_info : 账号信息
+//!
+//! extend :
+//!     uint account        账号
+//!
+//! back :
+//!     string nickname     昵称
+//!     string icon         头像
+//!     bool ok             确认
+//!
+CS_MAKE_TYPE(ac_info,_cs_,
+             CS_ARGV( CS_1(int64,account)  ),
+             CS_BODY( CS_2(int64,account)  ),
+             CS_ARGV(,CS_3(int64,account)  ),
+             CS_BODY( CS_4(int64,account)  )
+             )
+CS_MAKE_TYPE(ac_info_back,_sc_,
+             CS_ARGV( CS_1(string,nickname),CS_1(string,icon),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(string,nickname) CS_2(string,icon) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(string,nickname),CS_3(string,icon),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(string,nickname) CS_4(string,icon) CS_4(bool,ok)  )
+             )
+
+//!
 //! friends_list : 好友列表
 //!
 //! extend :
@@ -332,20 +356,44 @@ CS_MAKE_TYPE(friends_status_back,_sc_,
              )
 
 //!
+//! swap_cache : 转发缓存
+//!
+//! extend :
+//!     uint target         目标账号 [请求方账号]
+//!
+//! back :
+//!     string svec_sjson   暂存信息数组
+//!     bool ok             确认
+//!
+CS_MAKE_TYPE(swap_cache,_cs_,
+             CS_ARGV( CS_1(int64,target)  ),
+             CS_BODY( CS_2(int64,target)  ),
+             CS_ARGV(,CS_3(int64,target)  ),
+             CS_BODY( CS_4(int64,target)  )
+             )
+CS_MAKE_TYPE(swap_cache_back,_sc_,
+             CS_ARGV( CS_1(string,svec_sjson),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(string,svec_sjson) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(string,svec_sjson),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(string,svec_sjson) CS_4(bool,ok)  )
+             )
+
+
+//!
 //! swap_msg : 发送消息
 //!
 //! extend :
 //!     uint target         目标账号
 //!     uint source         源址账号
-//!     long long time_to   发送时间
+//!     uint time_to        发送时间
 //!     string type         消息类型 [Text,Img,File]
 //!     string content      消息内容
 //!
 //! back :
 //!     uint target         目标账号
 //!     uint source         源址账号
-//!     long long time_to   发送时间
-//!     long long time_ok   确认时间
+//!     uint time_to        发送时间
+//!     uint time_ok        确认时间
 //!     bool ok             反馈成功
 //!
 CS_MAKE_TYPE(swap_msg,_cc_,

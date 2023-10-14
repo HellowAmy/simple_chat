@@ -26,10 +26,11 @@ SOURCES += \
     qlab_img.cpp \
     qlab_wrap.cpp \
     qmove_pos.cpp \
-    qsqlist.cpp \
+#    qsqlist.cpp \
     qweb_client.cpp \
 #    qweb_socket.cpp \
     qweb_files.cpp \
+    sqlite_op.cpp \
     wid_chat.cpp \
     wid_chat_input.cpp \
     wid_chat_output.cpp \
@@ -126,11 +127,12 @@ HEADERS += \
     qlab_img.h \
     qlab_wrap.h \
     qmove_pos.h \
-    qsqlist.h \
+#    qsqlist.h \
     qweb_client.h \
 #    qweb_socket.h \
     qweb_files.h \
 #    swap_files.h \
+    sqlite_op.h \
     web_protocol.h \
     wid_chat.h \
     wid_chat_input.h \

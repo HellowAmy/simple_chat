@@ -21,12 +21,13 @@ public:
     void init_size(QSize size);
     void set_icon(QString left,QString right);  //设置头像
 
+    wid_message* make_hint(QString txt,long long date = 0);         //提示信息
     wid_message* make_text(QString txt,Qt::AlignmentFlag flg);      //生成文字
-    wid_message* make_img(QString file,Qt::AlignmentFlag flg);      //生成文字
+    wid_message* make_img(QString file,Qt::AlignmentFlag flg);      //生成图片
 
     //生成消息
     wid_message* make_msg(wid_msg_abs *msg,Qt::AlignmentFlag flg,
-                          long long date = QDateTime::currentDateTime().toMSecsSinceEpoch());
+                          long long date = QDateTime::currentMSecsSinceEpoch());
 
 signals:
     void sn_send_msg(wid_message *msg); //发送消息

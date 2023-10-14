@@ -23,6 +23,7 @@
 #include "web_protocol.h"
 #include "swap_files.h"
 #include "qweb_files.h"
+#include "sqlite_op.h"
 
 #include <filesystem>
 
@@ -58,7 +59,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 15;
+    int val = 25;
 
     if(val == 0)        test_0(parent);     //主要程序
     else if(val == 1)   test_1(parent);     //线条按钮
@@ -613,190 +614,378 @@ void wid_test::test_13(QWidget *parent)
 {
     this->hide();
 
-    QString test_db = "test_wid.db";
-    QString test_table = "test_table";
+    int64 account = 123456;
+    int64 ac_friend1 = 987123;
+    int64 ac_friend2 = 987444;
 
-    qsqlist_base li;
+    sqlite_history sql;
     {
-        int ret = li.open_db(test_db);
-        qlog("open_db: "<<ret);
-    }
-
-    {
-        int ret = li.create_test(test_table);
-        if(ret != 0) qlog(li.get_error_exec());
-        qlog("create_db: "<<ret);
-    }
-
-    {
-        int ret = li.insert_test(test_table,{1,"ab"});
-        if(ret != 0) qlog(li.get_error_exec());
-        qlog(ret);
+        bool ok = sql.open_history(account);
+        vlogif(ok,$(ok) $(sql.get_error()));
     }
     {
-        int ret = li.insert_test(test_table,{2,"abc"});
-        if(ret != 0) qlog(li.get_error_exec());
-        qlog(ret);
+        bool ok = sql.create_history(ac_friend1);
+        vlogif(ok,$(ok) $(sql.get_error()));
     }
     {
-        int ret = li.insert_test(test_table,{3,"abcd"});
-        if(ret != 0) qlog(li.get_error_exec());
-        qlog(ret);
-    }
-    {
-        int ret = li.insert_test(test_table,{3,"abcdtwo"});
-        if(ret != 0) qlog(li.get_error_exec());
-        qlog(ret);
+        bool ok = sql.create_history(ac_friend2);
+        vlogif(ok,$(ok) $(sql.get_error()));
     }
 
+    vlogi("========================\n");
     {
-        QVector<tuple<int, string>> vec;
-        int ret = li.select_test(test_table,vec);
+        bool ok = sql.insert_history(ac_friend1,{11,22,1,"File","AL","content1"});
+        vlogif(ok,$(ok) $(sql.get_error()));
+    }
+    {
+        bool ok = sql.insert_history(ac_friend1,{12,22,1,"File","AR","content2"});
+        vlogif(ok,$(ok) $(sql.get_error()));
+    }
+    {
+        bool ok = sql.insert_history(ac_friend1,{13,26,0,"File","Sys","content3"});
+        vlogif(ok,$(ok) $(sql.get_error()));
+    }
+    {
+        bool ok = sql.insert_history(ac_friend1,{14,27,0,"File","Hint","content4"});
+        vlogif(ok,$(ok) $(sql.get_error()));
+    }
 
-        qlog("select_db: "<<ret);
-        for(auto a:vec)
+    {
+        vector<string> data;
+        string table = sformat(sql.get_table())(ac_friend1);
+        bool ok = sql.select_db(table,data);
+        vlogif(ok,$(ok));
+        vlogc(data,1);
+    }
+    {
+        vector<tuple<int64, int64, int64, string, string, string> > vec_line;
+        bool ok = sql.select_non_read(ac_friend1,vec_line);
+        vlogif(ok,$(ok));
+        for(auto a:vec_line)
         {
-            qlog(std::get<0>(a) << std::get<1>(a));
+            vlogi($(std::get<0>(a)) $(std::get<1>(a)) $(std::get<2>(a))
+                  $(std::get<3>(a)) $(std::get<4>(a)) $(std::get<5>(a)));
+        }
+    }
+    {
+        int value = sql.count_non_read(ac_friend1);
+        vlogd($(value));
+    }
+
+    vlogi("========================\n");
+    {
+        bool ok = sql.update_non_read(ac_friend1,14,1);
+        vlogif(ok,ok);
+    }
+    {
+        bool ok = sql.update_feed_back(ac_friend1,14,66);
+        vlogif(ok,ok);
+    }
+    {
+        vector<string> data;
+        string table = sformat(sql.get_table())(ac_friend1);
+        bool ok = sql.select_db(table,data);
+        vlogif(ok,ok);
+        vlogc(data,1);
+    }
+    {
+        int value = sql.count_non_read(ac_friend1);
+        vlogd($(value));
+    }
+
+    vlogi("========================\n");
+    {
+        bool ok = sql.insert_history(ac_friend2,{111,122,1,"File","AL","content1"});
+        vlogif(ok,$(ok) $(sql.get_error()));
+    }
+    {
+        bool ok = sql.insert_history(ac_friend2,{112,122,1,"File","AR","content2"});
+        vlogif(ok,$(ok) $(sql.get_error()));
+    }
+    {
+        bool ok = sql.insert_history(ac_friend2,{113,126,0,"File","Sys","content3"});
+        vlogif(ok,$(ok) $(sql.get_error()));
+    }
+    {
+        bool ok = sql.insert_history(ac_friend2,{114,127,0,"File","Hint","content4"});
+        vlogif(ok,$(ok) $(sql.get_error()));
+    }
+    {
+        vector<string> data;
+        string table = sformat(sql.get_table())(ac_friend2);
+        bool ok = sql.select_db(table,data);
+        vlogif(ok,ok);
+        vlogc(data,1);
+    }
+    {
+        int value = sql.count_non_read(ac_friend2);
+        vlogd($(value));
+    }
+
+    vlogi("========================\n");
+    {
+        vector<string> data;
+        string table = sformat(sql.get_table())(ac_friend2);
+        bool ok = sql.select_db(table,data);
+        vlogif(ok,ok);
+        vlogc(data,1);
+    }
+    {
+        int value = sql.count_non_read(ac_friend2);
+        vlogd($(value));
+    }
+
+    vlogi("========================\n");
+//    {
+//        vector<map<string,string>> vec_line;
+//        bool ok = sql.select_non_read(ac_friend2,vec_line);
+//        vlogif(ok,$(ok));
+//        for(auto a:vec_line)
+//        {
+//            for(auto b:a)
+//            {
+//                vlogi($(b.first) $(b.second));
+//            }
+//        }
+//    }
+    {
+        vector<tuple<int64, int64, int64, string, string, string> > vec_line;
+        bool ok = sql.select_non_read(ac_friend2,vec_line);
+        vlogif(ok,ok);
+        for(auto a:vec_line)
+        {
+            vlogi($(std::get<0>(a)) $(std::get<1>(a)) $(std::get<2>(a))
+                  $(std::get<3>(a)) $(std::get<4>(a)) $(std::get<5>(a)));
+        }
+    }
+    {
+        vector<tuple<int64, int64, int64, string, string, string> > vec_line;
+        bool ok = sql.select_history(ac_friend2,vec_line);
+        vlogif(ok,ok);
+        for(auto a:vec_line)
+        {
+            vlogi($(std::get<0>(a)) $(std::get<1>(a)) $(std::get<2>(a))
+                  $(std::get<3>(a)) $(std::get<4>(a)) $(std::get<5>(a)));
         }
     }
 
+//    bool select_non_read(int64 ac_friend,vector<map<string,string>> &_vec_line);
+
+
+    vlogi("========================\n");
     {
-        int ret = li.delete_db(test_table);
-        qlog("delete_db: "<<ret);
+        string table = sformat(sql.get_table())(ac_friend2);
+        bool ok = sql.drop_db(table);
+        vlogif(ok,ok);
+    }
+    {
+        string table = sformat(sql.get_table())(ac_friend1);
+        bool ok = sql.drop_db(table);
+        vlogif(ok,ok);
+    }
+    {
+        bool ok = sql.close_db();
+        vlogif(ok,ok);
     }
 
-    {
-        int ret = li.drop_db(test_table);
-        if(ret != 0) qlog(li.get_error_exec());
-        qlog("drop_db: "<<ret);
-    }
+    vloge("========================\n");
 
-    {
-        int ret = li.close_db();
-        qlog("close_db: "<<ret);
-    }
+
+
+
+
+
+
+
+
+
+
+
+//    QString test_db = "test_wid.db";
+//    QString test_table = "test_table";
+
+//    qsqlist_base li;
+//    {
+//        int ret = li.open_db(test_db);
+//        qlog("open_db: "<<ret);
+//    }
+
+//    {
+//        int ret = li.create_test(test_table);
+//        if(ret != 0) qlog(li.get_error_exec());
+//        qlog("create_db: "<<ret);
+//    }
+
+//    {
+//        int ret = li.insert_test(test_table,{1,"ab"});
+//        if(ret != 0) qlog(li.get_error_exec());
+//        qlog(ret);
+//    }
+//    {
+//        int ret = li.insert_test(test_table,{2,"abc"});
+//        if(ret != 0) qlog(li.get_error_exec());
+//        qlog(ret);
+//    }
+//    {
+//        int ret = li.insert_test(test_table,{3,"abcd"});
+//        if(ret != 0) qlog(li.get_error_exec());
+//        qlog(ret);
+//    }
+//    {
+//        int ret = li.insert_test(test_table,{3,"abcdtwo"});
+//        if(ret != 0) qlog(li.get_error_exec());
+//        qlog(ret);
+//    }
+
+//    {
+//        QVector<tuple<int, string>> vec;
+//        int ret = li.select_test(test_table,vec);
+
+//        qlog("select_db: "<<ret);
+//        for(auto a:vec)
+//        {
+//            qlog(std::get<0>(a) << std::get<1>(a));
+//        }
+//    }
+
+//    {
+//        int ret = li.delete_db(test_table);
+//        qlog("delete_db: "<<ret);
+//    }
+
+//    {
+//        int ret = li.drop_db(test_table);
+//        if(ret != 0) qlog(li.get_error_exec());
+//        qlog("drop_db: "<<ret);
+//    }
+
+//    {
+//        int ret = li.close_db();
+//        qlog("close_db: "<<ret);
+//    }
+
 }
 
 void wid_test::test_14(QWidget *parent)
 {
-    uint account = 123456789;
-    uint friends = 123344556;
+//    uint account = 123456789;
+//    uint friends = 123344556;
 
-    qsqlist_history sql;
-    {
-        int ret = sql.open_history(account);
-        qlog("open_history: "<<ret);
-    }
-
-    {
-        int ret = sql.create_history(friends);
-        qlog("create_history: "<<ret);
-    }
-
-    {
-        int ret = sql.insert_history(friends,{12345,12345,0,2,2,"aghusdhasd","NULL"});
-        if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
-        qlog("insert_history: "<<ret);
-    }
-    {
-        int ret = sql.insert_history(friends,{12346,123499,0,1,0,"aghusdhasd111","hellow"});
-        if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
-        qlog("insert_history: "<<ret);
-    }
-    {
-        int ret = sql.insert_history(friends,{12347,123459,0,1,3,"aghusd222hasd","word"});
-        if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
-        qlog("insert_history: "<<ret);
-    }
+//    qsqlist_history sql;
 //    {
-//        for(int i=0;i<300;i++)
+//        int ret = sql.open_history(account);
+//        qlog("open_history: "<<ret);
+//    }
+
+//    {
+//        int ret = sql.create_history(friends);
+//        qlog("create_history: "<<ret);
+//    }
+
+//    {
+//        int ret = sql.insert_history(friends,{12345,12345,0,2,2,"aghusdhasd","NULL"});
+//        if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
+//        qlog("insert_history: "<<ret);
+//    }
+//    {
+//        int ret = sql.insert_history(friends,{12346,123499,0,1,0,"aghusdhasd111","hellow"});
+//        if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
+//        qlog("insert_history: "<<ret);
+//    }
+//    {
+//        int ret = sql.insert_history(friends,{12347,123459,0,1,3,"aghusd222hasd","word"});
+//        if(ret != 0) qlog("insert_history: "<<sql.get_error_exec());
+//        qlog("insert_history: "<<ret);
+//    }
+////    {
+////        for(int i=0;i<300;i++)
+////        {
+////            sql.insert_history({i,1000,1,1,3,"aghusd222hasd"});
+////        }
+////        for(int i=0;i<700;i++)
+////        {
+////            sql.insert_history({i+300,1000,2,1,3,"aghusd222hasd"});
+////        }
+////    }
+
+//    {
+//        QString table("history_%1");
+//        table = table.arg(friends);
+//        QVector<QString> vec;
+//        int ret = sql.select_db(table,vec);
+//        qlog("select_db: "<<ret);
+//        for(auto a:vec)
 //        {
-//            sql.insert_history({i,1000,1,1,3,"aghusd222hasd"});
-//        }
-//        for(int i=0;i<700;i++)
-//        {
-//            sql.insert_history({i+300,1000,2,1,3,"aghusd222hasd"});
+//            qlog(a);
 //        }
 //    }
 
-    {
-        QString table("history_%1");
-        table = table.arg(friends);
-        QVector<QString> vec;
-        int ret = sql.select_db(table,vec);
-        qlog("select_db: "<<ret);
-        for(auto a:vec)
-        {
-            qlog(a);
-        }
-    }
+//    {
+//        int ret = sql.update_history(friends,12345,sql.get_data().feed_back,12399);
+//        qlog("update_history: "<<ret);
+//    }
+//    {
+//        int ret = sql.update_history(friends,12345,sql.get_data().non_read,1);
+//        qlog("update_history: "<<ret);
+//    }
+//    {
+//        int ret = sql.update_history(friends,12345,sql.get_data().types,0);
+//        qlog("update_history: "<<ret);
+//    }
+//    {
+//        int ret = sql.update_history(friends,12345,sql.get_data().object,3);
+//        qlog("update_history: "<<ret);
+//    }
+//    {
+//        int ret = sql.update_history(friends,12345,sql.get_data().content,"aaabbb");
+//        qlog("update_history: "<<ret);
+//    }
+//    {
+//        int ret = sql.update_history(friends,12345,sql.get_data().extend,"are you ok");
+//        qlog("update_history: "<<ret);
+//    }
+//    {
+//        int ret = sql.update_history(friends,12346,sql.get_data().non_read,1);
+//        qlog("update_history: "<<ret);
+//    }
 
-    {
-        int ret = sql.update_history(friends,12345,sql.get_data().feed_back,12399);
-        qlog("update_history: "<<ret);
-    }
-    {
-        int ret = sql.update_history(friends,12345,sql.get_data().non_read,1);
-        qlog("update_history: "<<ret);
-    }
-    {
-        int ret = sql.update_history(friends,12345,sql.get_data().types,0);
-        qlog("update_history: "<<ret);
-    }
-    {
-        int ret = sql.update_history(friends,12345,sql.get_data().object,3);
-        qlog("update_history: "<<ret);
-    }
-    {
-        int ret = sql.update_history(friends,12345,sql.get_data().content,"aaabbb");
-        qlog("update_history: "<<ret);
-    }
-    {
-        int ret = sql.update_history(friends,12345,sql.get_data().extend,"are you ok");
-        qlog("update_history: "<<ret);
-    }
-    {
-        int ret = sql.update_history(friends,12346,sql.get_data().non_read,1);
-        qlog("update_history: "<<ret);
-    }
+//    {
+//        QString table("history_%1");
+//        table = table.arg(friends);
+//        QVector<QString> vec;
+//        int ret = sql.select_db(table,vec);
+//        qlog("select_db: "<<ret);
+//        for(auto a:vec)
+//        {
+//            qlog(a);
+//        }
+//    }
 
-    {
-        QString table("history_%1");
-        table = table.arg(friends);
-        QVector<QString> vec;
-        int ret = sql.select_db(table,vec);
-        qlog("select_db: "<<ret);
-        for(auto a:vec)
-        {
-            qlog(a);
-        }
-    }
-
-    {
-        int ret = sql.check_non_read(friends);
-        qlog("check_non_read: "<<ret);
-    }
-    {
-        QString table("history_%1");
-        table = table.arg(friends);
-        int ret = sql.drop_db(table);
-        qlog("drop_db: "<<ret);
-    }
-    {
-        QString table("history_%1");
-        table = table.arg(account);
-        int ret = sql.drop_db(table);
-        qlog("drop_db: "<<ret);
-        qlog("drop_db: "<<sql.get_error());
-        qlog("drop_db: "<<sql.get_error_exec());
-    }
-    {
-        qlog("close_db: "<<sql.get_error());
-        int ret = sql.close_db();
-//        if(ret != 0) qlog("close_db: "<<sql.get_error());
-        qlog("close_db: "<<ret);
-        qlog("close_db: "<<sql.get_error());
-    }
+//    {
+//        int ret = sql.check_non_read(friends);
+//        qlog("check_non_read: "<<ret);
+//    }
+//    {
+//        QString table("history_%1");
+//        table = table.arg(friends);
+//        int ret = sql.drop_db(table);
+//        qlog("drop_db: "<<ret);
+//    }
+//    {
+//        QString table("history_%1");
+//        table = table.arg(account);
+//        int ret = sql.drop_db(table);
+//        qlog("drop_db: "<<ret);
+//        qlog("drop_db: "<<sql.get_error());
+//        qlog("drop_db: "<<sql.get_error_exec());
+//    }
+//    {
+//        qlog("close_db: "<<sql.get_error());
+//        int ret = sql.close_db();
+////        if(ret != 0) qlog("close_db: "<<sql.get_error());
+//        qlog("close_db: "<<ret);
+//        qlog("close_db: "<<sql.get_error());
+//    }
 }
 
 void wid_test::test_15(QWidget *parent)
@@ -1654,6 +1843,75 @@ void wid_test::test_24(QWidget *parent)
 
 void wid_test::test_25(QWidget *parent)
 {
+    shared_ptr<sqlite_history> sp_db_history = std::make_shared<sqlite_history>();
+//    sqlite_history *db_history = new sqlite_history;
+    wid_friend_list *wid = new wid_friend_list(this);
+    wid->set_history_db(sp_db_history.get());
+    wid->hide();
+
+    //==
+    qweb_client *wc = new qweb_client(this);
+    connect(wc,&qweb_client::sn_open,this,[=](){
+        //登陆：史强
+        wc->ask_login(796304805,"123456"); //798315362  796304805
+        sp_db_history->open_history(wc->get_account());
+    });
+
+    connect(wc,&qweb_client::sn_ac_info,this,[=](string nickname,string icon){
+        vlogi($(nickname)$(icon));
+
+        wid->init_login(stoqs(nickname),stoqs(icon));
+        wid->show();
+    });
+
+    connect(wc,&qweb_client::sn_ac_status,this,[=](int64 ac_friends,string nickname,string icon,bool online){
+        vlogi($(ac_friends) $(nickname)$(icon)$(online));
+
+        wid_friend_list::ct_info ct {online,ac_friends,stoqs(nickname),stoqs(icon)};
+        wid->add_friend(ct);
+    });
+
+    connect(wc,&qweb_client::sn_recv_msg,this,[=](int64 target, int64 source, int64 time_to, string type, string content){
+        vlogi($(target) $(source) $(time_to) $(type) $(content));
+        wid_friend_list::ct_swap_msg ct {target,source,time_to,stoqs(type),stoqs(content)};
+        wid->add_recv_msg(ct);
+    });
+
+    connect(wc,&qweb_client::sn_close,this,[=](){
+        vlogw("sn_close");
+    });
+
+    wc->open();
+    //==
+
+
+    //==
+    connect(wid,&wid_friend_list::sn_send_msg,this,[=](wid_friend_list::ct_msg cts){
+
+
+//        cts.id
+//        cts.time
+//        ct.content
+
+        bool ok = wc->ask_swap_msg(cts.id,cts.time,qstos(cts.msg->get_info().type),qstos(cts.msg->get_info().content));
+
+        vlogif(ok,$(ok));
+//        wc->ask_register()
+//        vlogi($(target) $(source) $(time_to) $(type) $(content));
+//        wid_friend_list::ct_swap_msg ct {target,source,time_to,stoqs(type),stoqs(content)};
+//        wid->add_recv_msg(ct);
+    });
+    //==
+
+
+    QTimer::singleShot(2000,this,[=](){
+
+//        vlogw("vlogw("sn_close");");
+        wc->sn_recv_msg(798315362,796304805,6723456,"Text","你好啊");
+        wc->sn_recv_msg(798315362,796304805,3423456,"Text","不见了");
+        wc->sn_recv_msg(798315362,796304805,6523456,"Text","东改革");
+        wc->sn_recv_msg(798315362,796304805,5712346,"Text","你阿訇所大赛的");
+    });
 
 }
 

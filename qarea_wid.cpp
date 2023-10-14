@@ -1,5 +1,7 @@
 #include "qarea_wid.h"
 
+//#include "Tvlog.h"
+
 qarea_wid::qarea_wid(QWidget *parent)
     : QScrollArea(parent)
 {
@@ -42,11 +44,15 @@ void qarea_wid::init_size(QSize size)
 
 void qarea_wid::add_wid(QWidget *wid,int space)
 {
+    //检查不触底时不滚动
+    bool is_bottom = check_bottom_bar();
+
     wid->setParent(&_wid_area);
     wid->show();
     wid->move(0,_wid_area.height());
     add_height_wid(wid->height() + space);
-    show_bottom_bar();
+
+    if(is_bottom) show_bottom_bar();
 }
 
 void qarea_wid::add_width_wid(int width)
@@ -63,6 +69,13 @@ void qarea_wid::show_bottom_bar()
 {
     QScrollBar* bar = this->verticalScrollBar();
     bar->setValue(bar->maximum());
+}
+
+bool qarea_wid::check_bottom_bar()
+{
+    QScrollBar* bar = this->verticalScrollBar();
+    if(bar->value() == bar->maximum()) return true;
+    return false;
 }
 
 QWidget *qarea_wid::get_area()

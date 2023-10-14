@@ -64,6 +64,12 @@ void wid_chat_input::set_icon(QString left, QString right)
     _icon_right = right;
 }
 
+wid_message *wid_chat_input::make_hint(QString txt,long long date)
+{
+    if(date == 0) return make_msg(new wid_msg_hint(txt),Qt::AlignCenter);
+    return make_msg(new wid_msg_hint(txt),Qt::AlignCenter,date);
+}
+
 wid_message *wid_chat_input::make_text(QString txt, Qt::AlignmentFlag flg)
 {
     return make_msg(new wid_msg_text(txt),flg);

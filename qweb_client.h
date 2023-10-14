@@ -5,6 +5,7 @@
 #include <QQueue>
 #include <QMap>
 #include <QIterator>
+#include <QDateTime>
 #include <functional>
 #include <thread>
 #include <condition_variable>
@@ -31,10 +32,11 @@ public:
 
     //!
     //! 登陆逻辑：
-    //!     1.发送登陆请求
-    //!     2.获取登陆反馈，发送好友列表请求
-    //!     3.获取好友信息反馈，发送好友状态请求
-    //!     4.获取好友状态反馈，完成登陆处理
+    //!     1.发送登陆请求,获取登陆反馈
+    //!     2.请求账号信息，获取账号信息反馈,信号转发账号信息
+    //!     3.发送好友列表请求，获取好友信息反馈
+    //!     4.发送好友状态请求，获取好友状态反馈，信号转发好友状态
+    //!     5.发送请求暂存信息，获取暂存信息反馈，信号转发暂存信息，完成登陆处理
     //!
     bool ask_login(int64 account,string passwd);
 
@@ -43,13 +45,34 @@ public:
     //! 注册逻辑：
     //!     1.提交信息
     //!     2.反馈账号密码信息
+    //!
     bool ask_register(int64 phone,int64 age,int64 sex,string nickname,string location,string passwd);
+
+
+    //!     uint target         目标账号
+    //!     uint source         源址账号
+    //!     uint time_to        发送时间
+    //!     string type         消息类型 [Text,Img,File]
+    //!     string content      消息内容
+
+    //!
+    //! 交换逻辑：
+    //!     1.发送信息，完成交换处理
+    //!     2.服务器转发信息       [服务器处理]
+    //!     3.对方账号接收信息      [对方处理]
+    bool ask_swap_msg(int64 target,int64 time_to,string type,string content);
+
+
+    int64 get_account();
 
 signals:
     void sn_open();
     void sn_close();
+    void sn_ac_info(string nickname,string icon);
     void sn_ac_status(int64 ac_friends,string nickname,string icon,bool online);
     void sn_ac_register(int64 account,string passwd,bool ok);
+
+    void sn_recv_msg(int64 target, int64 source,int64 time_to, string type, string content);
 
 
 protected:
@@ -59,7 +82,7 @@ private:
     int64 _account;     //保存账号
     inter_client _wc;   //网络链接
 
-    QMap<string,function<void(const string&)>> _map_fn;
+    std::map<string,function<void(const string&)>> _map_fn;
 
     void sl_open();
     void sl_message(const string &sjson);
@@ -67,8 +90,12 @@ private:
 
     void task_ac_login_back(const string &sjson);
     void task_ac_register_back(const string &sjson);
+    void task_ac_info_back(const string &sjson);
     void task_friends_list_back(const string &sjson);
     void task_friends_status_back(const string &sjson);
+    void task_swap_cache_back(const string &sjson);
+    void task_swap_msg(const string &sjson);
+    void task_swap_msg_back(const string &sjson);
     void task_error_info(const string &sjson);
 
     bool send_msg(const string &json);

@@ -8,12 +8,20 @@ wid_friend_info::wid_friend_info(QWidget *parent)
     _butt_extend = new qbutt_line(this);
     _wid_icon = new qframe_line(this);
     _wid_img = new qlab_img(_wid_icon);
-    _wid_extend = new qframe_line;
+    _wid_extend = new qframe_line(this);
+    _wid_extend->hide();
 
     connect(_butt_extend,&qbutt_line::sn_clicked,this,[=](){
-        if(_wid_extend->isHidden()) _wid_extend->show();
-        else _wid_extend->hide();
-        emit sn_click_extend(true,"");
+        if(_wid_extend->isHidden())
+        {
+            _wid_extend->show();
+            emit sn_show_extend(true);
+        }
+        else
+        {
+            _wid_extend->hide();
+            emit sn_show_extend(false);
+        }
     });
 }
 
@@ -27,12 +35,20 @@ void wid_friend_info::set_name(QString name)
     _name = name;
 }
 
-void wid_friend_info::set_extend(const QVector<QString> &vec)
+void wid_friend_info::set_extend_wid(QWidget *parent, QSize size, QPoint pos)
 {
-    _vec_extend = vec;
+    _wid_extend->setParent(parent);
+    _wid_extend->move(pos);
+    _wid_extend->resize(size);
+//    _wid_extend->show();
 }
 
-void wid_friend_info::update_info()
+//void wid_friend_info::set_extend(const QVector<QString> &vec)
+//{
+////    _vec_extend = vec;
+//}
+
+void wid_friend_info::init_info()
 {
     QSize size_icon(100,100);
     QSize size_butt(30,30);
@@ -56,13 +72,21 @@ void wid_friend_info::update_info()
     _butt_extend->move(this->width() - _butt_extend->width()- _space,_space);
     _butt_extend->set_text(">>");
 
+    QVector<QString> vec_extend {
+        "搜索好友",
+        "添加好友",
+        "分组管理",
+        "切换账号",
+        "设置",
+        "退出"
+    };
+
     //扩展区按钮
-    _wid_extend->hide();
     _wid_extend->resize(size_extend);
     {
         int heigh = 0;
         qmove_pos move;
-        for(auto &a:_vec_extend)
+        for(auto &a:vec_extend)
         {
             qbutt_line *butt = new qbutt_line(_wid_extend);
             butt->resize(size_extend_butt);
@@ -72,7 +96,7 @@ void wid_friend_info::update_info()
             heigh += size_extend_butt.height() + _space;
 
             connect(butt,&qbutt_line::sn_clicked,this,[=](){
-                emit sn_click_extend(false,butt->get_text());
+                emit sn_click_extend(butt->get_text());
             });
         }
         move.move_y(QPoint(_space,_space),_space);
@@ -85,7 +109,13 @@ void wid_friend_info::update_info()
     });
 }
 
-QWidget *wid_friend_info::get_extend_wid()
+void wid_friend_info::update_info()
 {
-    return _wid_extend;
+    _wid_img->set_img(_icon);
+    _wid_img->update_img();
 }
+
+//QWidget *wid_friend_info::get_extend_wid()
+//{
+//    return _wid_extend;
+//}

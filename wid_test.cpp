@@ -614,10 +614,10 @@ void wid_test::test_12(QWidget *parent)
     wid->resize(QSize(240,140));
     wid->set_icon("../pic/one.png");
     wid->set_name("帕斯的");
-    wid->set_extend(vec);
-    wid->update_info();
+//    wid->set_extend(vec);
+    wid->init_info();
 
-    connect(wid,&wid_friend_info::sn_click_extend,this,[=](bool extend,QString txt){
+    connect(wid,&wid_friend_info::sn_click_extend,this,[=](QString txt){
         qlog(txt);
     });
 
@@ -1867,7 +1867,6 @@ void wid_test::test_25(QWidget *parent)
 
     //==
     qweb_client *wc = new qweb_client(this);
-    qweb_download_icon *wcf = new qweb_download_icon(this);
 
     wid_friend_list *wid = new wid_friend_list(this);
     wid->set_history_db(wc->get_db());
@@ -1904,19 +1903,16 @@ void wid_test::test_25(QWidget *parent)
         vlogfaile(ok,"sn_send_msg failed");
     });
     connect(wid,&wid_friend_list::sn_download_icon,this,[=](int64 account){
-        bool ok = wcf->download_icon_ac(account);
-        vlogfaile(ok,"sn_down_icon failed");
+        auto fn_icon = [=](bool ok,int64 account,string save_path){
+            if(ok) wid->update_ac_icon(account,stoqs(save_path));
+        };
+        qweb_ac_download *wcf = new qweb_ac_download(this);
+        wcf->download_icon_ac(account,fn_icon);
+        wcf->open();
     });
+
 
     //==
-    connect(wcf,&qweb_download_icon::sn_download_icon,this,[=](int64 account,string path){
-        wid->update_ac_icon(account,stoqs(path));
-        vlogd($(path));
-    });
-
-
-
-    wcf->open();
     wc->open();
 }
 
@@ -2049,7 +2045,6 @@ void wid_test::test_27(QWidget *parent)
 
     wfs->open();
     th->open();
-
 }
 
 

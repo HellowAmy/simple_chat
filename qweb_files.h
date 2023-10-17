@@ -103,108 +103,68 @@ protected:
 };
 
 
-
 //!
 //! 类说明：下载头像
 //!
-class qweb_download_icon : public qweb_files
+class qweb_ac_download : public qweb_files
 {
-    Q_OBJECT
 public:
-    struct ct_data
+    int64 _account;
+    string _save_path;
+    std::function<void(bool ok,int64 account,string save_path)> _fn_download_cb = nullptr;
+
+    explicit qweb_ac_download(QObject *parent = nullptr)
     {
-        int64 id;
-        int64 account;
-        string abs_path;
-    };
-
-signals:
-    void sn_download_icon(int64 account,string path);
-    void sn_upload_icon(int64 account,string path);
-
-public:
-    explicit qweb_download_icon(QObject *parent = nullptr)
-    {
-
-        connect(this,&qweb_download_icon::sn_create_download,[=](bool ok,int64 id,const string &abs_path){
-            if(ok)
-            {
-                for(auto &a:_vec_download)
-                {
-                    if(a.abs_path == abs_path)
-                    {
-                        a.id = id;
-                        break;
-                    }
-                }
-            }
+        connect(this,&qweb_ac_download::sn_open,[=](){
+            bool ok = download_icon(_account,_save_path);
+            if(ok == false) { if(_fn_download_cb) _fn_download_cb(ok,_account,_save_path); }
         });
 
-        connect(this,&qweb_download_icon::sn_finish_download,[=](bool ok,int64 id){
-            for(auto it = _vec_download.begin();it != _vec_download.end();it++)
-            {
-                if(it->id == id)
-                {
-                    if(ok) emit sn_download_icon(it->account,it->abs_path);
-                    _vec_download.erase(it);
-                    break;
-                }
-            }
-        });
-
-        connect(this,&qweb_download_icon::sn_create_upload,[=](bool ok,int64 id,const string &abs_path){
-            if(ok)
-            {
-                for(auto &a:_vec_upload)
-                {
-                    if(a.abs_path == abs_path)
-                    {
-                        a.id = id;
-                        break;
-                    }
-                }
-            }
-        });
-
-        connect(this,&qweb_download_icon::sn_finish_upload,[=](bool ok,int64 id){
-            for(auto it = _vec_upload.begin();it != _vec_upload.end();it++)
-            {
-                if(it->id == id)
-                {
-                    if(ok) emit sn_upload_icon(it->account,it->abs_path);
-                    _vec_upload.erase(it);
-                    break;
-                }
-            }
+        connect(this,&qweb_ac_download::sn_finish_download,[=](bool ok,int64 id){
+            if(_fn_download_cb) _fn_download_cb(ok,_account,_save_path);
+            this->close();
         });
     }
 
-    bool download_icon_ac(int64 account)
+    void download_icon_ac(int64 account,
+            std::function<void(bool ok,int64 account,string save_path)> fn_download_cb)
     {
-        string path;
-        bool ok = download_icon(account,path);
-        if(ok)
-        {
-            ct_data ct{0,account,path};
-            _vec_download.push_back(ct);
-        }
-        return ok;
+        _account = account;
+        _fn_download_cb = fn_download_cb;
     }
-
-    bool upload_icon_ac(const string &path,int64 account)
-    {
-        bool ok = upload_icon(path,account);
-        if(ok)
-        {
-            ct_data ct{0,account,path};
-            _vec_upload.push_back(ct);
-        }
-        return ok;
-    }
-
-protected:
-    vector<ct_data> _vec_download;
-    vector<ct_data> _vec_upload;
 };
+
+//!
+//! 类说明：上传头像
+//!
+class qweb_ac_upload : public qweb_files
+{
+public:
+    int64 _account;
+    string _abs_path;
+    std::function<void(bool ok,int64 account,string save_path)> _fn_upload_cb = nullptr;
+
+    explicit qweb_ac_upload(QObject *parent = nullptr)
+    {
+        connect(this,&qweb_ac_download::sn_open,[=](){
+            bool ok = upload_icon(_abs_path,_account);
+            if(ok == false) { if(_fn_upload_cb) _fn_upload_cb(ok,_account,_abs_path); }
+        });
+
+        connect(this,&qweb_ac_download::sn_finish_download,[=](bool ok,int64 id){
+            if(_fn_upload_cb) _fn_upload_cb(ok,_account,_abs_path);
+            this->close();
+        });
+    }
+
+    void upload_icon_ac(int64 account,string abs_path,
+                          std::function<void(bool ok,int64 account,string save_path)> fn_upload_cb)
+    {
+        _account = account;
+        _abs_path = abs_path;
+        _fn_upload_cb = fn_upload_cb;
+    }
+};
+
 
 #endif // QWEB_FILES_H

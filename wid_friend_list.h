@@ -60,7 +60,7 @@ private:
     QString _path_temp;             //临时路径
     QString _path_icon;             //头像路径
     QWidget *_wid_chat;             //聊天区域
-    QWidget *_wid_setting;          //聊天区域
+    QWidget *_wid_setting;          //设置区域
     ct_friend *_show_friend;        //当前显示的好友窗口
     qarea_wid *_wid_area;           //好友列表滑动显示
     sqlite_history *_db_history;    //历史记录

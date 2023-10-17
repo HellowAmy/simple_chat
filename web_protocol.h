@@ -358,7 +358,7 @@ CS_MAKE_TYPE(ac_info_all_back,_sc_,
 //!     uint account        账号
 //!     bool ok             确认
 //!
-//! （ uint 类型等于-1时，不修改，string 类型为空时，不修改 ）
+//! （ uint 类型等于 -1 时，不修改，string 类型为空时，不修改 ）
 //!
 CS_MAKE_TYPE(ac_update_info,_cs_,
              CS_ARGV( CS_1(int64,account),CS_1(int64,phone),CS_1(int64,age),CS_1(int64,sex),CS_1(string,nickname),CS_1(string,location),CS_1(string,icon)  ),

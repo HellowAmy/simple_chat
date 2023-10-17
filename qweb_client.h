@@ -69,6 +69,14 @@ public:
     //!
     bool ask_update_info(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
 
+    //!
+    //! 修改头像：
+    //!     1.提供账号与头像，上传文件服务器
+    //!     2.文件上传完成，提交头像更新记录
+    //!
+    bool ask_update_icon(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
+
+
     int64 is_online();
     sqlite_history* get_db();
 

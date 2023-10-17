@@ -257,8 +257,7 @@ void qweb_files::task_files_finish_download_back(const string &sjson)
 void qweb_files::sl_open()
 {
     bool ok = _fs_swap.add_id_channel(get_id_channel());
-
-    vlogif(ok,$(ok) $(get_id_channel()));
+    vlogfaile(ok,"add_id_channel failed");
     emit sn_open();
 }
 
@@ -305,6 +304,5 @@ void qweb_files::sl_message(const string &msg)
 void qweb_files::sl_close()
 {
     _fs_swap.remove_id_channel(get_id_channel());
-
     emit sn_close();
 }

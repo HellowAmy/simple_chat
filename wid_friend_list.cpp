@@ -10,36 +10,29 @@ wid_friend_list::wid_friend_list(QWidget *parent)
     QSize max_area = QSize(240,350);
     QSize max_info = QSize(240,140);
 
-
     _space = 5;
     _size_icon = QSize(240 - _space*3,40);
     _show_friend = nullptr;
     _path_temp = "../temp_file/";
     _path_icon = "../data/head_icon/";
-//    _icon_default = "../data/head_icon/icon_default";
     this->resize(max_size);
 
+    //好友聊天
     _wid_chat = new QWidget(this);
     _wid_chat->resize(max_show);
     _wid_chat->show();
 
+    //好友信息
     _wid_info = new wid_friend_info(this);
     _wid_info->resize(max_info);
-    _wid_info->set_extend({
-        "搜索好友",
-        "添加好友",
-        "分组管理",
-        "切换账号",
-        "设置",
-        "退出"
-    });
 
-
+    //好友列表
     qframe_line *wid = new qframe_line(this);
     _wid_area = new qarea_wid(wid);
     _wid_area->init_size(wid->calc_size(max_area,_space));
     wid->resize_center(_wid_area,max_area,_space);
 
+    //布局对齐
     {
         qmove_pos move;
         move.add_wid(_wid_info);
@@ -53,38 +46,25 @@ wid_friend_list::wid_friend_list(QWidget *parent)
         move.move_x(QPoint(0,0),_space*2);
     }
 
+    //添加设置
     _wid_setting = new QWidget(this);
     _wid_setting->move(_wid_chat->pos());
     _wid_setting->resize(_wid_chat->size());
     _wid_setting->hide();
-    _wid_info->get_extend_wid()->setParent(_wid_setting);
+    _wid_info->set_extend_wid(_wid_setting,_wid_setting->size(),QPoint(0,0));
 
-    connect(_wid_info,&wid_friend_info::sn_click_extend,this,[=](bool extend,QString tips){
-        auto fn_show_wid = [=](){
-            if(_wid_info->get_extend_wid()->isHidden() == true)
-            {
-                _wid_setting->hide();
-                _wid_chat->show();
-            }
-            else
-            {
-                _wid_setting->show();
-                _wid_chat->hide();
-            }
-        };
-
-        if(extend)
+    //设置与聊天窗口切换
+    connect(_wid_info,&wid_friend_info::sn_show_extend,this,[=](bool show){
+        if(show)
         {
-            _wid_setting->show();
             _wid_chat->hide();
-            fn_show_wid();
+            _wid_setting->show();
         }
         else
         {
-            qlog("<<"<<tips);
-//            qDebug<<"<<"<<tips;
+            _wid_chat->show();
+            _wid_setting->hide();
         }
-
     });
 
 
@@ -94,8 +74,6 @@ wid_friend_list::wid_friend_list(QWidget *parent)
         //读取历史记录--未读
         read_friend_history(account,std::bind(&sqlite_history::select_non_read,_db_history,_1,_2));
     });
-
-
 }
 
 
@@ -126,7 +104,7 @@ void wid_friend_list::init_login(int64 account,QString nickname, QString icon)
     if(files_info::is_exists(qstos(icon))) { _wid_info->set_icon(icon); }
     else { emit sn_download_icon(_account); }
 
-    _wid_info->update_info();
+    _wid_info->init_info();
 }
 
 void wid_friend_list::set_history_db(sqlite_history *db)

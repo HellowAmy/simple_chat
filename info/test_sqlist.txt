@@ -117,20 +117,10 @@ SELECT * FROM ac_friends;
 SELECT * FROM ac_info;
 SELECT * FROM ac_passwd;
 
-SELECT * FROM swap_cache;
-
-
-SELECT * FROM history_987123;
-
-SELECT * FROM history_987444 WHERE non_read = 1;
-
 SELECT * FROM history_798315362;
-
-SELECT * FROM history_987123;
 
 796304805  11012237  31   0    潘寒                     zhongg    icon_default.png
 798315362  11012215  9    0    史强                     zhongg    icon_default.png
-
 
 //插入好友
 INSERT INTO ac_friends (account, friends) VALUES
@@ -146,21 +136,28 @@ INSERT INTO ac_friends (account, friends) VALUES
     (798315362, 535181553),
     (798315362, 607037441);
 
+//修改头像
+UPDATE ac_info
+SET icon = 'icon_798315362'
+WHERE account = 523892629;
+
+//修改头像
+UPDATE ac_info
+SET icon = 'icon_default'
+
+
 //好友昵称查询
 SELECT ac_friends.account, ac_friends.friends, ac_info.nickname, ac_info.icon
 FROM ac_friends
 JOIN ac_info ON ac_friends.friends = ac_info.account
 WHERE ac_friends.account = 798315362;
 
-//
-UPDATE ac_info SET icon = 'icon_796304805' WHERE account = 796304805;
-UPDATE ac_info SET icon = 'icon_default';	
+//账号查询信息
+SELECT ac_info.account, ac_info.nickname, ac_info.location, ac_info.icon
+FROM ac_info
+JOIN ac_passwd ON ac_info.account = ac_passwd.account
+WHERE ac_passwd.account = 607037441;
 
-SELECT * FROM ac_friends WHERE account = 798315362;
-SELECT * FROM ac_friends WHERE friends = 798315362;
-
-SELECT * FROM ac_friends WHERE account = 100000003;
-SELECT * FROM ac_friends WHERE friends = 100000003;
 
 
 

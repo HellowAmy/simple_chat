@@ -16,6 +16,7 @@ wid_friend_list::wid_friend_list(QWidget *parent)
     _show_friend = nullptr;
     _path_temp = "../temp_file/";
     _path_icon = "../data/head_icon/";
+//    _icon_default = "../data/head_icon/icon_default";
     this->resize(max_size);
 
     _wid_chat = new QWidget(this);
@@ -90,35 +91,41 @@ wid_friend_list::wid_friend_list(QWidget *parent)
     //接收网络消息
     connect(this,&wid_friend_list::sn_update_msg,this,[=](int64 account){
 
-        auto it = get_friend(account);
-        if(it != nullptr)
-        {
-            //读取历史记录
-            vector<tuple<int64, int64, int64, string, string, string> > vec_line;
-            if(_db_history->select_non_read(account,vec_line))
-            {
-                //显示信息到屏幕
-                show_msg_history(it,vec_line);
-
-                //去除未读
-                for(auto a:vec_line)
-                {
-                    int64 send_time = std::get<0>(a);
-                    if(_db_history->update_non_read(account,send_time,0) == false)
-                    { vlogw("update_non_read failed"); }
-                }
-            }
-        }
+        //读取历史记录--未读
+        read_friend_history(account,std::bind(&sqlite_history::select_non_read,_db_history,_1,_2));
     });
 
 
 }
 
-void wid_friend_list::init_login(QString nickname, QString icon)
+
+void wid_friend_list::update_ac_icon(int64 account,QString path)
 {
+    if(account == _account)
+    {
+        _wid_info->set_icon(path);
+        _wid_info->update_info();
+    }
+    else
+    {
+        auto it = _map_friends.find(account);
+        if(it != _map_friends.end())
+        {
+            it->second->butt->set_icon(path);
+            it->second->butt->update_butt();
+        }
+    }
+}
+
+void wid_friend_list::init_login(int64 account,QString nickname, QString icon)
+{
+    _account = account;
     _icon = _path_icon + icon;
-    _wid_info->set_icon(_icon);
     _wid_info->set_name(nickname);
+
+    if(files_info::is_exists(qstos(icon))) { _wid_info->set_icon(icon); }
+    else { emit sn_download_icon(_account); }
+
     _wid_info->update_info();
 }
 
@@ -127,64 +134,62 @@ void wid_friend_list::set_history_db(sqlite_history *db)
     _db_history = db;
 }
 
-void wid_friend_list::set_icon(QString icon)
-{
-    _icon = icon;
-}
-
-void wid_friend_list::add_friend(const ct_info &info)
+void wid_friend_list::add_friend(ct_friend ct)
 {
     //按钮生成
+    QString path = _path_icon + stoqs(ct.icon);
     wid_friend_butt *butt = new wid_friend_butt(_wid_area);
-    butt->set_info(_path_icon + info.icon,info.name);
+
+    //设置头像,不存在则下载头像
+    if(files_info::is_exists(qstos(path))) { butt->set_icon(path); }
+    else { emit sn_download_icon(ct.account); }
+
+    butt->set_name(stoqs(ct.name));
     butt->init_size(_size_icon);
     _wid_area->add_wid(butt,_space);
 
     //根据是否为在线状态，标记颜色
-    ch_connect_col(butt,info.connect);
+    ch_connect_col(butt,ct.online);
 
     //组合按钮与聊天框
-    std::shared_ptr<ct_friend> sp_friend = std::make_shared<ct_friend>();
-    sp_friend->info = info;
+    std::shared_ptr<ct_friend> sp_friend = std::make_shared<ct_friend>(ct);
     sp_friend->butt = butt;
     sp_friend->chat = nullptr;
-    _map_friends.emplace(info.id,sp_friend);
+    _map_friends.emplace(ct.account,sp_friend);
 
     //按钮信号槽连接聊天框
     connect(sp_friend->butt->get_butt(),&qbutt_line::sn_clicked,this,[=](){
 
-        make_chat(sp_friend.get()); //首次进入时生成聊天窗口
+        //首次进入时生成聊天窗口
+        make_chat(sp_friend.get());
 
-        ch_keep_col(sp_friend->butt,sp_friend->info.connect); //点击时保持按钮选中
+        //点击时保持按钮选中
+        ch_keep_col(sp_friend->butt,sp_friend->online);
 
-        update_show_friend(sp_friend.get()); //更新聊天窗口句柄，取消上一个窗口选中状态颜色
+        //更新聊天窗口句柄，取消上一个窗口选中状态颜色
+        update_show_friend(sp_friend.get());
     });
 }
 
-void wid_friend_list::add_recv_msg(const ct_swap_msg &ct)
+void wid_friend_list::add_recv_msg(ct_swap_msg ct)
 {
+    //更新当前显示信息
     int64 account = ct.source;
-    bool ok = _db_history->insert_history(account,{ct.time_to,ct.time_to,1,qstos(ct.type),"AL",qstos(ct.content)});
-    if(ok)
+    auto it = get_friend(account);
+    if(it != nullptr)
     {
-        auto it = get_friend(account);
-        if(it != nullptr)
-        {
-            if(it->chat != nullptr && it == _show_friend)
-            { emit sn_update_msg(account); }
-        }
+        if(it->chat != nullptr && it == _show_friend)
+        { emit sn_update_msg(account); }
     }
-    else vlogw("insert history failed");
 }
 
-void wid_friend_list::update_connect(long long id, bool connect)
+void wid_friend_list::update_connect(int64 account, bool online)
 {
-    auto it =_map_friends.find(id);
+    auto it =_map_friends.find(account);
     if(it != _map_friends.end())
     {
-        ct_friend *ct = it->second.get();
-        ct->info.connect = connect;
-        ch_connect_col(ct->butt,connect);
+        it->second->online = online;
+        ch_connect_col(it->second->butt,online);
     }
 }
 
@@ -194,10 +199,10 @@ void wid_friend_list::ch_connect_col(wid_friend_butt *butt, bool connect)
     else butt->get_frame()->set_col(Qt::darkRed);
 }
 
-void wid_friend_list::ch_keep_col(wid_friend_butt *butt, bool connect)
+void wid_friend_list::ch_keep_col(wid_friend_butt *butt, bool online)
 {
     butt->get_butt()->keep_status(true);
-    if(connect) butt->get_butt()->set_col(Qt::darkGreen);
+    if(online) butt->get_butt()->set_col(Qt::darkGreen);
     else butt->get_butt()->set_col(Qt::darkRed);
 }
 
@@ -214,63 +219,37 @@ void wid_friend_list::update_show_friend(ct_friend *ct)
     }
     _show_friend = ct;
     _show_friend->chat->show();
-
-    emit sn_update_msg(ct->info.id);
+    show_bottom_bar(); //底部回滚
 }
 
 void wid_friend_list::make_chat(ct_friend *ct)
 {
     if(ct->chat == nullptr)
     {
+        //生成聊天窗口
+        QString path = _path_icon + stoqs(ct->icon);
         wid_chat *chat = new wid_chat(_wid_chat);
-        chat->get_input()->set_icon(_path_icon + ct->info.icon,_icon);
+        chat->get_input()->set_icon(path,_icon);
         ct->chat = chat;
 
-
-        //创建数据库表
-        int64 account = ct->info.id;
-        if(_db_history->create_history(account) == false)
-        { vlogw("create history failed"); }
-
-
-        //读取历史记录
-        auto it = get_friend(account);
-        if(it != nullptr)
-        {
-            vector<tuple<int64, int64, int64, string, string, string> > vec_line;
-            if(_db_history->select_history(account,vec_line))
-            {
-                vlogi($(vec_line.size()));
-
-                //显示信息到屏幕
-                show_msg_history(it,vec_line);
-
-                //去除未读
-                for(auto a:vec_line)
-                {
-                    int64 send_time = std::get<0>(a);
-                    if(_db_history->update_non_read(account,send_time,0) == false)
-                    { vlogw("update_non_read failed"); }
-                }
-            }
-            else vlogw("select_history failed");
-        }
-        else vlogw("get_friend not find");
-
+        //读取历史记录--全部
+        read_friend_history(ct->account,std::bind(&sqlite_history::select_history,_db_history,_1,_2,""));
 
         //发送到到网络转发端,附带账号与时间用于定位回馈确认消息
-        connect(ct->chat->get_input(),&wid_chat_input::sn_send_msg,this,[=](wid_message *msg){
-
-            //发送到到网络
-            ct_msg cts;
-            cts.id = ct->info.id;
-            cts.time = msg->get_info().time;
-            cts.msg = msg;
+        connect(ct->chat->get_input(),&wid_chat_input::sn_send_msg,this,[=](ct_msg_type msg){
+            //发送到网络
+            ct_swap_msg cts;
+            cts.target  = ct->account;
+            cts.source  = _account;
+            cts.time_to = msg.time;
+            cts.types   = msg.types;
+            cts.content = msg.content;
             emit sn_send_msg(cts);
+
+            //回滚到底部
+            show_bottom_bar();
         });
     }
-
-
 }
 
 wid_friend_list::ct_friend *wid_friend_list::get_friend(int64 account)
@@ -280,30 +259,45 @@ wid_friend_list::ct_friend *wid_friend_list::get_friend(int64 account)
     return nullptr;
 }
 
-void wid_friend_list::show_msg_history(ct_friend *it,const vector<tuple<int64, int64, int64, string, string, string>> &vec_line)
+void wid_friend_list::show_msg_history(ct_friend *it,ct_msg_type ct)
 {
-    for(auto a:vec_line)
+    auto msg = it->chat->get_input()->make_msg(ct);
+    if(msg) it->chat->get_output()->add_message(msg);
+}
+
+void wid_friend_list::show_bottom_bar()
+{
+    _show_friend->chat->get_output()->get_area()->show_bottom_bar();
+}
+
+void wid_friend_list::read_friend_history
+    (int64 account, std::function<bool (int64, vector<tuple<int64, int64, int64, string, string, string> > &)> fn_history_cb)
+{
+    auto it = get_friend(account);
+    if(it != nullptr)
     {
-        Qt::AlignmentFlag flg;
-        string types = std::get<3>(a);
-        string object = std::get<4>(a);
-        string content = std::get<5>(a);
-        wid_message *msg = nullptr;
+        //读取历史记录
+        vector<tuple<int64, int64, int64, string, string, string> > vec_line;
+        if(fn_history_cb(account,vec_line))
+        {
+            //显示信息到屏幕
+            for(auto a:vec_line)
+            {
+                ct_msg_type ct{std::get<0>(a),std::get<3>(a),std::get<4>(a),std::get<5>(a)};
+                show_msg_history(it,ct);
+            }
 
-        //对齐方式
-        if(object == "AL") flg = Qt::AlignLeft;
-        else if(object == "AR") flg = Qt::AlignRight;
-        else if(object == "Hint") flg = Qt::AlignCenter;
-        else if(object == "Sys") flg = Qt::AlignCenter;
-
-        //消息类型
-        if(types == "Text") msg = it->chat->get_input()->make_text(stoqs(content),flg);
-        else if(types == "Img") msg = it->chat->get_input()->make_img(stoqs(content),flg);
-        else if(types == "Hint") msg = it->chat->get_input()->make_hint(stoqs(content));
-
-        //加入屏幕
-        if(msg) it->chat->get_output()->add_message(msg);
+            //去除未读
+            for(auto a:vec_line)
+            {
+                int64 send_time = std::get<0>(a);
+                if(_db_history->update_non_read(account,send_time,0) == false)
+                { vlogw("update_non_read failed"); }
+            }
+        }
+        else vlogw("read history failed" $(account));
     }
+    else vlogw("get_friend not find" $(account));
 }
 
 

@@ -107,7 +107,7 @@ bool sqlite_history::create_history(int64 ac_friend)
     string sql (R"(
         CREATE TABLE IF NOT EXISTS {0} (
             {1} INTEGER PRIMARY KEY,
-            {2} INTEGER CHECK (feed_back >= send_time),
+            {2} INTEGER,
             {3} INTEGER CHECK (non_read >= 0 AND non_read <= 1),
             {4} TEXT,
             {5} TEXT,

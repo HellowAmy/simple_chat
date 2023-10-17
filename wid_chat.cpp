@@ -5,10 +5,10 @@
 wid_chat::wid_chat(QWidget *parent)
     : QWidget(parent)
 {
-    int space = 10;
-    int max_width = 500;
-    int height_output = 330;
-    int height_input = 160;
+    int space = _fsize_ioput_.space_chat;
+    int max_width = _fsize_ioput_.max_width;
+    int height_output = _fsize_ioput_.height_output;
+    int height_input = _fsize_ioput_.height_input;
 
     _output = new wid_chat_output(this);
     _output->init_size(QSize(max_width,height_output));
@@ -23,13 +23,14 @@ wid_chat::wid_chat(QWidget *parent)
         move.move_y(QPoint(0,0),space);
     }
 
-    connect(_input,&wid_chat_input::sn_send_msg,this,[=](wid_message *msg){
-        qlog(msg->get_info().type);
-        qlog(msg->get_info().align);
-        qlog(msg->get_info().time);
-        qlog(msg->get_info().content);
+    connect(_input,&wid_chat_input::sn_send_msg,this,[=](ct_msg_type msg){
+
+        qlog(msg.time);
+        qlog(msg.types);
+        qlog(msg.object);
+        qlog(msg.content);
         qlog("\n");
-        _output->add_message(msg);
+        _output->add_message(_input->make_msg(msg));
     });
 }
 
@@ -42,3 +43,4 @@ wid_chat_output *wid_chat::get_output()
 {
     return _output;
 }
+

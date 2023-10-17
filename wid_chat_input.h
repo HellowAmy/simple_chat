@@ -1,13 +1,20 @@
 #ifndef WID_CHAT_INPUT_H
 #define WID_CHAT_INPUT_H
 
+#include <QDateTime>
 #include <QImageReader>
+#include <string>
 
 #include "qedit_txt.h"
 #include "qframe_line.h"
 #include "qbutt_line.h"
 #include "qmove_pos.h"
 #include "wid_message.h"
+#include "typedef_struct.h"
+
+typedef long long int64;
+using std::string;
+using namespace typedef_struct;
 
 //!
 //! 类说明： 聊天输入框（文字输入与功能）
@@ -18,19 +25,14 @@ class wid_chat_input : public qframe_line
 public:
     explicit wid_chat_input(QWidget *parent = nullptr);
 
+    int64 get_time_now();
+
     void init_size(QSize size);
     void set_icon(QString left,QString right);  //设置头像
-
-    wid_message* make_hint(QString txt,long long date = 0);         //提示信息
-    wid_message* make_text(QString txt,Qt::AlignmentFlag flg);      //生成文字
-    wid_message* make_img(QString file,Qt::AlignmentFlag flg);      //生成图片
-
-    //生成消息
-    wid_message* make_msg(wid_msg_abs *msg,Qt::AlignmentFlag flg,
-                          long long date = QDateTime::currentMSecsSinceEpoch());
+    wid_message* make_msg(ct_msg_type msg);     //生成消息
 
 signals:
-    void sn_send_msg(wid_message *msg); //发送消息
+    void sn_send_msg(ct_msg_type msg); //发送消息
 
 private:
     QString _icon_left;     //对方头像

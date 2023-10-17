@@ -20,7 +20,7 @@ public:
     void add_width_wid(int width);          //增加显示区域--宽度
     void add_height_wid(int height);        //增加显示区域--高度
     void show_bottom_bar();                 //滚到底部
-    bool check_bottom_bar();
+    bool check_bottom_bar();                //检查是否为底部
     QWidget* get_area();                    //获取显示区域
 
 private:

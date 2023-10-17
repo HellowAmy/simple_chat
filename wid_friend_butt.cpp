@@ -6,6 +6,16 @@ wid_friend_butt::wid_friend_butt(QWidget *parent)
     _space = 5;
 }
 
+void wid_friend_butt::set_icon(QString icon)
+{
+    _icon = icon;
+}
+
+void wid_friend_butt::set_name(QString name)
+{
+    _name = name;
+}
+
 void wid_friend_butt::set_info(QString icon, QString name)
 {
     _icon = icon;
@@ -16,11 +26,11 @@ void wid_friend_butt::init_size(QSize size)
 {
     QSize size_icon(size.height(),size.height());
     _wid_icon = new qframe_line(this);
-    qlab_img *img = new qlab_img(_wid_icon);
-    img->set_img(_icon);
-    img->set_keep(false,QSize(_wid_icon->calc_size(size_icon,5)));
-    img->update_img();
-    _wid_icon->resize_center(img,size_icon,5);
+    _img = new qlab_img(_wid_icon);
+    _img->set_img(_icon);
+    _img->set_keep(false,QSize(_wid_icon->calc_size(size_icon,5)));
+    _img->update_img();
+    _wid_icon->resize_center(_img,size_icon,5);
 
     QSize size_butt = size - size_icon ;
     _wid_butt = new qbutt_line(this);
@@ -35,6 +45,13 @@ void wid_friend_butt::init_size(QSize size)
         move.add_wid(_wid_butt);
         move.move_x(QPoint(0,0),_space);
     }
+}
+
+void wid_friend_butt::update_butt()
+{
+    _img->set_img(_icon);
+    _img->update_img();
+    _img->update();
 }
 
 qframe_line *wid_friend_butt::get_frame()

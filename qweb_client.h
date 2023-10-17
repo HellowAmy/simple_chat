@@ -14,13 +14,19 @@
 #include "web_protocol.h"
 #include "inter_client.h"
 #include "qweb_files.h"
+#include "sqlite_op.h"
+#include "typedef_struct.h"
 
-
+using namespace typedef_struct;
 using namespace protocol;
 using std::function;
 using std::string;
 using hv::WebSocketClient;
 
+
+//!
+//! 类说明： 网络连接类，提供登陆注册等与服务器对接功能
+//!
 class qweb_client : public QObject
 {
     Q_OBJECT
@@ -29,6 +35,7 @@ public:
     ~qweb_client();
 
     int open(string ip = CS_SERVER_ADDRESS,int port = CS_PORT_TASKS,string txt = protocol::_head_);
+    void close();
 
     //!
     //! 登陆逻辑：
@@ -40,7 +47,6 @@ public:
     //!
     bool ask_login(int64 account,string passwd);
 
-
     //!
     //! 注册逻辑：
     //!     1.提交信息
@@ -48,39 +54,41 @@ public:
     //!
     bool ask_register(int64 phone,int64 age,int64 sex,string nickname,string location,string passwd);
 
-
-    //!     uint target         目标账号
-    //!     uint source         源址账号
-    //!     uint time_to        发送时间
-    //!     string type         消息类型 [Text,Img,File]
-    //!     string content      消息内容
-
     //!
     //! 交换逻辑：
     //!     1.发送信息，完成交换处理
     //!     2.服务器转发信息       [服务器处理]
     //!     3.对方账号接收信息      [对方处理]
-    bool ask_swap_msg(int64 target,int64 time_to,string type,string content);
+    bool ask_swap_msg(int64 target,int64 source,int64 time_to,string type,string content);
+    bool ask_swap_msg_back(int64 target,int64 source,int64 time_to,int64 time_ok);
 
+    //!
+    //! 修改信息：
+    //!     1.提供账号信息字段
+    //!     2.服务器完成修改并下发    [服务器处理]
+    //!
+    bool ask_update_info(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
 
-    int64 get_account();
+    int64 is_online();
+    sqlite_history* get_db();
 
 signals:
     void sn_open();
     void sn_close();
-    void sn_ac_info(string nickname,string icon);
+    void sn_ac_info(int64 account,string nickname,string icon);
     void sn_ac_status(int64 ac_friends,string nickname,string icon,bool online);
     void sn_ac_register(int64 account,string passwd,bool ok);
-
+    void sn_ac_info_all(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
+    void sn_update_info(bool ok);
     void sn_recv_msg(int64 target, int64 source,int64 time_to, string type, string content);
 
 
 protected:
 
 private:
-    bool _is_online;    //是否连接
-    int64 _account;     //保存账号
-    inter_client _wc;   //网络链接
+    bool _is_online;        //是否连接
+    inter_client _wc;       //网络链接
+    sqlite_history _db;     //历史记录
 
     std::map<string,function<void(const string&)>> _map_fn;
 
@@ -91,6 +99,8 @@ private:
     void task_ac_login_back(const string &sjson);
     void task_ac_register_back(const string &sjson);
     void task_ac_info_back(const string &sjson);
+    void task_ac_info_all_back(const string &sjson);
+    void task_ac_update_info_back(const string &sjson);
     void task_friends_list_back(const string &sjson);
     void task_friends_status_back(const string &sjson);
     void task_swap_cache_back(const string &sjson);

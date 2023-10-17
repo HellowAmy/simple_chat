@@ -12,6 +12,7 @@
 #include "include/sqlist3/sqlite3.h"
 //#include "../include/sqlite3/sqlite3.h"
 
+//#include "Tvlog.h"
 //#include "../util/Tvlog.h"
 
 typedef const std::string& cstr;
@@ -21,7 +22,9 @@ using std::map;
 using std::vector;
 using std::tuple;
 
-//
+//!
+//! 类说明： 数据库基础操作
+//!
 class sqlite_base
 {
 public:
@@ -143,6 +146,9 @@ protected:
 };
 
 
+//!
+//! 类说明： 好友聊天历史记录操作
+//!
 class sqlite_history : public sqlite_base
 {
 public:

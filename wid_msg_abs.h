@@ -14,17 +14,10 @@ class wid_msg_abs : public qframe_line
 {
     Q_OBJECT
 public:
-    explicit wid_msg_abs(QWidget *parent = nullptr);
-    virtual void update_msg(int max_width) = 0; //更新大小
-    QString get_type();     //显示类型
-    QString get_content();  //保存内容
-    QWidget* get_area();    //显示区域
+    virtual void update_msg(QString content,int max_width,int padding) = 0;
 
 protected:
-    int _padding;       //内容边距
-    QString _type;      //显示类型
-    QString _content;   //保存内容
-    QWidget *_wid_area; //显示区域
+    int _padding = 5;       //内容边距
 };
 
 //!
@@ -34,9 +27,16 @@ class wid_msg_text : public wid_msg_abs
 {
     Q_OBJECT
 public:
-    explicit wid_msg_text(QString txt,QWidget *parent = nullptr);
-    void update_msg(int max_width) override;
-    qlab_wrap *_lab;
+    void update_msg(QString content,int max_width,int padding) override
+    {
+        qlab_wrap *_lab = new qlab_wrap(this);
+        _lab->set_text(content);
+
+        int size_wid = max_width - padding*2;
+        _lab->set_width_max(size_wid);
+        _lab->update_text();
+        this->move_center(_lab,padding);
+    }
 };
 
 //!
@@ -46,9 +46,19 @@ class wid_msg_img : public wid_msg_abs
 {
     Q_OBJECT
 public:
-    explicit wid_msg_img(QString file,QWidget *parent = nullptr);
-    void update_msg(int max_width) override;
-    qlab_img *_lab;
+    void update_msg(QString content,int max_width,int padding) override
+    {
+        qlab_img *_lab = new qlab_img(this);
+        _lab->set_img(content);
+
+        QPixmap pix(_lab->get_file());
+        int width = pix.width() > max_width ? max_width : pix.width();
+        width -= padding*2;
+
+        _lab->set_keep(true,QSize(width,width));
+        _lab->update_img();
+        this->move_center(_lab,padding);
+    }
 };
 
 //!
@@ -58,9 +68,18 @@ class wid_msg_hint : public wid_msg_abs
 {
     Q_OBJECT
 public:
-    explicit wid_msg_hint(QString hint,QWidget *parent = nullptr);
-    void update_msg(int max_width) override;
-    qlab_wrap *_lab;
+    void update_msg(QString content,int max_width,int padding) override
+    {
+        this->set_frame(false);
+        qlab_wrap *_lab = new qlab_wrap(this);
+        _lab->set_text(content);
+        _lab->set_font(QFont("微软雅黑",10));
+
+        int size_wid = max_width - padding*2;
+        _lab->set_width_max(size_wid);
+        _lab->update_text();
+        this->move_center(_lab,0);
+    }
 };
 
 #endif // WID_MSG_ABS_H

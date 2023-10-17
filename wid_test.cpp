@@ -29,6 +29,7 @@
 
 #include <unistd.h>
 
+#include <QPushButton>
 #include <QTimer>
 #include <QDateTime>
 #include <QLabel>
@@ -89,6 +90,8 @@ wid_test::wid_test(QWidget *parent)
     else if(val == 23)   test_23(parent);   //在线账号
     else if(val == 24)   test_24(parent);   //头像下载
     else if(val == 25)   test_25(parent);   //登陆成功
+    else if(val == 26)   test_26(parent);   //移动测试
+    else if(val == 27)   test_27(parent);   //修改信息
 
 
     vlogd("== end ==");
@@ -100,78 +103,78 @@ wid_test::~wid_test()
 
 void wid_test::test_0(QWidget *parent)
 {
-    QString name =
-R"(
-汪淼
-史强
-常伟思
-丁仪
-杨冬
-魏成
-沙瑞山
-徐冰冰
-林云
-李瑶
-叶文洁
-杨卫宁
-雷志成
-叶哲泰
-邵琳
-叶文雪
-白沐霖
-程丽华
-阮雯
-马钢
-齐猎头
-大凤
-伊文斯
-潘寒
-申玉菲
-拉菲尔
-)";
+//    QString name =
+//R"(
+//汪淼
+//史强
+//常伟思
+//丁仪
+//杨冬
+//魏成
+//沙瑞山
+//徐冰冰
+//林云
+//李瑶
+//叶文洁
+//杨卫宁
+//雷志成
+//叶哲泰
+//邵琳
+//叶文雪
+//白沐霖
+//程丽华
+//阮雯
+//马钢
+//齐猎头
+//大凤
+//伊文斯
+//潘寒
+//申玉菲
+//拉菲尔
+//)";
 
-    QStringList ls = name.split("\n");
-    ls.push_front("这是一个很长很长且没有什么意义的人取的名字");
-    QVector<wid_friend_list::ct_info> vec;
-    for(int i=0;i<ls.size();i++)
-    {
-        if(ls[i] != "")
-        {
-            if(i%4 == 0 && i != 0) vec.push_back({false,i,ls[i],"../pic/two.png"});
-            else vec.push_back({true,i,ls[i],"../pic/one.png"});
-        }
-    }
+//    QStringList ls = name.split("\n");
+//    ls.push_front("这是一个很长很长且没有什么意义的人取的名字");
+//    QVector<wid_friend_list::ct_info> vec;
+//    for(int i=0;i<ls.size();i++)
+//    {
+//        if(ls[i] != "")
+//        {
+//            if(i%4 == 0 && i != 0) vec.push_back({false,i,ls[i],"../pic/two.png"});
+//            else vec.push_back({true,i,ls[i],"../pic/one.png"});
+//        }
+//    }
 
 
-    //== ==
-    wid_friend_list *wid = new wid_friend_list(this);
-    wid->set_icon("../pic/one.png");
+//    //== ==
+//    wid_friend_list *wid = new wid_friend_list(this);
+//    wid->set_icon("../pic/one.png");
 
-    for(auto a:vec)
-    {
-        wid->add_friend(a);
-    }
+//    for(auto a:vec)
+//    {
+//        wid->add_friend(a);
+//    }
 
-    this->resize(wid->size());
-    qlog(wid->size());
+//    this->resize(wid->size());
+//    qlog(wid->size());
 
-    QTimer::singleShot(2000,this,[=](){
-        wid->update_connect(0,false);
-        wid->update_connect(1,false);
-        wid->update_connect(2,false);
-        wid->update_connect(3,false);
-        wid->update_connect(4,false);
-    });
+//    QTimer::singleShot(2000,this,[=](){
+//        wid->update_connect(0,false);
+//        wid->update_connect(1,false);
+//        wid->update_connect(2,false);
+//        wid->update_connect(3,false);
+//        wid->update_connect(4,false);
+//    });
 
-    connect(wid,&wid_friend_list::sn_send_msg,this,[=](wid_friend_list::ct_msg ct){
-        qlog(ct.id);
-        qlog(ct.time);
+//    connect(wid,&wid_friend_list::sn_send_msg,this,[=](wid_friend_list::ct_msg ct){
+//        qlog(ct.id);
+//        qlog(ct.time);
 
-        QDateTime ti;
-        ti.setMSecsSinceEpoch(ct.time);
-        qlog(ti.toString());
-        qlog("\n");
-    });
+//        QDateTime ti;
+//        ti.setMSecsSinceEpoch(ct.time);
+//        qlog(ti.toString());
+//        qlog("\n");
+//    });
 }
 
 void wid_test::test_1(QWidget *parent)
@@ -318,113 +321,113 @@ void wid_test::test_5(QWidget *parent)
 
 void wid_test::test_6(QWidget *parent)
 {
-    this->resize(1200,1000);
-    QWidget *wid_p = new QWidget(this);
-    wid_p->resize(this->size());
-    wid_p->show();
+//    this->resize(1200,1000);
+//    QWidget *wid_p = new QWidget(this);
+//    wid_p->resize(this->size());
+//    wid_p->show();
 
-    QString str_date = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
-    long long date = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    QString txt = "hellow world! you user is python ?";
+//    QString str_date = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
+//    long long date = QDateTime::currentDateTime().toMSecsSinceEpoch();
+//    QString txt = "hellow world! you user is python ?";
 
-    auto fn_msg_text = [=](QPoint pos, QString txt,Qt::AlignmentFlag flg){
-        wid_message *wid = new wid_message;
-        wid->make_msg(new wid_msg_text(txt),"../pic/head.png",date,flg);
-        wid->move(pos);
+//    auto fn_msg_text = [=](QPoint pos, QString txt,Qt::AlignmentFlag flg){
+//        wid_message *wid = new wid_message;
+//        wid->make_msg(new wid_msg_text(txt),"../pic/head.png",date,flg);
+//        wid->move(pos);
 
-        wid->setParent(wid_p);
-        wid->show();
-    };
+//        wid->setParent(wid_p);
+//        wid->show();
+//    };
 
-    auto fn_msg_date = [=](QPoint pos, QString txt,Qt::AlignmentFlag flg){
-        wid_message *wid = new wid_message;
-        wid->make_msg(new wid_msg_hint(txt),"",date,flg);
-        wid->move(pos);
+//    auto fn_msg_date = [=](QPoint pos, QString txt,Qt::AlignmentFlag flg){
+//        wid_message *wid = new wid_message;
+//        wid->make_msg(new wid_msg_hint(txt),"",date,flg);
+//        wid->move(pos);
 
-        wid->setParent(wid_p);
-        wid->show();
-    };
+//        wid->setParent(wid_p);
+//        wid->show();
+//    };
 
-    auto fn_msg_img = [=](QPoint pos, QString txt,Qt::AlignmentFlag flg){
-        wid_message *wid = new wid_message;
-        wid->make_msg(new wid_msg_img(txt),"../pic/send.jpg",date,flg);
-        wid->move(pos);
+//    auto fn_msg_img = [=](QPoint pos, QString txt,Qt::AlignmentFlag flg){
+//        wid_message *wid = new wid_message;
+//        wid->make_msg(new wid_msg_img(txt),"../pic/send.jpg",date,flg);
+//        wid->move(pos);
 
-        wid->setParent(wid_p);
-        wid->show();
-    };
+//        wid->setParent(wid_p);
+//        wid->show();
+//    };
 
-    fn_msg_text({0,0},txt,Qt::AlignRight);
-    fn_msg_text({0,60},txt,Qt::AlignLeft);
-//    fn_msg_text({0,150},txt+txt+txt,Qt::AlignRight);
-//    fn_msg_text({0,250},txt+txt+txt,Qt::AlignLeft);
+//    fn_msg_text({0,0},txt,Qt::AlignRight);
+//    fn_msg_text({0,60},txt,Qt::AlignLeft);
+////    fn_msg_text({0,150},txt+txt+txt,Qt::AlignRight);
+////    fn_msg_text({0,250},txt+txt+txt,Qt::AlignLeft);
 
-//    fn_msg_date({0,350},date,Qt::AlignLeft);
-//    fn_msg_date({0,400},"对方撤回信息",Qt::AlignLeft);
+////    fn_msg_date({0,350},date,Qt::AlignLeft);
+////    fn_msg_date({0,400},"对方撤回信息",Qt::AlignLeft);
 
-//    fn_msg_img({510,0},"../pic/send.jpg",Qt::AlignRight);
-//    fn_msg_img({510,250},"../pic/send.jpg",Qt::AlignLeft);
-//    fn_msg_img({510,500},"../pic/head.png",Qt::AlignRight);
+////    fn_msg_img({510,0},"../pic/send.jpg",Qt::AlignRight);
+////    fn_msg_img({510,250},"../pic/send.jpg",Qt::AlignLeft);
+////    fn_msg_img({510,500},"../pic/head.png",Qt::AlignRight);
 
 
-    QTimer::singleShot(1000,this,[=](){
-        fn_msg_text({0,150},txt+txt+txt,Qt::AlignRight);
-        fn_msg_text({0,250},txt+txt+txt,Qt::AlignLeft);
+//    QTimer::singleShot(1000,this,[=](){
+//        fn_msg_text({0,150},txt+txt+txt,Qt::AlignRight);
+//        fn_msg_text({0,250},txt+txt+txt,Qt::AlignLeft);
 
-        fn_msg_date({0,350},str_date,Qt::AlignLeft);
-        fn_msg_date({0,400},"对方撤回信息",Qt::AlignLeft);
+//        fn_msg_date({0,350},str_date,Qt::AlignLeft);
+//        fn_msg_date({0,400},"对方撤回信息",Qt::AlignLeft);
 
-        fn_msg_img({510,0},"../pic/send.jpg",Qt::AlignRight);
-        fn_msg_img({510,250},"../pic/send.jpg",Qt::AlignLeft);
-        fn_msg_img({510,500},"../pic/head.png",Qt::AlignRight);
-    });
+//        fn_msg_img({510,0},"../pic/send.jpg",Qt::AlignRight);
+//        fn_msg_img({510,250},"../pic/send.jpg",Qt::AlignLeft);
+//        fn_msg_img({510,500},"../pic/head.png",Qt::AlignRight);
+//    });
 
 }
 
 void wid_test::test_7(QWidget *parent)
 {
-    this->resize(1000,500);
+//    this->resize(1000,500);
 
-    QString txt = "hellow world! you user is python ?";
-    QString str_date = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
-    long long date = QDateTime::currentDateTime().toMSecsSinceEpoch();
+//    QString txt = "hellow world! you user is python ?";
+//    QString str_date = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
+//    long long date = QDateTime::currentDateTime().toMSecsSinceEpoch();
 
-    auto fn_msg = [=](wid_msg_abs *msg,Qt::AlignmentFlag flg){
-        msg->show();
-        wid_message *wid = new wid_message;
-        wid->make_msg(msg,"../pic/head.png",date,flg);
-        wid->show();
-        return wid;
-    };
+//    auto fn_msg = [=](wid_msg_abs *msg,Qt::AlignmentFlag flg){
+//        msg->show();
+//        wid_message *wid = new wid_message;
+//        wid->make_msg(msg,"../pic/head.png",date,flg);
+//        wid->show();
+//        return wid;
+//    };
 
-    auto fn_hint = [=](wid_msg_abs *msg,Qt::AlignmentFlag flg){
-        wid_message *wid = new wid_message;
-        wid->make_msg(msg,"",date,flg);
-        return wid;
-    };
+//    auto fn_hint = [=](wid_msg_abs *msg,Qt::AlignmentFlag flg){
+//        wid_message *wid = new wid_message;
+//        wid->make_msg(msg,"",date,flg);
+//        return wid;
+//    };
 
-    wid_chat_output *chat = new wid_chat_output(this);
-    chat->add_message(fn_msg(new wid_msg_text(txt,this),Qt::AlignRight));
-    chat->add_message(fn_msg(new wid_msg_text(txt,this),Qt::AlignLeft));
-    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignRight));
-    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignRight));
-//    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignLeft));
-//    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignLeft));
-//    chat->add_message(fn_msg(new wid_msg_img("../pic/send.jpg"),Qt::AlignRight));
-//    chat->add_message(fn_msg(new wid_msg_img("../pic/send.jpg"),Qt::AlignLeft));
-//    chat->add_message(fn_msg(new wid_msg_img("../pic/head.png"),Qt::AlignRight));
-//    chat->add_message(fn_msg(new wid_msg_img("../pic/head.png"),Qt::AlignLeft));
-    chat->add_message(fn_hint(new wid_msg_hint(str_date),Qt::AlignRight));
-    chat->add_message(fn_hint(new wid_msg_hint("对方撤回消息"),Qt::AlignLeft));
+//    wid_chat_output *chat = new wid_chat_output(this);
+//    chat->add_message(fn_msg(new wid_msg_text(txt,this),Qt::AlignRight));
+//    chat->add_message(fn_msg(new wid_msg_text(txt,this),Qt::AlignLeft));
 //    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignRight));
-//    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignLeft));
+//    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignRight));
+////    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignLeft));
+////    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignLeft));
+////    chat->add_message(fn_msg(new wid_msg_img("../pic/send.jpg"),Qt::AlignRight));
+////    chat->add_message(fn_msg(new wid_msg_img("../pic/send.jpg"),Qt::AlignLeft));
+////    chat->add_message(fn_msg(new wid_msg_img("../pic/head.png"),Qt::AlignRight));
+////    chat->add_message(fn_msg(new wid_msg_img("../pic/head.png"),Qt::AlignLeft));
+//    chat->add_message(fn_hint(new wid_msg_hint(str_date),Qt::AlignRight));
+//    chat->add_message(fn_hint(new wid_msg_hint("对方撤回消息"),Qt::AlignLeft));
+////    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignRight));
+////    chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignLeft));
 
-    QTimer::singleShot(1000,this,[=](){
-        chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignRight));
-    });
+//    QTimer::singleShot(1000,this,[=](){
+//        chat->add_message(fn_msg(new wid_msg_text(txt+txt+txt),Qt::AlignRight));
+//    });
 
-    chat->init_size(QSize(500,500));
-    chat->show();
+//    chat->init_size(QSize(500,500));
+//    chat->show();
 }
 
 void wid_test::test_8(QWidget *parent)
@@ -435,49 +438,49 @@ void wid_test::test_8(QWidget *parent)
 
 void wid_test::test_9(QWidget *parent)
 {
-//    this->resize(1000,500);
+    this->resize(1000,500);
 
     wid_chat *wid = new wid_chat(this);
-    wid->get_input()->set_icon("../pic/two.png","../pic/one.png");
+    wid->get_input()->set_icon("../pic/icon2.jpg","../pic/one.png");
     wid->show();
 
     qlog(wid->size());
     qlog(wid->get_input()->size());
     qlog(wid->get_output()->size());
 
-    QTimer::singleShot(1000,this,[=](){
-        auto input = wid->get_input();
-        emit input->sn_send_msg(input->make_text("123123",Qt::AlignLeft));
-    });
+//    QTimer::singleShot(1000,this,[=](){
+//        auto input = wid->get_input();
+//        emit input->sn_send_msg(input->make_text("123123",Qt::AlignLeft));
+//    });
 
-    QTimer::singleShot(2000,this,[=](){
-        auto input = wid->get_input();
-        emit input->sn_send_msg(input->make_text("123123",Qt::AlignLeft));
-        emit input->sn_send_msg(input->make_text("12312gfasdasfjasdgasd3asdhgfasdasfjasdasdasdasdafgsgsg",Qt::AlignLeft));
-    });
+//    QTimer::singleShot(2000,this,[=](){
+//        auto input = wid->get_input();
+//        emit input->sn_send_msg(input->make_text("123123",Qt::AlignLeft));
+//        emit input->sn_send_msg(input->make_text("12312gfasdasfjasdgasd3asdhgfasdasfjasdasdasdasdafgsgsg",Qt::AlignLeft));
+//    });
 
-    QTimer::singleShot(2000,this,[=](){
-        auto input = wid->get_input();
-        emit input->sn_send_msg(input->make_img("../pic/send.jpg",Qt::AlignLeft));
-    });
+//    QTimer::singleShot(2000,this,[=](){
+//        auto input = wid->get_input();
+//        emit input->sn_send_msg(input->make_img("../pic/send.jpg",Qt::AlignLeft));
+//    });
 
-    QTimer::singleShot(3000,this,[=](){
-        auto input = wid->get_input();
-        emit input->sn_send_msg(input->make_text("123123",Qt::AlignLeft));
-    });
+//    QTimer::singleShot(3000,this,[=](){
+//        auto input = wid->get_input();
+//        emit input->sn_send_msg(input->make_text("123123",Qt::AlignLeft));
+//    });
 
-    QTimer::singleShot(3000,this,[=](){
-        auto input = wid->get_input();
-        emit input->sn_send_msg(input->make_text("3",Qt::AlignLeft));
-    });
+//    QTimer::singleShot(3000,this,[=](){
+//        auto input = wid->get_input();
+//        emit input->sn_send_msg(input->make_text("3",Qt::AlignLeft));
+//    });
 
-    QTimer::singleShot(4000,this,[=](){
-        auto input = wid->get_input();
-        emit input->sn_send_msg(input->make_msg(new wid_msg_hint("退出登陆"),Qt::AlignCenter));
-        emit input->sn_send_msg(input->make_img("../pic/head.png",Qt::AlignLeft));
-        emit input->sn_send_msg(input->make_msg(new wid_msg_hint("对方撤回消息"),Qt::AlignCenter));
-        emit input->sn_send_msg(input->make_text("pic[../pic/head.png]",Qt::AlignLeft));
-    });
+//    QTimer::singleShot(4000,this,[=](){
+//        auto input = wid->get_input();
+//        emit input->sn_send_msg(input->make_msg(new wid_msg_hint("退出登陆"),Qt::AlignCenter));
+//        emit input->sn_send_msg(input->make_img("../pic/head.png",Qt::AlignLeft));
+//        emit input->sn_send_msg(input->make_msg(new wid_msg_hint("对方撤回消息"),Qt::AlignCenter));
+//        emit input->sn_send_msg(input->make_text("pic[../pic/head.png]",Qt::AlignLeft));
+//    });
 }
 
 void wid_test::test_10(QWidget *parent)
@@ -545,20 +548,31 @@ R"(汪淼
 申玉菲
 拉菲尔)";
 
+
+
     QStringList ls = name.split("\n");
     ls.push_front("这是一个很长很长且没有什么意义的人取的名字");
-    QVector<wid_friend_list::ct_info> vec;
+    QVector<wid_friend_list::ct_friend> vec;
     for(int i=0;i<ls.size();i++)
     {
         if(ls[i] != "")
         {
-            if(i%4 == 0 && i != 0) vec.push_back({false,i,ls[i],"../pic/two.png"});
-            else vec.push_back({true,i,ls[i],"../pic/one.png"});
+            if(i%4 == 0 && i != 0) vec.push_back({false,i+100,qstos(ls[i]),"../pic/two.png",nullptr,nullptr});
+            else vec.push_back({true,i,qstos(ls[i]),"../pic/one.png",nullptr,nullptr});
         }
     }
 
     wid_friend_list *wid = new wid_friend_list(this);
-    wid->set_icon("../data/head_icon/icon_796304805");
+
+    shared_ptr<sqlite_history> sp_db_history = std::make_shared<sqlite_history>();
+    sp_db_history->open_history(123456999);
+    wid->set_history_db(sp_db_history.get());
+
+//    wid->set_ac_info(123456999,"");
+//    wid->set_icon("../data/head_icon/icon_796304805");
+    wid->init_login(123456999,"99pp","../data/head_icon/icon_796304805");
+
+
 
     for(auto a:vec)
     {
@@ -568,22 +582,24 @@ R"(汪淼
     this->resize(wid->size());
     qlog(wid->size());
 
-    QTimer::singleShot(2000,this,[=](){
-        wid->update_connect(0,false);
-        wid->update_connect(1,false);
-        wid->update_connect(2,false);
-        wid->update_connect(3,false);
-        wid->update_connect(4,false);
-    });
+//    wid->
 
-    connect(wid,&wid_friend_list::sn_send_msg,this,[=](wid_friend_list::ct_msg ct){
-        qlog(ct.id);
-        qlog(ct.time);
-        QDateTime ti;
-        ti.setMSecsSinceEpoch(ct.time);
-        qlog(ti.toString());
-        qlog("\n");
-    });
+//    QTimer::singleShot(2000,this,[=](){
+//        wid->update_connect(0,false);
+//        wid->update_connect(1,false);
+//        wid->update_connect(2,false);
+//        wid->update_connect(3,false);
+//        wid->update_connect(4,false);
+//    });
+
+//    connect(wid,&wid_friend_list::sn_send_msg,this,[=](wid_friend_list::ct_msg ct){
+//        qlog(ct.id);
+//        qlog(ct.time);
+//        QDateTime ti;
+//        ti.setMSecsSinceEpoch(ct.time);
+//        qlog(ti.toString());
+//        qlog("\n");
+//    });
 }
 
 void wid_test::test_12(QWidget *parent)
@@ -1011,20 +1027,20 @@ void wid_test::test_15(QWidget *parent)
 //        }
 //    }
 
-    qweb_client *th = new qweb_client;
-    connect(th,&qweb_client::sn_open,this,[=](){
-        vlogi("sn_open");
-        th->ask_login(798315362,"123456");
-    });
-    connect(th,&qweb_client::sn_close,this,[=](){
-        vlogi("sn_close");
-    });
+//    qweb_client *th = new qweb_client;
+//    connect(th,&qweb_client::sn_open,this,[=](){
+//        vlogi("sn_open");
+//        th->ask_login(798315362,"123456");
+//    });
+//    connect(th,&qweb_client::sn_close,this,[=](){
+//        vlogi("sn_close");
+//    });
 
-    connect(th,&qweb_client::sn_ac_status,this,[=](int64 ac_friends,string nickname,string icon,bool online){
-        vlogi($(ac_friends) $(nickname)$(icon)$(online));
-    });
-    bool ok = th->open();
-    vlogi(ok);
+//    connect(th,&qweb_client::sn_ac_status,this,[=](int64 ac_friends,string nickname,string icon,bool online){
+//        vlogi($(ac_friends) $(nickname)$(icon)$(online));
+//    });
+//    bool ok = th->open();
+//    vlogi(ok);
 }
 
 void wid_test::test_16(QWidget *parent)
@@ -1104,7 +1120,7 @@ void wid_test::test_18(QWidget *parent)
 {
 
 
-    qweb_client th;
+//    qweb_client th;
 
 }
 
@@ -1144,25 +1160,25 @@ void wid_test::test_19(QWidget *parent)
         }
     }
 
-    //== json ==
-    {
-        vlogi("\n");
-        string sjson = set_ac_login(123456789, "password123");
+//    //== json ==
+//    {
+//        vlogi("\n");
+//        string sjson = set_ac_login(123456789, "password123");
 
-        int64 account;
-        string passwd;
-        if (get_ac_login(sjson, account, passwd))
-        {
-            vlogi($(account) $(passwd));
+//        int64 account;
+//        string passwd;
+//        if (get_ac_login(sjson, account, passwd))
+//        {
+//            vlogi($(account) $(passwd));
 
-            string ssjson = set_ac_login_back(true);
-            bool ok;
-            if (get_ac_login_back(ssjson, ok))
-            {
-                vlogi($(ok));
-            }
-        }
-    }
+//            string ssjson = set_ac_login_back(true);
+//            bool ok;
+//            if (get_ac_login_back(ssjson, ok))
+//            {
+//                vlogi($(ok));
+//            }
+//        }
+//    }
 
     {
         vlogi("\n");
@@ -1187,32 +1203,32 @@ void wid_test::test_19(QWidget *parent)
         }
     }
 
-    {
-        vlogi("\n");
-        string sjson = set_friends_list(123456789);
+//    {
+//        vlogi("\n");
+//        string sjson = set_friends_list(123456789);
 
-        int64 account;
-        if(get_friends_list(sjson,account))
-        {
-            vlogi($(account));
+//        int64 account;
+//        if(get_friends_list(sjson,account))
+//        {
+//            vlogi($(account));
 
-            string ss = set_json_vec({"123","456","abc","999"});
-            string sjson1 = set_friends_list_back(ss,true);
+//            string ss = set_json_vec({"123","456","abc","999"});
+//            string sjson1 = set_friends_list_back(ss,true);
 
-            string svec;
-            bool ret;
-            if(get_friends_list_back(sjson1,svec,ret))
-            {
-                vlogi($(svec) $(ret));
+//            string svec;
+//            bool ret;
+//            if(get_friends_list_back(sjson1,svec,ret))
+//            {
+//                vlogi($(svec) $(ret));
 
-                vector<string> vec = get_json_vec(svec);
-                for(auto a:vec)
-                {
-                    vlogi($(a));
-                }
-            }
-        }
-    }
+//                vector<string> vec = get_json_vec(svec);
+//                for(auto a:vec)
+//                {
+//                    vlogi($(a));
+//                }
+//            }
+//        }
+//    }
 
     {
         vlogi("\n");
@@ -1242,62 +1258,62 @@ void wid_test::test_19(QWidget *parent)
         }
     }
 
-    {
-        vlogi("\n");
-        vector<string> vec;
-        vec.push_back(set_ac_info_json(123,"nickname11","icon11",true));
-        vec.push_back(set_ac_info_json(123456,"nickname22","icon22",false));
-        vec.push_back(set_ac_info_json(999,"nickname33","icon33",true));
+//    {
+//        vlogi("\n");
+//        vector<string> vec;
+//        vec.push_back(set_ac_info_json(123,"nickname11","icon11",true));
+//        vec.push_back(set_ac_info_json(123456,"nickname22","icon22",false));
+//        vec.push_back(set_ac_info_json(999,"nickname33","icon33",true));
 
-        string vec_s = set_json_vec(vec);
+//        string vec_s = set_json_vec(vec);
 
-        string sjson = set_friends_status(vec_s);
+//        string sjson = set_friends_status(vec_s);
 
-        string vec_gs;
-        if (get_friends_status(sjson,vec_gs))
-        {
-            vlogi($(vec_gs));
-            auto vec = get_json_vec(vec_gs);
+//        string vec_gs;
+//        if (get_friends_status(sjson,vec_gs))
+//        {
+//            vlogi($(vec_gs));
+//            auto vec = get_json_vec(vec_gs);
 
-            for(auto a:vec)
-            {
-                vlogi($(a));
+//            for(auto a:vec)
+//            {
+//                vlogi($(a));
 
-                int64 ac_friends;
-                string nickname;
-                string icon;
-                bool online;
-                if(get_ac_info_json(a,ac_friends,nickname,icon,online))
-                {
-                    vlogi($(ac_friends) $(nickname) $(icon) $(online));
-                }
-            }
-        }
-    }
+//                int64 ac_friends;
+//                string nickname;
+//                string icon;
+//                bool online;
+//                if(get_ac_info_json(a,ac_friends,nickname,icon,online))
+//                {
+//                    vlogi($(ac_friends) $(nickname) $(icon) $(online));
+//                }
+//            }
+//        }
+//    }
 
-    {
-        vlogi("\n");
-        string svec_ac_fs = "your_friends_status_data_here";
+//    {
+//        vlogi("\n");
+//        string svec_ac_fs = "your_friends_status_data_here";
 
 
-//        set_ac_info_json();
-//        get_ac_info_json()
-        string sjson = set_friends_status(svec_ac_fs);
+////        set_ac_info_json();
+////        get_ac_info_json()
+//        string sjson = set_friends_status(svec_ac_fs);
 
-        string svec_ac_info;
-        if (get_friends_status(sjson, svec_ac_info))
-        {
-            vlogi(svec_ac_info);
+//        string svec_ac_info;
+//        if (get_friends_status(sjson, svec_ac_info))
+//        {
+//            vlogi(svec_ac_info);
 
-            string ssjson = set_friends_status_back(svec_ac_info, true);
+//            string ssjson = set_friends_status_back(svec_ac_info, true);
 
-            bool ok;
-            if (get_friends_status_back(ssjson, svec_ac_info, ok))
-            {
-                vlogi(svec_ac_info + " " + $(ok));
-            }
-        }
-    }
+//            bool ok;
+//            if (get_friends_status_back(ssjson, svec_ac_info, ok))
+//            {
+//                vlogi(svec_ac_info + " " + $(ok));
+//            }
+//        }
+//    }
 
 
     //== files ==
@@ -1831,7 +1847,9 @@ void wid_test::test_24(QWidget *parent)
     });
     connect(fs,&qweb_files::sn_finish_upload,[=](bool ok,int64 id){
         vlogif(ok,"upload" << $(id));
-        fs->download_icon(796304805);
+        string path;
+        fs->download_icon(796304805,path);
+        vlogd($(path));
     });
     connect(fs,&qweb_files::sn_finish_download,[=](bool ok,int64 id){
         vlogif(ok,"download 1" << $(id));
@@ -1843,75 +1861,194 @@ void wid_test::test_24(QWidget *parent)
 
 void wid_test::test_25(QWidget *parent)
 {
-    shared_ptr<sqlite_history> sp_db_history = std::make_shared<sqlite_history>();
-//    sqlite_history *db_history = new sqlite_history;
-    wid_friend_list *wid = new wid_friend_list(this);
-    wid->set_history_db(sp_db_history.get());
-    wid->hide();
+    //登陆：史强 798315362  796304805 607037441
+    int64 account = 798315362;
+    string passwd = "123456";
 
     //==
     qweb_client *wc = new qweb_client(this);
-    connect(wc,&qweb_client::sn_open,this,[=](){
-        //登陆：史强
-        wc->ask_login(796304805,"123456"); //798315362  796304805
-        sp_db_history->open_history(wc->get_account());
-    });
+    qweb_download_icon *wcf = new qweb_download_icon(this);
 
-    connect(wc,&qweb_client::sn_ac_info,this,[=](string nickname,string icon){
+    wid_friend_list *wid = new wid_friend_list(this);
+    wid->set_history_db(wc->get_db());
+    wid->hide();
+
+
+    //==
+    connect(wc,&qweb_client::sn_open,this,[=](){
+        wc->ask_login(account,passwd);
+    });
+    connect(wc,&qweb_client::sn_ac_info,this,[=](int64 account,string nickname,string icon){
         vlogi($(nickname)$(icon));
 
-        wid->init_login(stoqs(nickname),stoqs(icon));
+        wid->init_login(account,stoqs(nickname),stoqs(icon));
         wid->show();
     });
-
-    connect(wc,&qweb_client::sn_ac_status,this,[=](int64 ac_friends,string nickname,string icon,bool online){
-        vlogi($(ac_friends) $(nickname)$(icon)$(online));
-
-        wid_friend_list::ct_info ct {online,ac_friends,stoqs(nickname),stoqs(icon)};
-        wid->add_friend(ct);
-    });
-
     connect(wc,&qweb_client::sn_recv_msg,this,[=](int64 target, int64 source, int64 time_to, string type, string content){
         vlogi($(target) $(source) $(time_to) $(type) $(content));
-        wid_friend_list::ct_swap_msg ct {target,source,time_to,stoqs(type),stoqs(content)};
-        wid->add_recv_msg(ct);
-    });
 
+        wid->add_recv_msg({target,source,time_to,type,content});
+    });
+    connect(wc,&qweb_client::sn_ac_status,this,[=](int64 ac_friends,string nickname,string icon,bool online){
+        vlogi($(ac_friends) $(nickname) $(icon) $(online));
+        wid_friend_list::ct_friend ct{online,ac_friends,nickname,icon,nullptr,nullptr };
+        wid->add_friend(ct);
+    });
     connect(wc,&qweb_client::sn_close,this,[=](){
         vlogw("sn_close");
     });
 
+    //==
+    connect(wid,&wid_friend_list::sn_send_msg,this,[=](ct_swap_msg ct){
+        bool ok = wc->ask_swap_msg(ct.target,ct.source,ct.time_to,ct.types,ct.content);
+        vlogfaile(ok,"sn_send_msg failed");
+    });
+    connect(wid,&wid_friend_list::sn_download_icon,this,[=](int64 account){
+        bool ok = wcf->download_icon_ac(account);
+        vlogfaile(ok,"sn_down_icon failed");
+    });
+
+    //==
+    connect(wcf,&qweb_download_icon::sn_download_icon,this,[=](int64 account,string path){
+        wid->update_ac_icon(account,stoqs(path));
+        vlogd($(path));
+    });
+
+
+
+    wcf->open();
     wc->open();
-    //==
+}
+
+void wid_test::test_26(QWidget *parent)
+{
+    auto fn_bu = [&](QString txt){
+        QPushButton *p = new QPushButton(this);
+        p->resize(50,50);
+        p->show();
+        p->setText(txt);
+        return p;
+    };
+
+    {
+        qmove_pos move;
+        for(int i=1;i<=5;i++)
+        {
+            move.add_wid(fn_bu(QString::number(i)));
+        }
+        auto size = move.move_x(QPoint(100,0));
+    }
+    {
+        qmove_pos move;
+        for(int i=1;i<=5;i++)
+        {
+            move.add_wid(fn_bu(QString::number(i)));
+        }
+        auto size = move.move_xr(QPoint(100,50));
+    }
+
+    {
+        qmove_pos move;
+        for(int i=1;i<=5;i++)
+        {
+            move.add_wid(fn_bu(QString::number(i)));
+        }
+        auto size = move.move_y(QPoint(0,0),10);
+    }
+    {
+        qmove_pos move;
+        for(int i=1;i<=5;i++)
+        {
+            move.add_wid(fn_bu(QString::number(i)));
+        }
+        auto size = move.move_yr(QPoint(50,0),10);
+    }
+
+    {
+        qmove_pos move;
+        for(int i=1;i<=25;i++)
+        {
+            move.add_wid(fn_bu(QString::number(i)));
+        }
+
+        auto size = move.move_group(QPoint(100,100),10);
+    }
+    {
+        qmove_pos move;
+        for(int i=1;i<=25;i++)
+        {
+            move.add_wid(fn_bu(QString::number(i)));
+        }
+
+        auto size = move.move_group(QPoint(200,200),10,5,-1,true);
+    }
+    {
+        qmove_pos move;
+        for(int i=1;i<=25;i++)
+        {
+            move.add_wid(fn_bu(QString::number(i)));
+        }
+
+        auto size = move.move_group(QPoint(300,300),10,-1,5,true);
+    }
+
+    {
+        qmove_pos move;
+        for(int i=1;i<=25;i++)
+        {
+            move.add_wid(fn_bu(QString::number(i)));
+        }
+
+        auto size = move.move_group(QPoint(400,400),10,-1,5);
+    }
+}
+
+void wid_test::test_27(QWidget *parent)
+{
+
+    string file = "/home/red/open/github/simple_chat/pic/icon1.jpg";
+//    string file = "/home/red/open/github/simple_chat/pic/icon2.jpg";
+
+    //登陆：史强 798315362  796304805 607037441 523892629
+    int64 account = 523892629;
+
+    int64 phone     = -1;
+    int64 age       = -1;
+    int64 sex       = -1;
+    string nickname = "";
+    string location = "";
+
+    //
+    string icon     = "icon_" + std::to_string(account);
 
 
-    //==
-    connect(wid,&wid_friend_list::sn_send_msg,this,[=](wid_friend_list::ct_msg cts){
+    qweb_client *th = new qweb_client(this);
+    qweb_files *wfs = new qweb_files(this);
 
-
-//        cts.id
-//        cts.time
-//        ct.content
-
-        bool ok = wc->ask_swap_msg(cts.id,cts.time,qstos(cts.msg->get_info().type),qstos(cts.msg->get_info().content));
-
-        vlogif(ok,$(ok));
-//        wc->ask_register()
-//        vlogi($(target) $(source) $(time_to) $(type) $(content));
-//        wid_friend_list::ct_swap_msg ct {target,source,time_to,stoqs(type),stoqs(content)};
-//        wid->add_recv_msg(ct);
+    connect(wfs,&qweb_files::sn_finish_upload,this,[=](){
+        //更新信息
+        vlogw("sn_finish_upload" $(th->is_online()));
+        if(th->is_online()) th->ask_update_info(account,phone,age,sex,nickname,location,icon);
     });
-    //==
 
-
-    QTimer::singleShot(2000,this,[=](){
-
-//        vlogw("vlogw("sn_close");");
-        wc->sn_recv_msg(798315362,796304805,6723456,"Text","你好啊");
-        wc->sn_recv_msg(798315362,796304805,3423456,"Text","不见了");
-        wc->sn_recv_msg(798315362,796304805,6523456,"Text","东改革");
-        wc->sn_recv_msg(798315362,796304805,5712346,"Text","你阿訇所大赛的");
+    connect(th,&qweb_client::sn_open,this,[=](){
+        //登陆
+        th->ask_login(account,"123456");
     });
+    connect(th,&qweb_client::sn_ac_info,this,[=](){
+        //上传图片
+        bool ok = wfs->upload_icon(file,account);
+        vlogw("upload_icon" $(ok));
+    });
+    connect(th,&qweb_client::sn_update_info,this,[=](){
+        vloge("sn_close");
+        th->close();
+        wfs->close();
+    });
+
+
+    wfs->open();
+    th->open();
 
 }
 

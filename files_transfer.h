@@ -25,6 +25,9 @@ using std::queue;
 typedef std::function<bool(int64 id,const string &data)> Tfn_send_cb;
 typedef std::function<void(int64 id,int64 prog,int64 count,int64 length)> Tfn_prog_cb;
 
+//!
+//! 类说明：查看文件信息
+//!
 class files_info
 {
 public:
@@ -81,6 +84,9 @@ public:
     }
 };
 
+//!
+//! 类说明：文件读写控制
+//!
 class files_io : public files_info
 {
 public:
@@ -287,70 +293,10 @@ protected:
     map<int64,std::shared_ptr<fs_send>> _map_send;
 };
 
-//class files_auto : public files_io
-//{
-//public:
 
-//    //== 自动发送接口 ==
-////    bool get_sending()
-////    { return _sending.load(); }
-
-////    void add_send_queue(int64 id)
-////    {
-////        std::unique_lock<std::mutex> lock(_mut_send_que);
-////        _que_send.push(id);
-////    }
-
-////    int64 remove_send_queue()
-////    {
-////        std::unique_lock<std::mutex> lock(_mut_send_que);
-////        int64 id = _que_send.back(); _que_send.pop();
-////        return id;
-////    }
-
-////    size_t get_send_size_queue()
-////    { return _que_send.size(); }
-
-//    //检查连续发送范围是否越界
-//    bool check_linit_flux(bool ok,int64 id,int64 flux = 2*1024*1024)
-//    {
-//        auto it = find_fs_send(id);
-//        if(it != nullptr && (it->count_send % flux == 0))
-//        { return false; }
-//        return ok;
-//    }
-
-////    //! 自动发送打开的文件数据
-////    //!     fn_finish_cb : [finish: 是否完成] [id: 文件标识] [return: 是否继续传输]
-////    //!     fn_add_data_send : [id: 文件标识] [return: 是否完成]
-////    //!
-////    //!     fn_add_data_send 回调可用于 add_data_send 和 add_data_send_limit_flux 两个发送版本
-////    //!
-////    int64 start_send_queue(std::function<bool(bool finish,int64 id)> fn_finish_cb)
-////    {
-////        _sending = true;
-////        int size_que = _que_send.size();
-////        for(int i=0;i<size_que;i++)
-////        {
-////            int64 id = remove_send_queue();
-////            bool ok = add_data_send(id);
-////            bool is_send = fn_finish_cb(ok,id);
-
-////            //[未完成：加入队列继续发送] [完成：关闭文件]
-////            if(is_send && ok == false) { add_send_queue(id); }
-////            else { close_file_send(id); }
-////        }
-////        _sending = false;
-////        return _que_send.size();
-////    }
-//    //== 自动发送接口 ==
-
-//protected:
-////    std::atomic_bool _sending = false;
-////    mutex _mut_send_que;
-////    queue<int64> _que_send;
-//};
-
+//!
+//! 类说明：统一控制网络连接的文件读写
+//!
 class files_channel : public files_io
 {
 public:

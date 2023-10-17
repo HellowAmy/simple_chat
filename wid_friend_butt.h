@@ -16,8 +16,11 @@ class wid_friend_butt : public QWidget
     Q_OBJECT
 public:
     explicit wid_friend_butt(QWidget *parent = nullptr);
+    void set_icon(QString icon);
+    void set_name(QString name);
     void set_info(QString icon,QString name);   //设置图片与名称
     void init_size(QSize size); //初始化按钮大小
+    void update_butt();
     qframe_line* get_frame();   //获取边框
     qbutt_line* get_butt();     //获取按钮
 
@@ -29,6 +32,7 @@ private:
     QString _name;          //保存文字
     qframe_line *_wid_icon; //图片显示
     qbutt_line *_wid_butt;  //触发按钮
+    qlab_img *_img;
 };
 
 #endif // WID_FRIEND_BUTT_H

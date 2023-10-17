@@ -21,7 +21,6 @@ qweb_files::qweb_files(QObject *parent)
     ADD_MAP(files_create_download_back);
     ADD_MAP(files_begin_download_back);
     ADD_MAP(files_finish_download_back);
-
 }
 
 int qweb_files::open(string ip, int port, string txt)
@@ -57,15 +56,20 @@ bool qweb_files::download_file(const string &abs_path,const string &save_path)
     return send_msg(s);
 }
 
-bool qweb_files::download_icon(int64 account)
+bool qweb_files::download_icon(int64 account,string &save_path)
 {
-    string save_path = _path_icon + "icon_" + std::to_string(account);
+    save_path = _path_icon + "icon_" + std::to_string(account);
     return download_file(save_path,save_path);
 }
 
 string qweb_files::get_temp_path()
 {
     return _path_temp;
+}
+
+string qweb_files::get_icon_path()
+{
+    return _path_icon;
 }
 
 inter_client *qweb_files::get_wc()

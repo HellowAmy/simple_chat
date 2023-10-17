@@ -18,18 +18,13 @@ class wid_chat_output : public qframe_line
 public:
     explicit wid_chat_output(QWidget *parent = nullptr);
     void init_size(QSize size);
-    void add_message(wid_message *msg); //加入到聊天窗口
+    void add_message(wid_message *msg);     //加入到聊天窗口
+    qarea_wid* get_area();                  //滑动窗口
 
 signals:
 
 private:
-    int _space;         //消息间隔
-    int _area_width;    //显示宽度
-    int _area_height;   //显示高度
     qarea_wid *_area;   //滑动显示
-    QList<wid_message *> _ls_history;   //历史消息记录
-//    QMap<QString,wid_message *> _map_prog;
-
 };
 
 #endif // WID_CHAT_OUTPUT_H

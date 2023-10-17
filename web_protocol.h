@@ -224,6 +224,20 @@ CS_MAKE_TYPE(error_info,_sc_,
              )
 
 //!
+//! online_status : 上线状态
+//!
+//! extend :
+//!     uint account    好友账号
+//!     bool online     在线状态
+//!
+CS_MAKE_TYPE(online_status,_sc_,
+             CS_ARGV( CS_1(int64,ac_friend),CS_1(bool,online)  ),
+             CS_BODY( CS_2(int64,ac_friend) CS_2(bool,online)  ),
+             CS_ARGV(,CS_3(int64,ac_friend),CS_3(bool,online)  ),
+             CS_BODY( CS_4(int64,ac_friend) CS_4(bool,online)  )
+             )
+
+//!
 //! ac_login : 登陆账号
 //!
 //! extend :
@@ -240,10 +254,10 @@ CS_MAKE_TYPE(ac_login,_cs_,
              CS_BODY( CS_4(int64,account) CS_4(string,passwd)  )
              )
 CS_MAKE_TYPE(ac_login_back,_sc_,
-             CS_ARGV( CS_1(bool,ok)  ),
-             CS_BODY( CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(bool,ok)  ),
-             CS_BODY( CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,account),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,account) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,account) CS_4(bool,ok)  )
              )
 
 //!
@@ -294,11 +308,94 @@ CS_MAKE_TYPE(ac_info,_cs_,
              CS_BODY( CS_4(int64,account)  )
              )
 CS_MAKE_TYPE(ac_info_back,_sc_,
-             CS_ARGV( CS_1(string,nickname),CS_1(string,icon),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(string,nickname) CS_2(string,icon) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(string,nickname),CS_3(string,icon),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(string,nickname) CS_4(string,icon) CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,account),CS_1(string,nickname),CS_1(string,icon),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,account) CS_2(string,nickname) CS_2(string,icon) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(string,nickname),CS_3(string,icon),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,account) CS_4(string,nickname) CS_4(string,icon) CS_4(bool,ok)  )
              )
+
+//!
+//! ac_info_all : 账号信息--所有
+//!
+//! extend :
+//!     uint account        账号
+//!
+//! back :
+//!     uint account        账号
+//!     uint phone          电话
+//!     uint age            年龄
+//!     uint sex            性别
+//!     string nickname     昵称
+//!     string location     地址
+//!     string icon         头像
+//!
+CS_MAKE_TYPE(ac_info_all,_cs_,
+             CS_ARGV( CS_1(int64,account)  ),
+             CS_BODY( CS_2(int64,account)  ),
+             CS_ARGV(,CS_3(int64,account)  ),
+             CS_BODY( CS_4(int64,account)  )
+             )
+CS_MAKE_TYPE(ac_info_all_back,_sc_,
+             CS_ARGV( CS_1(int64,account),CS_1(int64,phone),CS_1(int64,age),CS_1(int64,sex),CS_1(string,nickname),CS_1(string,location),CS_1(string,icon)  ),
+             CS_BODY( CS_2(int64,account) CS_2(int64,phone) CS_2(int64,age) CS_2(int64,sex) CS_2(string,nickname) CS_2(string,location) CS_2(string,icon)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(int64,phone),CS_3(int64,age),CS_3(int64,sex),CS_3(string,nickname),CS_3(string,location),CS_3(string,icon)  ),
+             CS_BODY( CS_4(int64,account) CS_4(int64,phone) CS_4(int64,age) CS_4(int64,sex) CS_4(string,nickname) CS_4(string,location) CS_4(string,icon)  )
+             )
+
+//!
+//! ac_update_info : 更新账号信息
+//!
+//! extend :
+//!     uint account        账号
+//!     uint phone          电话
+//!     uint age            年龄
+//!     uint sex            性别
+//!     string nickname     昵称
+//!     string location     地址
+//!     string icon         头像
+//!
+//! back :
+//!     uint account        账号
+//!     bool ok             确认
+//!
+//! （ uint 类型等于-1时，不修改，string 类型为空时，不修改 ）
+//!
+CS_MAKE_TYPE(ac_update_info,_cs_,
+             CS_ARGV( CS_1(int64,account),CS_1(int64,phone),CS_1(int64,age),CS_1(int64,sex),CS_1(string,nickname),CS_1(string,location),CS_1(string,icon)  ),
+             CS_BODY( CS_2(int64,account) CS_2(int64,phone) CS_2(int64,age) CS_2(int64,sex) CS_2(string,nickname) CS_2(string,location) CS_2(string,icon)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(int64,phone),CS_3(int64,age),CS_3(int64,sex),CS_3(string,nickname),CS_3(string,location),CS_3(string,icon)  ),
+             CS_BODY( CS_4(int64,account) CS_4(int64,phone) CS_4(int64,age) CS_4(int64,sex) CS_4(string,nickname) CS_4(string,location) CS_4(string,icon)  )
+             )
+CS_MAKE_TYPE(ac_update_info_back,_sc_,
+             CS_ARGV( CS_1(int64,account),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,account) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,account) CS_4(bool,ok)  )
+             )
+
+////!
+////! ac_update_icon : 更新账号头像
+////!
+////! extend :
+////!     uint account        账号
+////!     string icon         头像
+////!
+////! back :
+////!     uint account        账号
+////!
+//CS_MAKE_TYPE(ac_update_icon,_cs_,
+//             CS_ARGV( CS_1(int64,account),CS_1(string,icon)  ),
+//             CS_BODY( CS_2(int64,account) CS_2(string,icon)  ),
+//             CS_ARGV(,CS_3(int64,account),CS_3(string,icon)  ),
+//             CS_BODY( CS_4(int64,account) CS_4(string,icon)  )
+//             )
+//CS_MAKE_TYPE(ac_update_icon_back,_sc_,
+//             CS_ARGV( CS_1(int64,account)  ),
+//             CS_BODY( CS_2(int64,account)  ),
+//             CS_ARGV(,CS_3(int64,account)  ),
+//             CS_BODY( CS_4(int64,account)  )
+//             )
+
 
 //!
 //! friends_list : 好友列表
@@ -310,7 +407,10 @@ CS_MAKE_TYPE(ac_info_back,_sc_,
 //!     string svec_fs      存储好友列表的数组
 //!     bool ok             确认
 //!
-//!     ( svec是存储vector的json数据格式，需要通过get_json_vec函数获取 )
+//!     | svec_fs 存储json格式：)
+//!     | uint account     好友账号
+//!
+//!     ( svec是存储vector的json数据格式，需要通过set_json_vec 和 get_json_vec 函数获取 )
 //!
 CS_MAKE_TYPE(friends_list,_cs_,
              CS_ARGV( CS_1(int64,account)  ),
@@ -319,10 +419,10 @@ CS_MAKE_TYPE(friends_list,_cs_,
              CS_BODY( CS_4(int64,account)  )
              )
 CS_MAKE_TYPE(friends_list_back,_sc_,
-             CS_ARGV( CS_1(string,svec_fs),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(string,svec_fs) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(string,svec_fs),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(string,svec_fs) CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,account),CS_1(string,svec_fs),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,account) CS_2(string,svec_fs) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(string,svec_fs),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,account) CS_4(string,svec_fs) CS_4(bool,ok)  )
              )
 
 //!
@@ -341,18 +441,19 @@ CS_MAKE_TYPE(friends_list_back,_sc_,
 //!     | string icon         头像
 //!     | bool online         在线
 //!
+//!     ( svec是存储vector的json数据格式，需要通过set_json_vec 和 get_json_vec 函数获取 )
 //!
 CS_MAKE_TYPE(friends_status,_cs_,
-             CS_ARGV( CS_1(string,svec_ac_fs)  ),
-             CS_BODY( CS_2(string,svec_ac_fs)  ),
-             CS_ARGV(,CS_3(string,svec_ac_fs)  ),
-             CS_BODY( CS_4(string,svec_ac_fs)  )
+             CS_ARGV( CS_1(int64,account),CS_1(string,svec_ac_fs)  ),
+             CS_BODY( CS_2(int64,account) CS_2(string,svec_ac_fs)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(string,svec_ac_fs)  ),
+             CS_BODY( CS_4(int64,account) CS_4(string,svec_ac_fs)  )
              )
 CS_MAKE_TYPE(friends_status_back,_sc_,
-             CS_ARGV( CS_1(string,svec_ac_info),CS_1(bool,ok)  ),
-             CS_BODY( CS_2(string,svec_ac_info) CS_2(bool,ok)  ),
-             CS_ARGV(,CS_3(string,svec_ac_info),CS_3(bool,ok)  ),
-             CS_BODY( CS_4(string,svec_ac_info) CS_4(bool,ok)  )
+             CS_ARGV( CS_1(int64,account),CS_1(string,svec_ac_info),CS_1(bool,ok)  ),
+             CS_BODY( CS_2(int64,account) CS_2(string,svec_ac_info) CS_2(bool,ok)  ),
+             CS_ARGV(,CS_3(int64,account),CS_3(string,svec_ac_info),CS_3(bool,ok)  ),
+             CS_BODY( CS_4(int64,account) CS_4(string,svec_ac_info) CS_4(bool,ok)  )
              )
 
 //!

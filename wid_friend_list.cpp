@@ -51,7 +51,7 @@ wid_friend_list::wid_friend_list(QWidget *parent)
     _wid_setting->move(_wid_chat->pos());
     _wid_setting->resize(_wid_chat->size());
     _wid_setting->hide();
-    _wid_info->set_extend_wid(_wid_setting,_wid_setting->size(),QPoint(0,0));
+    _wid_info->set_extend_wid(_wid_setting);
 
     //设置与聊天窗口切换
     connect(_wid_info,&wid_friend_info::sn_show_extend,this,[=](bool show){
@@ -72,7 +72,7 @@ wid_friend_list::wid_friend_list(QWidget *parent)
     connect(this,&wid_friend_list::sn_update_msg,this,[=](int64 account){
 
         //读取历史记录--未读
-        read_friend_history(account,std::bind(&sqlite_history::select_non_read,_db_history,_1,_2));
+        emit sn_history_read_ac(account);
     });
 }
 
@@ -107,9 +107,16 @@ void wid_friend_list::init_login(int64 account,QString nickname, QString icon)
     _wid_info->init_info();
 }
 
-void wid_friend_list::set_history_db(sqlite_history *db)
+void wid_friend_list::set_history_msg(int64 account, const std::vector<ct_msg_type> &vec)
 {
-    _db_history = db;
+    //显示信息到屏幕
+    auto it = get_friend(account);
+    if(it != nullptr)
+    {
+        for(auto a:vec)
+        { show_msg_history(it,a); }
+    }
+    else vlogw("set_history_msg: friend not failed" $(account));
 }
 
 void wid_friend_list::add_friend(ct_friend ct)
@@ -211,7 +218,7 @@ void wid_friend_list::make_chat(ct_friend *ct)
         ct->chat = chat;
 
         //读取历史记录--全部
-        read_friend_history(ct->account,std::bind(&sqlite_history::select_history,_db_history,_1,_2,""));
+        emit sn_history_read_ac(ct->account,false);
 
         //发送到到网络转发端,附带账号与时间用于定位回馈确认消息
         connect(ct->chat->get_input(),&wid_chat_input::sn_send_msg,this,[=](ct_msg_type msg){
@@ -246,36 +253,6 @@ void wid_friend_list::show_msg_history(ct_friend *it,ct_msg_type ct)
 void wid_friend_list::show_bottom_bar()
 {
     _show_friend->chat->get_output()->get_area()->show_bottom_bar();
-}
-
-void wid_friend_list::read_friend_history
-    (int64 account, std::function<bool (int64, vector<tuple<int64, int64, int64, string, string, string> > &)> fn_history_cb)
-{
-    auto it = get_friend(account);
-    if(it != nullptr)
-    {
-        //读取历史记录
-        vector<tuple<int64, int64, int64, string, string, string> > vec_line;
-        if(fn_history_cb(account,vec_line))
-        {
-            //显示信息到屏幕
-            for(auto a:vec_line)
-            {
-                ct_msg_type ct{std::get<0>(a),std::get<3>(a),std::get<4>(a),std::get<5>(a)};
-                show_msg_history(it,ct);
-            }
-
-            //去除未读
-            for(auto a:vec_line)
-            {
-                int64 send_time = std::get<0>(a);
-                if(_db_history->update_non_read(account,send_time,0) == false)
-                { vlogw("update_non_read failed"); }
-            }
-        }
-        else vlogw("read history failed" $(account));
-    }
-    else vlogw("get_friend not find" $(account));
 }
 
 

@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QVector>
+#include <QLineEdit>
 
 #include "qframe_line.h"
 #include "qbutt_line.h"
@@ -23,7 +24,7 @@ public:
     void set_name(QString name);    //设置昵称
 
     //设置扩展区父类与位置大小
-    void set_extend_wid(QWidget *parent,QSize size, QPoint pos);
+    void set_extend_wid(QWidget *parent);
 
 //    QWidget* get_extend_wid();  //获取扩展窗口，用于贴附到其他界面
 

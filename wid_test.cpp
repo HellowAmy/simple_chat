@@ -24,6 +24,7 @@
 #include "swap_files.h"
 #include "qweb_files.h"
 #include "sqlite_op.h"
+#include "sqlite_read_history.h"
 
 #include <filesystem>
 
@@ -60,7 +61,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 25;
+    int val = 30;
 
     if(val == 0)        test_0(parent);     //主要程序
     else if(val == 1)   test_1(parent);     //线条按钮
@@ -92,6 +93,11 @@ wid_test::wid_test(QWidget *parent)
     else if(val == 25)   test_25(parent);   //登陆成功
     else if(val == 26)   test_26(parent);   //移动测试
     else if(val == 27)   test_27(parent);   //修改信息
+    else if(val == 28)   test_28(parent);   //个人资料
+
+    else if(val == 30)   test_30(parent);   //资料界面
+    else if(val == 31)   test_31(parent);   //个人资料
+    else if(val == 32)   test_32(parent);   //提示窗口
 
 
     vlogd("== end ==");
@@ -566,7 +572,7 @@ R"(汪淼
 
     shared_ptr<sqlite_history> sp_db_history = std::make_shared<sqlite_history>();
     sp_db_history->open_history(123456999);
-    wid->set_history_db(sp_db_history.get());
+//    wid->set_history_db(sp_db_history.get());
 
 //    wid->set_ac_info(123456999,"");
 //    wid->set_icon("../data/head_icon/icon_796304805");
@@ -1862,14 +1868,16 @@ void wid_test::test_24(QWidget *parent)
 void wid_test::test_25(QWidget *parent)
 {
     //登陆：史强 798315362  796304805 607037441
-    int64 account = 798315362;
+    int64 account = 796304805;
     string passwd = "123456";
 
     //==
     qweb_client *wc = new qweb_client(this);
 
+    sqlite_read_history *phistory = new sqlite_read_history(this);
+    phistory->init_db(wc->get_db());
+
     wid_friend_list *wid = new wid_friend_list(this);
-    wid->set_history_db(wc->get_db());
     wid->hide();
 
 
@@ -1910,6 +1918,13 @@ void wid_test::test_25(QWidget *parent)
         wcf->download_icon_ac(account,fn_icon);
         wcf->open();
     });
+    connect(wid,&wid_friend_list::sn_history_read_ac,this,[=](int64 account,bool is_non_read){
+        vector<ct_msg_type> vec;
+        if(is_non_read) phistory->read_history_non_read(account,vec);
+        else phistory->read_history(account,vec);
+
+        wid->set_history_msg(account,vec);
+    });
 
 
     //==
@@ -1926,77 +1941,103 @@ void wid_test::test_26(QWidget *parent)
         return p;
     };
 
-    {
-        qmove_pos move;
-        for(int i=1;i<=5;i++)
-        {
-            move.add_wid(fn_bu(QString::number(i)));
-        }
-        auto size = move.move_x(QPoint(100,0));
-    }
-    {
-        qmove_pos move;
-        for(int i=1;i<=5;i++)
-        {
-            move.add_wid(fn_bu(QString::number(i)));
-        }
-        auto size = move.move_xr(QPoint(100,50));
-    }
+    auto fn_bu2 = [&](QString txt){
+        QPushButton *p = new QPushButton(this);
+        p->resize(120,40);
+        p->show();
+        p->setText(txt);
+        return p;
+    };
 
-    {
-        qmove_pos move;
-        for(int i=1;i<=5;i++)
-        {
-            move.add_wid(fn_bu(QString::number(i)));
-        }
-        auto size = move.move_y(QPoint(0,0),10);
-    }
-    {
-        qmove_pos move;
-        for(int i=1;i<=5;i++)
-        {
-            move.add_wid(fn_bu(QString::number(i)));
-        }
-        auto size = move.move_yr(QPoint(50,0),10);
-    }
+
 
     {
         qmove_pos move;
         for(int i=1;i<=25;i++)
         {
-            move.add_wid(fn_bu(QString::number(i)));
+            move.add_wid(fn_bu2(QString::number(i)));
         }
 
-        auto size = move.move_group(QPoint(100,100),10);
-    }
-    {
-        qmove_pos move;
-        for(int i=1;i<=25;i++)
-        {
-            move.add_wid(fn_bu(QString::number(i)));
-        }
-
-        auto size = move.move_group(QPoint(200,200),10,5,-1,true);
-    }
-    {
-        qmove_pos move;
-        for(int i=1;i<=25;i++)
-        {
-            move.add_wid(fn_bu(QString::number(i)));
-        }
-
-        auto size = move.move_group(QPoint(300,300),10,-1,5,true);
+        QLabel *lab = new QLabel(this);
+        auto size = move.move_group(QPoint(200,200),5,2,-1);
+        qlog(size);
+        lab->move(QPoint(200,200));
+        lab->resize(size);;
+        lab->setFrameShape(QFrame::Box);
+        lab->show();
     }
 
-    {
-        qmove_pos move;
-        for(int i=1;i<=25;i++)
-        {
-            move.add_wid(fn_bu(QString::number(i)));
-        }
 
-        auto size = move.move_group(QPoint(400,400),10,-1,5);
-    }
+//    {
+//        qmove_pos move;
+//        for(int i=1;i<=5;i++)
+//        {
+//            move.add_wid(fn_bu(QString::number(i)));
+//        }
+//        auto size = move.move_x(QPoint(100,0));
+//    }
+//    {
+//        qmove_pos move;
+//        for(int i=1;i<=5;i++)
+//        {
+//            move.add_wid(fn_bu(QString::number(i)));
+//        }
+//        auto size = move.move_xr(QPoint(100,50));
+//    }
+//    {
+//        qmove_pos move;
+//        for(int i=1;i<=5;i++)
+//        {
+//            move.add_wid(fn_bu(QString::number(i)));
+//        }
+//        auto size = move.move_y(QPoint(0,0),10);
+//    }
+//    {
+//        qmove_pos move;
+//        for(int i=1;i<=5;i++)
+//        {
+//            move.add_wid(fn_bu(QString::number(i)));
+//        }
+//        auto size = move.move_yr(QPoint(50,0),10);
+//    }
+
+//    {
+//        qmove_pos move;
+//        for(int i=1;i<=25;i++)
+//        {
+//            move.add_wid(fn_bu(QString::number(i)));
+//        }
+
+//        auto size = move.move_group(QPoint(100,100),10);
+//    }
+//    {
+//        qmove_pos move;
+//        for(int i=1;i<=25;i++)
+//        {
+//            move.add_wid(fn_bu(QString::number(i)));
+//        }
+
+//        auto size = move.move_group(QPoint(200,200),10,5,-1,true);
+//    }
+//    {
+//        qmove_pos move;
+//        for(int i=1;i<=25;i++)
+//        {
+//            move.add_wid(fn_bu(QString::number(i)));
+//        }
+
+//        auto size = move.move_group(QPoint(300,300),10,-1,5,true);
+//    }
+
+//    {
+//        qmove_pos move;
+//        for(int i=1;i<=25;i++)
+//        {
+//            move.add_wid(fn_bu(QString::number(i)));
+//        }
+
+//        auto size = move.move_group(QPoint(400,400),10,-1,5);
+//    }
 }
 
 void wid_test::test_27(QWidget *parent)
@@ -2046,5 +2087,36 @@ void wid_test::test_27(QWidget *parent)
     wfs->open();
     th->open();
 }
+
+void wid_test::test_28(QWidget *parent)
+{
+
+//    string account;
+//    string phone;
+//    string age;
+//    string sex;
+//    string nickname;
+//    string location;
+//    string icon;
+
+    QSize max_show = QSize(500,500);
+    QSize max_info = QSize(240,140);
+    QString file = "/home/red/open/github/simple_chat/pic/icon1.jpg";
+
+    wid_friend_info *wid = new wid_friend_info(this);
+    wid->resize(max_info);
+    wid->set_name("Pajhisd");
+    wid->set_icon(file);
+    wid->init_info();
+
+    qframe_line *wex = new qframe_line(this);
+    wex->move(QPoint(wid->width() + 10,0));
+    wex->resize(max_show);
+
+    wid->set_extend_wid(wex);
+
+
+}
+
 
 

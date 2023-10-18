@@ -38,18 +38,19 @@ public:
 public:
     explicit wid_friend_list(QWidget *parent = nullptr);
 
-    void set_history_db(sqlite_history *db);            //添加历史记录
     void add_friend(ct_friend ct);                      //添加好友
     void add_recv_msg(ct_swap_msg ct);                  //接收网络消息
     void update_connect(int64 account, bool online);    //更新连接状态
     void update_ac_icon(int64 account,QString path);    //
     void init_login(int64 account,QString nickname,QString icon);   //初始化登陆
+    void set_history_msg(int64 account,const std::vector<ct_msg_type> &vec_msg);
 
 
 signals:
     void sn_send_msg(ct_swap_msg ct);               //发送信息
     void sn_update_msg(int64 account);              //更新界面显示
 
+    void sn_history_read_ac(int64 account,bool is_non_read = true);
     void sn_download_icon(int64 account);
 
 private:
@@ -63,8 +64,6 @@ private:
     QWidget *_wid_setting;          //设置区域
     ct_friend *_show_friend;        //当前显示的好友窗口
     qarea_wid *_wid_area;           //好友列表滑动显示
-    sqlite_history *_db_history;    //历史记录
-//    qweb_files _web_files;
     wid_friend_info *_wid_info;     //显示信息
 
     std::map<long long,std::shared_ptr<ct_friend>> _map_friends;    //好友列表
@@ -89,10 +88,6 @@ private:
 
     //当前窗口底部回滚
     void show_bottom_bar();
-
-    //读取历史记录
-    void read_friend_history(int64 account,
-            std::function<bool(int64,vector<tuple<int64,int64,int64,string,string,string>> &)> fn_history_cb);
 };
 
 #endif // WID_FRIEND_LIST_H

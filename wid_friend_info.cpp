@@ -35,12 +35,9 @@ void wid_friend_info::set_name(QString name)
     _name = name;
 }
 
-void wid_friend_info::set_extend_wid(QWidget *parent, QSize size, QPoint pos)
+void wid_friend_info::set_extend_wid(QWidget *parent)
 {
     _wid_extend->setParent(parent);
-    _wid_extend->move(pos);
-    _wid_extend->resize(size);
-//    _wid_extend->show();
 }
 
 //void wid_friend_info::set_extend(const QVector<QString> &vec)
@@ -73,6 +70,7 @@ void wid_friend_info::init_info()
     _butt_extend->set_text(">>");
 
     QVector<QString> vec_extend {
+        "个人资料",
         "搜索好友",
         "添加好友",
         "分组管理",

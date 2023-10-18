@@ -206,10 +206,7 @@ void qweb_client::task_swap_cache_back(const string &sjson)
         {
             vector<string> vec = get_json_vec(svec_sjson);
             for(auto a:vec)
-            {
-                vloge("task_swap_cache_back: " <<$(a));
-                sl_message(a);
-            }
+            { sl_message(a); }
         }
         else vlogw("task_swap_cache_back:" $(sjson) $(ok));
     }

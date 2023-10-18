@@ -39,7 +39,9 @@ SOURCES += \
     wid_friend_list.cpp \
     wid_message.cpp \
 #    wid_msg_abs.cpp \
-    wid_test.cpp
+    wid_person_info.cpp \
+    wid_test.cpp \
+    wid_test_30.cpp
 
 HEADERS += \
     Tvlog.h \
@@ -133,17 +135,20 @@ HEADERS += \
     qweb_files.h \
 #    swap_files.h \
     sqlite_op.h \
+    sqlite_read_history.h \
     typedef_struct.h \
 #    types_swap.h \
     web_protocol.h \
     wid_chat.h \
     wid_chat_input.h \
     wid_chat_output.h \
+    wid_dialog_box.h \
     wid_friend_butt.h \
     wid_friend_info.h \
     wid_friend_list.h \
     wid_message.h \
     wid_msg_abs.h \
+    wid_person_info.h \
     wid_test.h
 
 #INCLUDEPATH += $$PWD/include/sqlist3

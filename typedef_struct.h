@@ -5,6 +5,13 @@
 #include <QDateTime>
 #include <string>
 
+#include <QLineEdit>
+#include <QLabel>
+//#include <string>
+#include <tuple>
+
+#include "qframe_line.h"
+
 #define stoqs(s) QString::fromStdString(s)
 #define qstos(s) s.toStdString()
 
@@ -29,7 +36,76 @@ static string _object_AR_     = "AR";
 static string _object_AL_     = "AL";
 static string _object_SYS_    = "SYS";
 
-static int64 get_time_now() { QDateTime::currentMSecsSinceEpoch(); }
+
+//== 带边框界面 ==
+static auto fn_time_now = []()
+    -> int64
+{
+    return QDateTime::currentMSecsSinceEpoch();
+};
+
+static auto fn_LineEdit = [](QWidget *wid,QSize size = QSize(100,30),QPoint pos = QPoint(0,0))
+    -> std::tuple<qframe_line*,QLineEdit*>
+{
+    QString sty = R"(
+            QLineEdit {
+                font-family: 微软雅黑;
+                border: none;
+                font-size: 14px;
+                color: #808080;
+            }
+            )";
+    qframe_line *fr = new qframe_line(wid);
+    QLineEdit *ed = new QLineEdit(fr);
+    ed->setAlignment(Qt::AlignVCenter);
+    ed->setStyleSheet(sty);
+    ed->show();
+    fr->resize_center(ed,size,5);
+    fr->move(pos);
+    fr->show();
+    return std::make_tuple(fr,ed);
+};
+
+static auto fn_LineEdit_txt = [](QWidget *wid,QString txt,QSize size)
+    -> std::tuple<qframe_line*,QLineEdit*>
+{
+    auto [c,d] = fn_LineEdit(wid,size);
+    QLineEdit *p = d;
+    p->setText(txt);
+    return std::make_tuple(c,d);
+};
+
+static auto fn_LineEdit_non = [](QWidget *wid,QString txt,QSize size)
+    -> std::tuple<qframe_line*,QLineEdit*>
+{
+    auto [c,d] = fn_LineEdit(wid,size);
+
+    qframe_line *f = c;
+    f->set_col(QColor(0xaa0000));
+
+    QLineEdit *p = d;
+    p->setText(txt);
+    p->setAlignment(Qt::AlignCenter);
+    p->setFocusPolicy(Qt::NoFocus);
+    return std::make_tuple(c,d);
+};
+
+static auto fn_Label = [](QWidget *wid,QString str, QSize size = QSize(80,30),QPoint pos = QPoint(0,0))
+    -> std::tuple<qframe_line*,QLabel*>
+{
+    qframe_line *fr = new qframe_line(wid);
+    QLabel *lab = new QLabel(fr);
+    lab->setText(str);
+    lab->setAlignment(Qt::AlignCenter);
+    lab->setFont(QFont("微软雅黑",10));
+    lab->show();
+    fr->resize_center(lab,size,5);
+    fr->move(pos);
+    fr->show();
+    return std::make_tuple(fr,lab);
+};
+//== 带边框界面 ==
+
 
 
 //!
@@ -59,6 +135,19 @@ static struct
 } _fsize_message_;
 
 
+//!
+//! 账号信息传递
+//!
+struct ct_ac_info
+{
+    int64 account;      //账号
+    int64 phone;        //电话
+    int64 age;          //年龄
+    int64 sex;          //性别
+    string nickname;    //昵称
+    string location;    //地址
+    string icon;        //头像
+};
 
 //!
 //! 输入区发送的消息类型传递

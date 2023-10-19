@@ -32,24 +32,24 @@ void wid_test::test_30(QWidget *parent)
 //    in->init_show();
     in->show();
 
-    connect(in,&wid_person_info::sn_change_info,[=](bool save,bool remarks){
-        vlogd($(save) $(remarks));
+//    connect(in,&wid_person_info::sn_change_info,[=](bool save,bool remarks){
+//        vlogd($(save) $(remarks));
 
-        if(save)
-        {
-            if(remarks)
-            {
-                QString str = in->get_edit_remarks();
-                vlogd($(qstos(str)));
-            }
-            else
-            {
-                auto ct = in->get_edit_info();
-                vlogd($(ct.account)  $(ct.phone) $(ct.age) $(ct.sex)
-                      $(ct.location) $(ct.nickname) $(ct.icon));
-            }
-        }
-    });
+//        if(save)
+//        {
+//            if(remarks)
+//            {
+//                QString str = in->get_edit_remarks();
+//                vlogd($(qstos(str)));
+//            }
+//            else
+//            {
+//                auto ct = in->get_edit_info();
+//                vlogd($(ct.account)  $(ct.phone) $(ct.age) $(ct.sex)
+//                      $(ct.location) $(ct.nickname) $(ct.icon));
+//            }
+//        }
+//    });
 }
 
 void wid_test::test_31(QWidget *parent)

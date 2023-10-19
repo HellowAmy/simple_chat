@@ -5,6 +5,7 @@ qlab_img::qlab_img(QWidget *parent)
 {
     this->show();
     _frame = false;
+    _click = false;
 }
 
 void qlab_img::set_frame(bool frame)
@@ -23,6 +24,11 @@ void qlab_img::set_keep(bool keep, QSize size)
     _size = size;
 }
 
+void qlab_img::set_click(bool click)
+{
+    _click = click;
+}
+
 void qlab_img::update_img()
 {
     if(_pix.load(_file))
@@ -35,6 +41,7 @@ void qlab_img::update_img()
         else _pix = _pix.scaled(size,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
         this->resize(_pix.size());
     }
+    this->update();
 }
 
 QString qlab_img::get_file()
@@ -58,4 +65,22 @@ void qlab_img::paintEvent(QPaintEvent *event)
         show.drawLine(QPoint(this->width(),0),QPoint(0,this->height()));
     }
     show.end();
+}
+
+void qlab_img::enterEvent(QEnterEvent *event)
+{
+    if(_click) this->setCursor(Qt::PointingHandCursor);
+    QWidget::enterEvent(event);
+}
+
+void qlab_img::leaveEvent(QEvent *event)
+{
+    if(_click) this->setCursor(Qt::ArrowCursor);
+    QWidget::leaveEvent(event);
+}
+
+void qlab_img::mouseReleaseEvent(QMouseEvent *event)
+{
+    if(_click && this->rect().contains(event->pos())) { emit sn_clicked(); }
+    QWidget::mouseReleaseEvent(event);
 }

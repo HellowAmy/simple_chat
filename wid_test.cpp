@@ -38,6 +38,7 @@
 #include <QString>
 #include <QDebug>
 
+
 void wid_frame(QWidget *wid)
 {
     QLabel *lab = new QLabel(wid);
@@ -61,7 +62,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 30;
+    int val = 25;
 
     if(val == 0)        test_0(parent);     //主要程序
     else if(val == 1)   test_1(parent);     //线条按钮
@@ -275,7 +276,12 @@ void wid_test::test_4(QWidget *parent)
         lab->set_keep(keep,size);
         lab->move(pos);
         lab->update_img();
+        lab->set_click(true);
         lab->show();
+
+        connect(lab,&qlab_img::sn_clicked,[=](){
+            vlogw("QString");
+        });
     };
 
     fn_img({10,10},{0,0},"../pic/head.png");
@@ -491,20 +497,20 @@ void wid_test::test_9(QWidget *parent)
 
 void wid_test::test_10(QWidget *parent)
 {
-    this->resize(500,600);
+//    this->resize(500,600);
 
-    auto fn_butt = [=](QSize size,QString txt){
-        wid_friend_butt *wid = new wid_friend_butt(this);
-        wid->set_info("../pic/one.png",txt);
-        wid->init_size(size);
-        return wid;
-    };
+//    auto fn_butt = [=](QSize size,QString txt){
+//        wid_friend_butt *wid = new wid_friend_butt(this);
+//        wid->set_info("../pic/one.png",txt);
+//        wid->init_size(size);
+//        return wid;
+//    };
 
-    qmove_pos move;
-    move.add_wid(fn_butt({240,50},"叶文洁"));
-    move.add_wid(fn_butt({240,50},"大史"));
-    move.add_wid(fn_butt({240,50},"章北海"));
-    move.move_y(QPoint(0,0),5);
+//    qmove_pos move;
+//    move.add_wid(fn_butt({240,50},"叶文洁"));
+//    move.add_wid(fn_butt({240,50},"大史"));
+//    move.add_wid(fn_butt({240,50},"章北海"));
+//    move.move_y(QPoint(0,0),5);
 
 //    {
 //        wid_friend_butt *wid = new wid_friend_butt(this);
@@ -1154,17 +1160,17 @@ void wid_test::test_19(QWidget *parent)
             vlogi($(target) $(source));
         }
     }
-    {
-        string s = set_ac_info_json(123,"nicknamesss","iconsss",true);
-        int64 ac_friends;
-        string nickname;
-        string icon;
-        bool online;
-        if(get_ac_info_json(s,ac_friends,nickname,icon,online))
-        {
-            vlogi($(ac_friends) $(nickname) $(icon) $(icon));
-        }
-    }
+//    {
+//        string s = set_ac_info_json(123,"nicknamesss","iconsss",true);
+//        int64 ac_friends;
+//        string nickname;
+//        string icon;
+//        bool online;
+//        if(get_ac_info_json(s,ac_friends,nickname,icon,online))
+//        {
+//            vlogi($(ac_friends) $(nickname) $(icon) $(icon));
+//        }
+//    }
 
 //    //== json ==
 //    {
@@ -1867,10 +1873,6 @@ void wid_test::test_24(QWidget *parent)
 
 void wid_test::test_25(QWidget *parent)
 {
-    //登陆：史强 798315362  796304805 607037441
-    int64 account = 796304805;
-    string passwd = "123456";
-
     //==
     qweb_client *wc = new qweb_client(this);
 
@@ -1880,10 +1882,21 @@ void wid_test::test_25(QWidget *parent)
     wid_friend_list *wid = new wid_friend_list(this);
     wid->hide();
 
+    {
+        //登陆：史强 798315362  796304805 607037441 535181553
+        int64 account = 535181553;
+        string passwd = "123456";
+        wid->set_login_info(account,passwd);
+    }
+
+
 
     //==
     connect(wc,&qweb_client::sn_open,this,[=](){
-        wc->ask_login(account,passwd);
+        wc->ask_login(wid->get_account(),wid->get_passwd());
+    });
+    connect(wc,&qweb_client::sn_close,this,[=](){
+        vlogw("sn_close");
     });
     connect(wc,&qweb_client::sn_ac_info,this,[=](int64 account,string nickname,string icon){
         vlogi($(nickname)$(icon));
@@ -1896,13 +1909,30 @@ void wid_test::test_25(QWidget *parent)
 
         wid->add_recv_msg({target,source,time_to,type,content});
     });
-    connect(wc,&qweb_client::sn_ac_status,this,[=](int64 ac_friends,string nickname,string icon,bool online){
+    connect(wc,&qweb_client::sn_ac_status,
+            this,[=](int64 ac_friends,string nickname,string icon,string remarks,bool online)
+    {
         vlogi($(ac_friends) $(nickname) $(icon) $(online));
-        wid_friend_list::ct_friend ct{online,ac_friends,nickname,icon,nullptr,nullptr };
+        ct_login_status ct_status{online,ac_friends,nickname,icon,remarks};
+        wid_friend_list::ct_friend ct{ct_status,nullptr,nullptr };
         wid->add_friend(ct);
     });
-    connect(wc,&qweb_client::sn_close,this,[=](){
-        vlogw("sn_close");
+    connect(wc,&qweb_client::sn_ac_info_all,this,[=]
+            (int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon){
+        ct_ac_info ct{account,phone,age,sex,nickname,location,icon};
+        wid->add_account_person(ct);
+    });
+    connect(wc,&qweb_client::sn_update_info,this,[=] (bool ok){
+        if(ok == false)
+        { wid_dialog_box().make_box("修改信息失败","服务器更新信息失败，请检查信息合理性",wid_dialog_box::e_error); }
+        wid->get_info()->show_extend();
+    });
+    connect(wc,&qweb_client::sn_update_remarks,this,[=] (int64 friends,bool ok){
+        if(ok == false)
+        { wid_dialog_box().make_box("修改备注失败","服务器更新改备失败，请检查网络状态",wid_dialog_box::e_error); }
+    });
+    connect(wc,&qweb_client::sn_ac_info_remarks,this,[=] (int64 friends,string remarks){
+        wid->add_friend_remarks(friends,remarks);
     });
 
     //==
@@ -1924,6 +1954,37 @@ void wid_test::test_25(QWidget *parent)
         else phistory->read_history(account,vec);
 
         wid->set_history_msg(account,vec);
+    });
+//    connect(wid,&wid_friend_list::sn_history_read_ac,this,[=](int64 account,bool is_non_read){
+////        vector<ct_msg_type> vec;
+////        if(is_non_read) phistory->read_history_non_read(account,vec);
+////        else phistory->read_history(account,vec);
+
+////        wid->set_history_msg(account,vec);
+//    });
+    connect(wid,&wid_friend_list::sn_account_info,this,[=](int64 friends){
+        bool ok = wc->ask_info_all(friends);
+        vlogfaile(ok,$(ok));
+
+//        wid->set_history_msg(account,vec);
+
+//        vector<ct_msg_type> vec;
+//        if(is_non_read) phistory->read_history_non_read(account,vec);
+//        else phistory->read_history(account,vec);
+
+//        wid->set_history_msg(account,vec);
+    });
+
+    //==
+    connect(wid->get_info()->get_person(),&wid_person_info::sn_save_info,this,[=](ct_ac_info ct){
+        bool ok = wc->ask_update_info(ct.account,ct.phone,ct.age,ct.sex,ct.nickname,ct.location,ct.icon);
+        vlogfaile(ok,$(ok));
+    });
+    connect(wid->get_person(),&wid_person_info::sn_save_remarks,this,[=](string remarks){
+        int64 account = wid->get_account();
+        int64 ac_friend = wid->get_person()->get_edit_info().account;
+        bool ok = wc->ask_update_remarks(account,ac_friend,remarks);
+        vlogfaile(ok,$("ask_update_remarks") $(remarks));
     });
 
 
@@ -2061,6 +2122,10 @@ void wid_test::test_27(QWidget *parent)
 
     qweb_client *th = new qweb_client(this);
     qweb_files *wfs = new qweb_files(this);
+
+    //初始化单例网络
+//    Tweb::get()->init_web(th);
+
 
     connect(wfs,&qweb_files::sn_finish_upload,this,[=](){
         //更新信息

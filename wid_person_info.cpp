@@ -20,47 +20,43 @@ wid_person_info::wid_person_info(QWidget *parent)
     _save->resize(size_butt);
 
     connect(_cancel,&qbutt_line::sn_clicked,[=](){
-        emit sn_save_info(false);
+        emit sn_save(false);
     });
 
     connect(_save,&qbutt_line::sn_clicked,[=](){
-        emit sn_save_info(true);
+        emit sn_save(true);
     });
 
-    connect(this,&wid_person_info::sn_save_info,[=](bool save){
+    connect(this,&wid_person_info::sn_save,[=](bool save){
         if(save)
         {
             if(not_change_info() == false)
             {
                 if(is_verification_info())
                 {
-                    emit sn_change_info(true,false);
+                    bool ok = wid_dialog_box().make_box("确认修改","<< 个人信息以改变，请确认修改个人信息 >>",
+                                wid_dialog_box::e_warning);
+                    if(ok) emit sn_save_info(get_edit_info());
+                    return ;
                 }
                 else
                 {
-                    QString s =
-R"(
-    性别：男 或的 女
-    年龄：0 至 200
-)";
-                    wid_dialog_box().make_box("修改限制",s,wid_dialog_box::e_warning);
+                    wid_dialog_box().make_box("修改限制","性别：男 或的 女 \n年龄：0 至 200",
+                        wid_dialog_box::e_warning);
                     return;
                 }
             }
-            else if(not_change_remarks() == false)
-            {
-                emit sn_change_info(true,true);
-            }
+            else if(not_change_remarks() == false) { emit sn_save_remarks(get_edit_remarks()); }
         }
-        emit sn_change_info(false,false);
+        emit sn_not_change();
     });
 }
 
 void wid_person_info::set_info(const ct_ac_info &info)
 {
     QString sex;
-    if(info.sex == 0) sex = "男";
-    else sex = "女";
+    if(info.sex == 0) sex = "女";
+    else sex = "男";
 
     _ct_save.account    = QString::number(info.account);
     _ct_save.phone      = QString::number(info.phone);
@@ -267,9 +263,9 @@ ct_ac_info wid_person_info::get_edit_info()
     return ct;
 }
 
-QString wid_person_info::get_edit_remarks()
+string wid_person_info::get_edit_remarks()
 {
     QString str;
     if(_edit.remarks) str = _edit.remarks->text();
-    return str;
+    return str.toStdString();
 }

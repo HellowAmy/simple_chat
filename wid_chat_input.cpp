@@ -45,16 +45,7 @@ void wid_chat_input::init_size(QSize size)
 
     //消息转发--发送按钮
     connect(butt_send,&qbutt_line::sn_clicked,this,[=](){
-
-        QString txt = edit_text->get_send_text();
-        if(txt != "")
-        {
-            ct_msg_type msg {get_time_now(),_types_Text_,_object_AL_,txt.toStdString()};
-            emit sn_send_msg(msg);
-        }
-
-
-//        send_text(edit_text->get_send_text());
+        send_text(edit_text->get_send_text());
     });
 
     //消息转发--回车

@@ -19,6 +19,10 @@
 删除表：
 	DROP TABLE IF EXISTS test_table;
 	
+新增表字段：
+	ALTER TABLE test_table ADD COLUMN name TEXT;			（新增字段）
+	ALTER TABLE test_table ADD COLUMN name TEXT DEFAULT 'null';	（新增字段，带默认值）
+
 查看表结构：
 	.tables			（查看所有表）
 	.schema test_table	（查看某个表的具体数据结构）
@@ -117,8 +121,13 @@ SELECT * FROM ac_friends;
 SELECT * FROM ac_info;
 SELECT * FROM ac_passwd;
 
+535181553
+SELECT * FROM ac_friends WHERE account = 535181553;
+UPDATE ac_friends SET remarks = '一陀大屎-强' WHERE account = 535181553 AND friends = 798315362;
+	
 SELECT * FROM history_798315362;
 
+535181553  11012214  8    1    汪淼                     zhongg     icon_default  
 796304805  11012237  31   0    潘寒                     zhongg    icon_default.png
 798315362  11012215  9    0    史强                     zhongg    icon_default.png
 

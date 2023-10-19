@@ -10,6 +10,7 @@
 //#include <string>
 #include <tuple>
 
+#include "qlab_img.h"
 #include "qframe_line.h"
 
 #define stoqs(s) QString::fromStdString(s)
@@ -104,6 +105,21 @@ static auto fn_Label = [](QWidget *wid,QString str, QSize size = QSize(80,30),QP
     fr->show();
     return std::make_tuple(fr,lab);
 };
+
+static auto fn_fimg = [](QWidget *wid,QString icon, QSize size = QSize(80,30),QPoint pos = QPoint(0,0))
+    -> std::tuple<qframe_line*,qlab_img*>
+{
+    qframe_line *fr = new qframe_line(wid);
+    qlab_img *lab = new qlab_img(fr);
+    lab->set_img(icon);
+    lab->set_keep(false,QSize(fr->calc_size(size,5)));
+    lab->update_img();
+    lab->show();
+    fr->resize_center(lab,size,5);
+    fr->move(pos);
+    fr->show();
+    return std::make_tuple(fr,lab);
+};
 //== 带边框界面 ==
 
 
@@ -147,6 +163,18 @@ struct ct_ac_info
     string nickname;    //昵称
     string location;    //地址
     string icon;        //头像
+};
+
+//!
+//! 好友状态传递
+//!
+struct ct_login_status
+{
+    bool online;        //在线
+    int64 account;      //账号
+    string nickname;    //昵称
+    string icon;        //头像
+    string remarks;     //备注
 };
 
 //!

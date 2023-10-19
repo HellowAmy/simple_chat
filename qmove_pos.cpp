@@ -173,7 +173,6 @@ QSize qmove_pos::move_group(QPoint pos,int space,int row, int column,bool is_rev
 
 void qmove_pos::move_center(QWidget *wid)
 {
-
     QScreen* desk = QApplication::primaryScreen();
     int width = desk->geometry().width();
     int height = desk->geometry().height();

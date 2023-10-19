@@ -70,11 +70,27 @@ public:
     bool ask_update_info(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
 
     //!
-    //! 修改头像：
-    //!     1.提供账号与头像，上传文件服务器
-    //!     2.文件上传完成，提交头像更新记录
+    //! 修改备注：
+    //!     1.提供我方与好友账号，修改好友备注
+    //!     2.服务器完成修改并下发    [服务器处理]
     //!
-    bool ask_update_icon(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
+    bool ask_update_remarks(int64 account,int64 friends,string remarks);
+
+
+    //!
+    //! 获取信息：
+    //!     1.提供账号获取所有信息
+    //!     2.服务器查询并下发      [服务器处理]
+    //!
+    bool ask_info_all(int64 account);
+
+    //!
+    //! 获取备注：
+    //!     1.提供我方与好友账号
+    //!     2.服务器查询并下发      [服务器处理]
+    //!
+    bool ask_info_remarks(int64 account,int64 friends);
+
 
 
     int64 is_online();
@@ -84,10 +100,12 @@ signals:
     void sn_open();
     void sn_close();
     void sn_ac_info(int64 account,string nickname,string icon);
-    void sn_ac_status(int64 ac_friends,string nickname,string icon,bool online);
+    void sn_ac_info_remarks(int64 friends,string remarks);
+    void sn_ac_status(int64 ac_friends,string nickname,string icon,string remarks,bool online);
     void sn_ac_register(int64 account,string passwd,bool ok);
     void sn_ac_info_all(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
     void sn_update_info(bool ok);
+    void sn_update_remarks(int64 friends,bool ok);
     void sn_recv_msg(int64 target, int64 source,int64 time_to, string type, string content);
 
 
@@ -107,8 +125,10 @@ private:
     void task_ac_login_back(const string &sjson);
     void task_ac_register_back(const string &sjson);
     void task_ac_info_back(const string &sjson);
+    void task_ac_info_remarks_back(const string &sjson);
     void task_ac_info_all_back(const string &sjson);
     void task_ac_update_info_back(const string &sjson);
+    void task_ac_update_remarks_back(const string &sjson);
     void task_friends_list_back(const string &sjson);
     void task_friends_status_back(const string &sjson);
     void task_swap_cache_back(const string &sjson);
@@ -118,5 +138,22 @@ private:
 
     bool send_msg(const string &json);
 };
+
+////!
+////! 类说明： 蜘蛛网络，单例模式，提供跨界连接网络
+////!
+//class qweb_client_spider : public QObject
+//{
+//    Q_OBJECT
+//public:
+//    void init_web(qweb_client *web) { _web = web; }
+//    qweb_client* get_web() { return _web; }
+
+//private:
+//    qweb_client *_web = nullptr;
+//};
+
+
+
 
 #endif // QWEB_CLIENT_H

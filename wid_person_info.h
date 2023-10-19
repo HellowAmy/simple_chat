@@ -44,18 +44,21 @@ public:
     void set_info_remarks(QString remarks);
     void init_edit();
     void init_show();
+
     bool not_change_info();
     bool not_change_remarks();
     bool is_verification_info();
-
     void update_info();
 
     ct_ac_info get_edit_info();
-    QString get_edit_remarks();
+    string get_edit_remarks();
 
 signals:
-    void sn_save_info(bool save);
-    void sn_change_info(bool save,bool remarks);
+    void sn_save(bool save);
+//    void sn_change_info(bool save,bool remarks);
+    void sn_save_info(ct_ac_info ct);
+    void sn_save_remarks(string remarks);
+    void sn_not_change();
 
 protected:
     int _space;

@@ -68,6 +68,7 @@ public:
         _butt_ok->resize(max_width/2 - space,butt_high);
 
         qmove_pos move;
+        move.move_center(this);
         {
             move.add_wid(_butt_no);
             move.add_wid(_butt_ok);

@@ -27,7 +27,7 @@ class wid_friend_list : public qframe_line
 public:
     struct ct_friend
     {
-        ct_login_status status;
+        ct_friends_init status;
         wid_friend_butt *butt;
         wid_chat *chat;
     };
@@ -37,12 +37,17 @@ public:
 
     void set_login_info(int64 account,string passwd);
 
+
     void add_friend_remarks(int64 account,string remarks);
     void add_account_person(ct_ac_info ct);
     void add_friend(ct_friend ct);                      //添加好友
     void add_recv_msg(ct_swap_msg ct);                  //接收网络消息
+//    void update_icon(int64 account, bool online);    //更新连接状态
     void update_connect(int64 account, bool online);    //更新连接状态
     void update_ac_icon(int64 account,QString path);    //重新载入账号头像
+    void update_info_icon();
+
+
     void init_login(int64 account,QString nickname,QString icon);                   //初始化登陆
     void set_history_msg(int64 account,const std::vector<ct_msg_type> &vec_msg);    //读入聊天窗口
 
@@ -51,12 +56,24 @@ public:
     int64 get_account();
     string get_passwd();
 
+    QString get_path_icon();
+
 signals:
-    void sn_account_info(int64 friends);    //获取好友账号信息
+    void sn_account_info(int64 account);    //获取好友账号信息
     void sn_send_msg(ct_swap_msg ct);       //发送信息
     void sn_update_msg(int64 account);      //更新界面显示
     void sn_download_icon(int64 account);   //下载头像
-    void sn_history_read_ac(int64 account,bool is_non_read = true); //读取历史记录
+    void sn_upload_icon(int64 account,string icon);       //上传头像
+    void sn_change_icon(string icon);
+
+    //修改信息
+    void sn_update_info(ct_ac_info ct);
+    void sn_update_remarks(int64 account, int64 friends, string remarks);
+
+
+
+    //读取历史记录
+    void sn_history_read_ac(int64 account,bool is_non_read = true);
 
 private:
     int _space;                     //间隔

@@ -19,6 +19,7 @@ class wid_person_info : public qframe_line
 public:
     struct ct_person_str
     {
+        QString icon;
         QString remarks;
         QString account;
         QString phone;
@@ -41,7 +42,7 @@ public:
 public:
     explicit wid_person_info(QWidget *parent = nullptr);
     void set_info(const ct_ac_info &info);
-    void set_info_remarks(QString remarks);
+    void set_info_remarks(QString remarks,QString icon = "");
     void init_edit();
     void init_show();
 
@@ -68,6 +69,7 @@ protected:
     ct_person_str _ct_save;
     qbutt_line *_cancel;
     qbutt_line *_save;
+    qlab_img *_img = nullptr;
 };
 
 #endif // WID_PERSON_INFO_H

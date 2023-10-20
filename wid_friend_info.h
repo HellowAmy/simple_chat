@@ -4,6 +4,9 @@
 #include <QWidget>
 #include <QVector>
 #include <QLineEdit>
+#include <QFileDialog>
+#include <QImageReader>
+//#include <QFileInfo>
 
 #include "qframe_line.h"
 #include "qbutt_line.h"
@@ -33,6 +36,7 @@ public:
 
 signals:
     void sn_show_extend();
+    void sn_change_icon(QString file);
     void sn_click_name(QString name);   //点击名字按钮
     void sn_click_extend(QString tips); //点击扩展按钮
     void sn_info_all();
@@ -52,6 +56,8 @@ private:
 
     void status_extend(int status,QWidget* wid);
     void show_wid_extend(QWidget* wid);
+
+    bool is_img(QString file);
 
 //    QVector<QString> _vec_extend;   //扩展功能按钮组合
 };

@@ -24,12 +24,6 @@ wid_chat::wid_chat(QWidget *parent)
     }
 
     connect(_input,&wid_chat_input::sn_send_msg,this,[=](ct_msg_type msg){
-
-        qlog(msg.time);
-        qlog(msg.types);
-        qlog(msg.object);
-        qlog(msg.content);
-        qlog("\n");
         _output->add_message(_input->make_msg(msg));
     });
 }

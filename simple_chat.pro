@@ -41,6 +41,7 @@ SOURCES += \
 #    wid_msg_abs.cpp \
     wid_person_info.cpp \
     wid_test.cpp \
+    wid_test_20.cpp \
     wid_test_30.cpp
 
 HEADERS += \

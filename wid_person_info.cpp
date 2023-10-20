@@ -66,9 +66,10 @@ void wid_person_info::set_info(const ct_ac_info &info)
     _ct_save.location   = stoqs(info.location);
 }
 
-void wid_person_info::set_info_remarks(QString remarks)
+void wid_person_info::set_info_remarks(QString remarks,QString icon)
 {
     _ct_save.remarks = remarks;
+    if(icon != "") _ct_save.icon = icon;
 }
 
 void wid_person_info::init_edit()
@@ -198,6 +199,13 @@ void wid_person_info::init_show()
     auto size = move.move_group({_space,_space},_space,2,-1);
     this->resize(size + QSize(_space*2,_space*2));
 
+    {
+        auto [a,b] = fn_fimg(this,_ct_save.icon,QSize(200 + 10,200 + 10));
+        qframe_line *f = a;
+        _img = b;
+        f->move(this->width(),_space);
+        this->resize(QSize(this->width() + f->width() + _space,this->height()));
+    }
 }
 
 bool wid_person_info::not_change_info()
@@ -238,6 +246,11 @@ bool wid_person_info::is_verification_info()
 void wid_person_info::update_info()
 {
     if(_edit.remarks) _edit.remarks->setText(_ct_save.remarks);
+    if(_img)
+    {
+        _img->set_img(_ct_save.icon);
+        _img->update_img();
+    }
 
     _edit.account->setText(_ct_save.account);
     _edit.phone->setText(_ct_save.phone);

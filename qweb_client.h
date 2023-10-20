@@ -39,11 +39,9 @@ public:
 
     //!
     //! 登陆逻辑：
-    //!     1.发送登陆请求,获取登陆反馈
-    //!     2.请求账号信息，获取账号信息反馈,信号转发账号信息
-    //!     3.发送好友列表请求，获取好友信息反馈
-    //!     4.发送好友状态请求，获取好友状态反馈，信号转发好友状态
-    //!     5.发送请求暂存信息，获取暂存信息反馈，信号转发暂存信息，完成登陆处理
+    //!     1.发送登陆请求,获取账号信息与好友初始化信息
+    //!     2.打开历史记录数据库，创建好友数据表
+    //!     3.拉取交换暂存信息，获取暂存信息并加入到历史记录
     //!
     bool ask_login(int64 account,string passwd);
 
@@ -56,18 +54,19 @@ public:
 
     //!
     //! 交换逻辑：
-    //!     1.发送信息，完成交换处理
-    //!     2.服务器转发信息       [服务器处理]
-    //!     3.对方账号接收信息      [对方处理]
-    bool ask_swap_msg(int64 target,int64 source,int64 time_to,string type,string content);
-    bool ask_swap_msg_back(int64 target,int64 source,int64 time_to,int64 time_ok);
+    //!     1.发送信息，加入发送方历史记录
+    //!     2.服务器转发信息，不在线则加入暂存                  [服务器处理]
+    //!     3.对方账号接收信息，发送确认反馈，加入接收方历史记录   [对方处理]
+    bool ask_swap_msg(ct_swap_msg msg);
+    bool ask_swap_msg_back(ct_swap_msg_back msg);
 
     //!
     //! 修改信息：
     //!     1.提供账号信息字段
     //!     2.服务器完成修改并下发    [服务器处理]
     //!
-    bool ask_update_info(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
+    bool ask_update_info(ct_ac_info info);
+//     int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
 
     //!
     //! 修改备注：
@@ -84,13 +83,16 @@ public:
     //!
     bool ask_info_all(int64 account);
 
-    //!
-    //! 获取备注：
-    //!     1.提供我方与好友账号
-    //!     2.服务器查询并下发      [服务器处理]
-    //!
-    bool ask_info_remarks(int64 account,int64 friends);
+//    //!
+//    //! 获取备注：
+//    //!     1.提供我方与好友账号
+//    //!     2.服务器查询并下发      [服务器处理]
+//    //!
+//    bool ask_info_remarks(int64 account,int64 friends);
 
+
+
+//    void open_friends_db(int64 friends);
 
 
     int64 is_online();
@@ -99,14 +101,28 @@ public:
 signals:
     void sn_open();
     void sn_close();
-    void sn_ac_info(int64 account,string nickname,string icon);
+    void sn_recv_msg(ct_swap_msg msg);
+
+    void sn_ac_login(int64 account,string nickname,string icon,vector<ct_friends_init> vec_friends);
+
+    void sn_ac_info_all(ct_ac_info info);
     void sn_ac_info_remarks(int64 friends,string remarks);
-    void sn_ac_status(int64 ac_friends,string nickname,string icon,string remarks,bool online);
+
+    void sn_update_info(string icon,bool ok);
+    void sn_update_remarks(int64 friends,string remarks);
+
+
+//    void sn_ac_info(int64 account,string nickname,string icon);
+
+
+
+//    void sn_ac_status(int64 ac_friends,string nickname,string icon,string remarks,bool online);
     void sn_ac_register(int64 account,string passwd,bool ok);
-    void sn_ac_info_all(int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
-    void sn_update_info(bool ok);
-    void sn_update_remarks(int64 friends,bool ok);
-    void sn_recv_msg(int64 target, int64 source,int64 time_to, string type, string content);
+
+// int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
+
+
+
 
 
 protected:
@@ -122,18 +138,40 @@ private:
     void sl_message(const string &sjson);
     void sl_close();
 
-    void task_ac_login_back(const string &sjson);
-    void task_ac_register_back(const string &sjson);
-    void task_ac_info_back(const string &sjson);
-    void task_ac_info_remarks_back(const string &sjson);
-    void task_ac_info_all_back(const string &sjson);
-    void task_ac_update_info_back(const string &sjson);
-    void task_ac_update_remarks_back(const string &sjson);
-    void task_friends_list_back(const string &sjson);
-    void task_friends_status_back(const string &sjson);
-    void task_swap_cache_back(const string &sjson);
+    //发送接收信息
     void task_swap_msg(const string &sjson);
     void task_swap_msg_back(const string &sjson);
+
+    //获取暂存信息，重新分别到任务处理函数
+    void task_swap_cache_back(const string &sjson);
+
+
+    //== 任务处理函数 ==
+    void task_ac_login_back(const string &sjson);
+
+
+
+    void task_ac_update_info_back(const string &sjson);
+    void task_ac_update_remarks_back(const string &sjson);
+
+    void task_ac_info_all_back(const string &sjson);
+
+
+
+    void task_ac_register_back(const string &sjson);
+
+//    void task_ac_info_back(const string &sjson);
+//    void task_ac_info_remarks_back(const string &sjson);
+
+
+
+//    void task_friends_list_back(const string &sjson);
+//    void task_friends_status_back(const string &sjson);
+
+
+
+
+
     void task_error_info(const string &sjson);
 
     bool send_msg(const string &json);

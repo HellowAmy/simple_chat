@@ -100,12 +100,53 @@ wid_friend_list::wid_friend_list(QWidget *parent)
     connect(_wid_info,&wid_friend_info::sn_info_all,this,[=](){
         emit sn_account_info(_account);
     });
+
+
+//    connect(_wid_info->get_person(),&wid_person_info::sn_save_info,this,[=](ct_ac_info ct){
+//        emit sn_update_info(ct);
+//    });
+//    connect(_wid_fd_info,&wid_person_info::sn_save_remarks,this,[=](ct_ac_info ct){
+////        int64 account, int64 friends, string remarks
+//        int64 account = wid->get_account();
+//        int64 ac_friend = wid->get_person()->get_edit_info().account;
+//        bool ok = wc->ask_update_remarks(account,ac_friend,remarks);
+//        vlogfaile(ok,$("ask_update_remarks") $(remarks));
+
+//        emit sn_update_remarks({account,friends,remarks});
+////        emit sn_update_info(ct);
+//    });
+
+
+    connect(_wid_info,&wid_friend_info::sn_change_icon,this,[=](QString file){
+        emit sn_upload_icon(_account, qstos(file));
+
+//        ct_ac_info ct{_account,-1,-1,-1,"","",qstos(file)};
+//        emit sn_update_info(ct);
+    });
+
+    //修改信息
+    connect(_wid_info->get_person(),&wid_person_info::sn_save_info,this,[=](ct_ac_info ct){
+        emit sn_update_info(ct);
+    });
+    connect(_wid_fd_info,&wid_person_info::sn_save_remarks,this,[=](string remarks){
+        int64 account = _account;
+        int64 friends = _wid_fd_info->get_edit_info().account;
+        emit sn_update_remarks(account,friends,remarks);
+    });
+
 }
 
 void wid_friend_list::set_login_info(int64 account, string passwd)
 {
     _account = account;
     _passwd = passwd;
+}
+
+void wid_friend_list::update_info_icon()
+{
+    QString path = _path_icon + "icon_" + stoqs(std::to_string(_account));
+    _wid_info->set_icon(path);
+    vlogw(Q$(path));
 }
 
 void wid_friend_list::add_friend_remarks(int64 account, string remarks)
@@ -117,7 +158,8 @@ void wid_friend_list::add_friend_remarks(int64 account, string remarks)
         wid_friend_butt *butt = it->second->butt;
         butt->get_status()->remarks = remarks;
         butt->update_butt();
-        _wid_fd_info->set_info_remarks(stoqs(it->second->status.remarks));
+
+        _wid_fd_info->set_info_remarks(stoqs(remarks));
         _wid_fd_info->update_info();
     }
 }
@@ -136,8 +178,10 @@ void wid_friend_list::add_account_person(ct_ac_info ct)
         if(it != _map_friends.end())
         {
             QString remarks = stoqs(it->second->status.remarks);
+            QString icon = stoqs(it->second->status.icon);
+
             _wid_fd_info->set_info(ct);
-            _wid_fd_info->set_info_remarks(remarks);
+            _wid_fd_info->set_info_remarks(remarks,icon);
             _wid_fd_info->update_info();
             show_wid_extend(_wid_person);
         }
@@ -147,10 +191,7 @@ void wid_friend_list::add_account_person(ct_ac_info ct)
 
 void wid_friend_list::update_ac_icon(int64 account,QString path)
 {
-    if(account == _account)
-    {
-        _wid_info->set_icon(path);
-    }
+    if(account == _account) { _wid_info->set_icon(path); }
     else
     {
         auto it = _map_friends.find(account);
@@ -159,8 +200,6 @@ void wid_friend_list::update_ac_icon(int64 account,QString path)
             wid_friend_butt *butt = it->second->butt;
             butt->get_status()->icon = qstos(path);
             butt->update_butt();
-//            it->second->butt->set_icon(path);
-//            it->second->butt->update_butt();
         }
     }
 }
@@ -207,6 +246,11 @@ string wid_friend_list::get_passwd()
     return _passwd;
 }
 
+QString wid_friend_list::get_path_icon()
+{
+    return _path_icon;
+}
+
 void wid_friend_list::add_friend(ct_friend ct)
 {
     //补全头像路径
@@ -219,7 +263,7 @@ void wid_friend_list::add_friend(ct_friend ct)
 
     //设置头像,不存在则下载头像
     if(files_info::is_exists(ct.status.icon) == false)
-    { emit sn_download_icon(ct.status.account); }
+    { emit sn_download_icon(ct.status.friends); }
 
 
 //    if(files_info::is_exists(qstos(path))) { butt->set_icon(path); }
@@ -238,7 +282,7 @@ void wid_friend_list::add_friend(ct_friend ct)
     std::shared_ptr<ct_friend> sp_friend = std::make_shared<ct_friend>(ct);
     sp_friend->butt = butt;
     sp_friend->chat = nullptr;
-    _map_friends.emplace(ct.status.account,sp_friend);
+    _map_friends.emplace(ct.status.friends,sp_friend);
 
     //按钮信号槽连接聊天框
     connect(sp_friend->butt->get_butt(),&qbutt_line::sn_clicked,this,[=](){
@@ -264,7 +308,6 @@ void wid_friend_list::add_friend(ct_friend ct)
         emit sn_account_info(account);
         vlogi($(account));
     });
-
 }
 
 void wid_friend_list::add_recv_msg(ct_swap_msg ct)
@@ -328,13 +371,13 @@ void wid_friend_list::make_chat(ct_friend *ct)
         ct->chat = chat;
 
         //读取历史记录--全部
-        emit sn_history_read_ac(ct->status.account,false);
+        emit sn_history_read_ac(ct->status.friends,false);
 
         //发送到到网络转发端,附带账号与时间用于定位回馈确认消息
         connect(ct->chat->get_input(),&wid_chat_input::sn_send_msg,this,[=](ct_msg_type msg){
             //发送到网络
             ct_swap_msg cts;
-            cts.target  = ct->status.account;
+            cts.target  = ct->status.friends;
             cts.source  = _account;
             cts.time_to = msg.time;
             cts.types   = msg.types;

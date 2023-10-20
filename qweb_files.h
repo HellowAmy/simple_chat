@@ -15,6 +15,7 @@
 #include "web_protocol.h"
 #include "inter_client.h"
 //#include "swap_files.h"
+//#include "Tvlog.h"
 #include "files_transfer.h"
 
 using namespace protocol;
@@ -146,12 +147,12 @@ public:
 
     explicit qweb_ac_upload(QObject *parent = nullptr)
     {
-        connect(this,&qweb_ac_download::sn_open,[=](){
+        connect(this,&qweb_ac_upload::sn_open,[=](){
             bool ok = upload_icon(_abs_path,_account);
             if(ok == false) { if(_fn_upload_cb) _fn_upload_cb(ok,_account,_abs_path); }
         });
 
-        connect(this,&qweb_ac_download::sn_finish_download,[=](bool ok,int64 id){
+        connect(this,&qweb_ac_upload::sn_finish_upload,[=](bool ok,int64 id){
             if(_fn_upload_cb) _fn_upload_cb(ok,_account,_abs_path);
             this->close();
         });

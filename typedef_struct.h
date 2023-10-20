@@ -166,12 +166,12 @@ struct ct_ac_info
 };
 
 //!
-//! 好友状态传递
+//! 好友状态初始化
 //!
-struct ct_login_status
+struct ct_friends_init
 {
     bool online;        //在线
-    int64 account;      //账号
+    int64 friends;      //账号
     string nickname;    //昵称
     string icon;        //头像
     string remarks;     //备注

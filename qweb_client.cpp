@@ -13,13 +13,13 @@ qweb_client::qweb_client(QObject *parent)
 
     ADD_MAP(ac_login_back);
     ADD_MAP(ac_register_back);
-    ADD_MAP(ac_info_back);
-    ADD_MAP(ac_info_remarks_back);
+//    ADD_MAP(ac_info_back);
+//    ADD_MAP(ac_info_remarks_back);
     ADD_MAP(ac_info_all_back);
     ADD_MAP(ac_update_info_back);
     ADD_MAP(ac_update_remarks_back);
-    ADD_MAP(friends_list_back);
-    ADD_MAP(friends_status_back);
+//    ADD_MAP(friends_list_back);
+//    ADD_MAP(friends_status_back);
     ADD_MAP(swap_cache_back);
     ADD_MAP(swap_msg);
     ADD_MAP(swap_msg_back);
@@ -63,25 +63,68 @@ void qweb_client::sl_close()
     emit sn_close();
 }
 
+//void qweb_client::open_friends_db(int64 friends)
+//{
+//    //创建数据库
+//    if(_db.create_history(friends) == false)
+//    { vlogw("create history failed" $(friends)); }
+//}
+
 void qweb_client::task_ac_login_back(const string &sjson)
 {
     int64 account;
-    bool ok;
-    if(get_ac_login_back(sjson,account,ok))
+    string svec_friends_info;
+    string nickname;
+    string icon;
+    if (get_ac_login_back(sjson,account,nickname,icon,svec_friends_info))
     {
-        if(ok)
-        {
-            //打开数据库
-            _db.open_history(account);
+        //打开数据库
+        if(_db.open_history(account) == false)
+        { vlogw("open history failed" $(account)); }
 
-            //获取账号信息
-            string s = set_ac_info(account);
-            send_msg(s);
-            _is_online = ok;
+        //加入好友信息并反馈
+        vector<ct_friends_init> vec_friends;
+        vector<string> vec = get_json_vec(svec_friends_info);
+        for(const auto &a:vec)
+        {
+            ct_friends_init ct;
+            if(get_friends_info_json(a,ct.friends,ct.nickname,ct.icon,ct.remarks,ct.online))
+            {
+                //创建数据库
+                if(_db.create_history(ct.friends) == false)
+                { vlogw("create history failed" $(ct.friends)); }
+
+                vec_friends.push_back(ct);
+            }
         }
-        else vlogw("get_ac_login_back:" $(sjson));
+        emit sn_ac_login(account,nickname,icon,vec_friends);
+
+        //请求暂存信息
+        string s = set_swap_cache(account);
+        send_msg(s);
     }
-    else vlogw("get_ac_login_back:" $(sjson));
+    else vlogw("ac_login_back:" $(sjson));
+
+
+
+
+//    int64 account;
+//    bool ok;
+//    if(get_ac_login_back(sjson,account,ok))
+//    {
+//        if(ok)
+//        {
+//            //打开数据库
+//            _db.open_history(account);
+
+//            //获取账号信息
+//            string s = set_ac_info(account);
+//            send_msg(s);
+//            _is_online = ok;
+//        }
+//        else vlogw("get_ac_login_back:" $(sjson));
+//    }
+//    else vlogw("get_ac_login_back:" $(sjson));
 
 }
 
@@ -97,37 +140,37 @@ void qweb_client::task_ac_register_back(const string &sjson)
     else vlogw("task_ac_register_back:" $(sjson));
 }
 
-void qweb_client::task_ac_info_back(const string &sjson)
-{
-    int64 account;
-    string nickname;
-    string icon;
-    bool ok;
-    if(get_ac_info_back(sjson,account,nickname,icon,ok))
-    {
-        if(ok)
-        {
-            emit sn_ac_info(account,nickname,icon); //转发账号信息
+//void qweb_client::task_ac_info_back(const string &sjson)
+//{
+//    int64 account;
+//    string nickname;
+//    string icon;
+//    bool ok;
+//    if(get_ac_info_back(sjson,account,nickname,icon,ok))
+//    {
+//        if(ok)
+//        {
+//            emit sn_ac_info(account,nickname,icon); //转发账号信息
 
-            //获取好友列表
-            string s = set_friends_list(account);
-            send_msg(s);
-        }
-        else vlogw("task_ac_info_back:" $(sjson));
-    }
-    else vlogw("task_ac_info_back:" $(sjson));
-}
+//            //获取好友列表
+//            string s = set_friends_list(account);
+//            send_msg(s);
+//        }
+//        else vlogw("task_ac_info_back:" $(sjson));
+//    }
+//    else vlogw("task_ac_info_back:" $(sjson));
+//}
 
-void qweb_client::task_ac_info_remarks_back(const string &sjson)
-{
-    int64 friends;
-    string remarks;
-    if(get_ac_info_remarks_back(sjson,friends,remarks))
-    {
-        emit sn_ac_info_remarks(friends,remarks); //转发账号备注
-    }
-    else vlogw("task_ac_info_back:" $(sjson));
-}
+//void qweb_client::task_ac_info_remarks_back(const string &sjson)
+//{
+//    int64 friends;
+//    string remarks;
+//    if(get_ac_info_remarks_back(sjson,friends,remarks))
+//    {
+//        emit sn_ac_info_remarks(friends,remarks); //转发账号备注
+//    }
+//    else vlogw("task_ac_info_back:" $(sjson));
+//}
 
 void qweb_client::task_ac_info_all_back(const string &sjson)
 {
@@ -140,7 +183,8 @@ void qweb_client::task_ac_info_all_back(const string &sjson)
     string icon;
     if(get_ac_info_all_back(sjson,account,phone,age,sex,nickname,location,icon))
     {
-        emit sn_ac_info_all(account,phone,age,sex,nickname,location,icon);
+        ct_ac_info info{account,phone,age,sex,nickname,location,icon};
+        emit sn_ac_info_all(info);
     }
     else vlogw("task_ac_info_all_back:" $(sjson));
 }
@@ -148,10 +192,11 @@ void qweb_client::task_ac_info_all_back(const string &sjson)
 void qweb_client::task_ac_update_info_back(const string &sjson)
 {
     int64 account;
+    string icon;
     bool ok;
-    if(get_ac_update_info_back(sjson,account,ok))
+    if(get_ac_update_info_back(sjson,account,icon,ok))
     {
-        emit sn_update_info(ok);
+        emit sn_update_info(icon,ok);
     }
     else vlogw("task_friends_list_back:" $(sjson));
 }
@@ -160,84 +205,77 @@ void qweb_client::task_ac_update_remarks_back(const string &sjson)
 {
     int64 account;
     int64 friends;
-    bool ok;
-    if(get_ac_update_remarks_back(sjson,account,friends,ok))
+    string remarks;
+    if(get_ac_update_remarks_back(sjson,account,friends,remarks))
     {
-//        vlogw("update remarks failed" $(ok));
-        if(ok) ask_info_remarks(account,friends);
-        else vlogw("update remarks failed");
+        emit sn_update_remarks(friends,remarks);
     }
     else vlogw("task_friends_list_back:" $(sjson));
 }
 
-void qweb_client::task_friends_list_back(const string &sjson)
-{
-    int64 account;
-    string svec_fs;
-    bool ok;
-    if(get_friends_list_back(sjson,account,svec_fs,ok))
-    {
-        if(ok)
-        {
-            string s = set_friends_status(account,svec_fs);
-            send_msg(s);
-        }
-        else vlogw("task_friends_list_back:" $(sjson));
-    }
-    else vlogw("task_friends_list_back:" $(sjson));
+//void qweb_client::task_friends_list_back(const string &sjson)
+//{
+//    int64 account;
+//    string svec_fs;
+//    bool ok;
+//    if(get_friends_list_back(sjson,account,svec_fs,ok))
+//    {
+//        if(ok)
+//        {
+//            string s = set_friends_status(account,svec_fs);
+//            send_msg(s);
+//        }
+//        else vlogw("task_friends_list_back:" $(sjson));
+//    }
+//    else vlogw("task_friends_list_back:" $(sjson));
 
-}
+//}
 
-void qweb_client::task_friends_status_back(const string &sjson)
-{
-    int64 account;
-    string svec_ac_info;
-    bool ok;
-    if(get_friends_status_back(sjson,account,svec_ac_info,ok))
-    {
-        if(ok)
-        {
-            vector<string> vec = get_json_vec(svec_ac_info);
-            for(auto a:vec)
-            {
-                int64 ac_friends;
-                string nickname;
-                string icon;
-                string remarks;
-                bool online;
-                if(get_ac_info_json(a,ac_friends,nickname,icon,remarks,online))
-                {
-                    //创建数据库
-                    if(_db.create_history(ac_friends) == false)
-                    { vlogw("create history failed" $(ac_friends)); }
+//void qweb_client::task_friends_status_back(const string &sjson)
+//{
+////    int64 account;
+////    string svec_ac_info;
+////    bool ok;
+////    if(get_friends_status_back(sjson,account,svec_ac_info,ok))
+////    {
+////        if(ok)
+////        {
+////            vector<string> vec = get_json_vec(svec_ac_info);
+////            for(auto a:vec)
+////            {
+////                int64 ac_friends;
+////                string nickname;
+////                string icon;
+////                string remarks;
+////                bool online;
+////                if(get_ac_info_json(a,ac_friends,nickname,icon,remarks,online))
+////                {
+////                    //创建数据库
+////                    if(_db.create_history(ac_friends) == false)
+////                    { vlogw("create history failed" $(ac_friends)); }
 
-                    //发送好友状态
-                    emit sn_ac_status(ac_friends,nickname,icon,remarks,online);
-                }
-            }
+////                    //发送好友状态
+////                    emit sn_ac_status(ac_friends,nickname,icon,remarks,online);
+////                }
+////            }
 
-            //请求暂存信息
-            string s = set_swap_cache(account);
-            send_msg(s);
-        }
-        else vlogw("get_friends_status_back:" $(sjson) $(ok));
-    }
-    else vlogw("get_friends_status_back:" $(sjson));
-}
+////            //请求暂存信息
+////            string s = set_swap_cache(account);
+////            send_msg(s);
+////        }
+////        else vlogw("get_friends_status_back:" $(sjson) $(ok));
+////    }
+////    else vlogw("get_friends_status_back:" $(sjson));
+//}
 
 void qweb_client::task_swap_cache_back(const string &sjson)
 {
     string svec_sjson;
-    bool ok;
-    if(get_swap_cache_back(sjson,svec_sjson,ok))
+    if(get_swap_cache_back(sjson,svec_sjson))
     {
-        if(ok)
-        {
-            vector<string> vec = get_json_vec(svec_sjson);
-            for(auto a:vec)
-            { sl_message(a); }
-        }
-        else vlogw("task_swap_cache_back:" $(sjson) $(ok));
+        vector<string> vec = get_json_vec(svec_sjson);
+        for(auto a:vec)
+        { sl_message(a); }
     }
     else vlogw("task_swap_cache_back:" $(sjson));
 }
@@ -258,11 +296,12 @@ void qweb_client::task_swap_msg(const string &sjson)
         { vlogw("insert_history failed"<<$(source) $(content) $(_db.get_error())); }
 
         //反馈接收信息
-        emit sn_recv_msg(target,source,time_to,type,content);
+        ct_swap_msg ct{target,source,time_to,type,content};
+        emit sn_recv_msg(ct);
 
         //接收确认反馈
         int64 time_ok = QDateTime::currentMSecsSinceEpoch();
-        string s = set_swap_msg_back(source,target,time_to,time_ok,true);
+        string s = set_swap_msg_back(source,target,time_to,time_ok);
         send_msg(s);
     }
     else vlogw("task_swap_msg:" $(sjson));
@@ -274,17 +313,11 @@ void qweb_client::task_swap_msg_back(const string &sjson)
     int64 source;
     int64 time_to;
     int64 time_ok;
-    bool ok;
-    if(get_swap_msg_back(sjson,target,source,time_to,time_ok,ok))
+    if(get_swap_msg_back(sjson,target,source,time_to,time_ok))
     {
-        vlogi($(target) $(source) $(time_to) $(time_ok) $(ok));
-        if(ok)
-        {
-            //写入数据库确认反馈
-            if(_db.update_feed_back(source,time_to,time_ok) == false)
-            { vlogw("swap_msg_back: update_feed_back failed"); }
-        }
-        else vlogw("task_swap_msg:" $(sjson) $(ok));
+        //写入数据库确认反馈
+        if(_db.update_feed_back(source,time_to,time_ok) == false)
+        { vlogw("swap_msg_back: update_feed_back failed"); }
     }
     else vlogw("task_swap_msg:" $(sjson));
 }
@@ -330,29 +363,30 @@ bool qweb_client::ask_register(int64 phone, int64 age, int64 sex, string nicknam
     return send_msg(sjson);
 }
 
-bool qweb_client::ask_swap_msg(int64 target,int64 source, int64 time_to, string type, string content)
+bool qweb_client::ask_swap_msg(ct_swap_msg msg)
 {
     //插入历史数据库
-    bool ok = _db.insert_history(target,{time_to,0,0,type,_object_AR_,content});
+    bool ok = _db.insert_history(msg.target,{msg.time_to,0,0,msg.types,_object_AR_,msg.content});
     if(ok)
     {
         //发送信息
-        string sjson = set_swap_msg(target,source,time_to,type,content);
+        string sjson = set_swap_msg(msg.target,msg.source,msg.time_to,msg.types,msg.content);
         return send_msg(sjson);
     }
-    else vlogw("insert_history failed" $(target) $(source) $(_db.get_error_exec()));
+    else vlogw("insert_history failed" $(msg.target) $(msg.source) $(_db.get_error_exec()));
     return false;
 }
 
-bool qweb_client::ask_swap_msg_back(int64 target, int64 source, int64 time_to, int64 time_ok)
+bool qweb_client::ask_swap_msg_back(ct_swap_msg_back msg)
 {
-    string sjson = set_swap_msg_back(target,source,time_to,time_ok,true);
+    string sjson = set_swap_msg_back(msg.target,msg.source,msg.time_to,msg.time_ok);
     return send_msg(sjson);
 }
 
-bool qweb_client::ask_update_info(int64 account, int64 phone, int64 age, int64 sex, string nickname, string location,string icon)
+bool qweb_client::ask_update_info(ct_ac_info info)
 {
-    string sjson = set_ac_update_info(account,phone,age,sex,nickname,location,icon);
+    string sjson = set_ac_update_info(info.account,info.phone,info.age,info.sex,
+                                      info.nickname,info.location,info.icon);
     return send_msg(sjson);
 }
 
@@ -368,11 +402,11 @@ bool qweb_client::ask_info_all(int64 account)
     return send_msg(sjson);
 }
 
-bool qweb_client::ask_info_remarks(int64 account, int64 friends)
-{
-    string sjson = set_ac_info_remarks(account,friends);
-    return send_msg(sjson);
-}
+//bool qweb_client::ask_info_remarks(int64 account, int64 friends)
+//{
+//    string sjson = set_ac_info_remarks(account,friends);
+//    return send_msg(sjson);
+//}
 
 int64 qweb_client::is_online()
 {

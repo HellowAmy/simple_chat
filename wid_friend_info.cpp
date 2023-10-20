@@ -22,6 +22,7 @@ wid_friend_info::wid_friend_info(QWidget *parent)
     //头像
     _wid_icon = new qframe_line(this);
     _wid_img = new qlab_img(_wid_icon);
+    _wid_img->set_click(true);
 //    _wid_img->set_img(_icon);
     _wid_img->set_keep(false,_wid_icon->calc_size(size_icon,_space));
     _wid_img->update_img();
@@ -120,6 +121,28 @@ wid_friend_info::wid_friend_info(QWidget *parent)
     connect(_wid_person,&wid_person_info::sn_not_change,[=](){
         show_wid_extend(_wid_extend);
     });
+
+
+
+
+    //更改头像
+    connect(_wid_img,&qlab_img::sn_clicked,[=](){
+
+        QString file = QFileDialog::getOpenFileName(this,"Open File","../pic/");
+
+        if(is_img(file)) emit sn_change_icon(file);
+
+
+////        QPixmap::isQBitmap()
+////        QFileInfo::isRelative()
+
+//        QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+//                                                        "/home",
+//                                                        tr("Images (*.png *.xpm *.jpg)"));
+
+//        show_wid_extend(_wid_extend);
+    });
+
 }
 
 void wid_friend_info::set_icon(QString icon)
@@ -170,6 +193,12 @@ void wid_friend_info::show_wid_extend(QWidget *wid)
         if(wid && wid == a) a->show();
         else a->hide();
     }
+}
+
+bool wid_friend_info::is_img(QString file)
+{
+    QImageReader img(file);
+    return img.canRead();
 }
 
 //void wid_friend_info::set_extend(const QVector<QString> &vec)

@@ -62,7 +62,7 @@ wid_test::wid_test(QWidget *parent)
     vlogd("== begin ==");
 
 
-    int val = 25;
+    int val = 20;
 
     if(val == 0)        test_0(parent);     //主要程序
     else if(val == 1)   test_1(parent);     //线条按钮
@@ -86,12 +86,12 @@ wid_test::wid_test(QWidget *parent)
     else if(val == 18)   test_18(parent);   //发送测试
     else if(val == 19)   test_19(parent);   //协议统一
 
-    else if(val == 20)   test_20(parent);   //文件测试
+    else if(val == 20)   test_20(parent);   //登陆成功
     else if(val == 21)   test_21(parent);   //文件传输
     else if(val == 22)   test_22(parent);   //账号注册
     else if(val == 23)   test_23(parent);   //在线账号
     else if(val == 24)   test_24(parent);   //头像下载
-    else if(val == 25)   test_25(parent);   //登陆成功
+    else if(val == 25)   test_25(parent);   //文件操作
     else if(val == 26)   test_26(parent);   //移动测试
     else if(val == 27)   test_27(parent);   //修改信息
     else if(val == 28)   test_28(parent);   //个人资料
@@ -1242,33 +1242,33 @@ void wid_test::test_19(QWidget *parent)
 //        }
 //    }
 
-    {
-        vlogi("\n");
-        string sjson = set_swap_msg(123456789,222456789,20010404,"Text","hellow");
+//    {
+//        vlogi("\n");
+//        string sjson = set_swap_msg(123456789,222456789,20010404,"Text","hellow");
 
-        int64 target;
-        int64 source;
-        int64 time_to;
-        string type;
-        string content;
+//        int64 target;
+//        int64 source;
+//        int64 time_to;
+//        string type;
+//        string content;
 
-        if(get_swap_msg(sjson,target,source,time_to,type,content))
-        {
-            vlogi($(target) $(source) $(time_to) $(type) $(content));
+//        if(get_swap_msg(sjson,target,source,time_to,type,content))
+//        {
+//            vlogi($(target) $(source) $(time_to) $(type) $(content));
 
-            string ssjson = set_swap_msg_back(source,target,time_to,time_to+100,true);
+//            string ssjson = set_swap_msg_back(source,target,time_to,time_to+100,true);
 
-            int64 target;
-            int64 source;
-            int64 time_to;
-            int64 time_ok;
-            bool ok;
-            if(get_swap_msg_back(ssjson,target,source,time_to,time_ok,ok))
-            {
-                vlogi($(target) $(source) $(time_to) $(time_ok) $(ok));
-            }
-        }
-    }
+//            int64 target;
+//            int64 source;
+//            int64 time_to;
+//            int64 time_ok;
+//            bool ok;
+//            if(get_swap_msg_back(ssjson,target,source,time_to,time_ok,ok))
+//            {
+//                vlogi($(target) $(source) $(time_to) $(time_ok) $(ok));
+//            }
+//        }
+//    }
 
 //    {
 //        vlogi("\n");
@@ -1498,71 +1498,71 @@ void wid_test::test_19(QWidget *parent)
 
 }
 
-void wid_test::test_20(QWidget *parent)
-{
-    this->hide();
+//void wid_test::test_20(QWidget *parent)
+//{
+//    this->hide();
 
-    int64 id = 123456789;
-    string s1 = "/home/red/open/load/clion.png";
-    string s2 = "/home/red/open/load/CLion202322.tar.gz";
-    string s3 = "/home/red/open/load/none.txt";
-    string ss = "/home/red/open/load/123456789";
-    string ss1 = "/home/red/open/load/save_12345";
+//    int64 id = 123456789;
+//    string s1 = "/home/red/open/load/clion.png";
+//    string s2 = "/home/red/open/load/CLion202322.tar.gz";
+//    string s3 = "/home/red/open/load/none.txt";
+//    string ss = "/home/red/open/load/123456789";
+//    string ss1 = "/home/red/open/load/save_12345";
 
-    swap_files s;
-    {
-        auto ok = s.is_can_read(s1);
-        vlogi($(ok));
-    }
-    {
-        auto ok = s.is_can_read(ss1);
-        vlogi($(ok));
-    }
-    {
-        auto ok = s.is_exists(s1);
-        vlogi($(ok));
-    }
-    {
-        auto ok = s.is_file(s1);
-        vlogi($(ok));
-    }
-    {
-        auto ok = s.get_file_size(s1);
-        vlogi($(ok));
-    }
-    {
-        auto ok = s.get_filename(s1);
-        vlogi($(ok));
-    }
-
-//    return; //函数测试部分
-
-
-
-//    //收发测试部分
-//    auto fn = [&](bool &stop,int64 id,const string &buf){
-
-//        bool ok = s.add_data_recv(id,buf);
-//        if(ok == false) vlogi($(ok));
-
-//        static size_t co = 0;
-//        co += buf.size();
-//        if(co%100000 == 0)
-//        {
-//            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-//            vlogi("sleep_for:" );
-//        }
-//    };
-
+//    swap_files s;
 //    {
-//        bool ok = s.open_file_recv(fn,id,s1);
+//        auto ok = s.is_can_read(s1);
 //        vlogi($(ok));
 //    }
 //    {
-//        s.close_file_recv(id);
+//        auto ok = s.is_can_read(ss1);
+//        vlogi($(ok));
+//    }
+//    {
+//        auto ok = s.is_exists(s1);
+//        vlogi($(ok));
+//    }
+//    {
+//        auto ok = s.is_file(s1);
+//        vlogi($(ok));
+//    }
+//    {
+//        auto ok = s.get_file_size(s1);
+//        vlogi($(ok));
+//    }
+//    {
+//        auto ok = s.get_filename(s1);
+//        vlogi($(ok));
 //    }
 
-}
+////    return; //函数测试部分
+
+
+
+////    //收发测试部分
+////    auto fn = [&](bool &stop,int64 id,const string &buf){
+
+////        bool ok = s.add_data_recv(id,buf);
+////        if(ok == false) vlogi($(ok));
+
+////        static size_t co = 0;
+////        co += buf.size();
+////        if(co%100000 == 0)
+////        {
+////            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+////            vlogi("sleep_for:" );
+////        }
+////    };
+
+////    {
+////        bool ok = s.open_file_recv(fn,id,s1);
+////        vlogi($(ok));
+////    }
+////    {
+////        s.close_file_recv(id);
+////    }
+
+//}
 
 void wid_test::test_21(QWidget *parent)
 {
@@ -1873,123 +1873,180 @@ void wid_test::test_24(QWidget *parent)
 
 void wid_test::test_25(QWidget *parent)
 {
-    //==
-    qweb_client *wc = new qweb_client(this);
 
-    sqlite_read_history *phistory = new sqlite_read_history(this);
-    phistory->init_db(wc->get_db());
+    int64 id = 123456789;
+    string s1 = "/home/red/open/load/clion.png";
+    string s2 = "/home/red/open/load/CLion202322.tar.gz";
+    string s3 = "/home/red/open/load/none.txt";
+    string ss = "/home/red/open/load/123456789";
+    string ss1 = "/home/red/open/load/save_12345";
+    string ss2 = "/home/red/open/load/clion_100.png";
 
-    wid_friend_list *wid = new wid_friend_list(this);
-    wid->hide();
-
+    swap_files s;
     {
-        //登陆：史强 798315362  796304805 607037441 535181553
-        int64 account = 535181553;
-        string passwd = "123456";
-        wid->set_login_info(account,passwd);
+        auto ok = s.is_can_read(s1);
+        vlogi($(ok));
     }
-
-
-
-    //==
-    connect(wc,&qweb_client::sn_open,this,[=](){
-        wc->ask_login(wid->get_account(),wid->get_passwd());
-    });
-    connect(wc,&qweb_client::sn_close,this,[=](){
-        vlogw("sn_close");
-    });
-    connect(wc,&qweb_client::sn_ac_info,this,[=](int64 account,string nickname,string icon){
-        vlogi($(nickname)$(icon));
-
-        wid->init_login(account,stoqs(nickname),stoqs(icon));
-        wid->show();
-    });
-    connect(wc,&qweb_client::sn_recv_msg,this,[=](int64 target, int64 source, int64 time_to, string type, string content){
-        vlogi($(target) $(source) $(time_to) $(type) $(content));
-
-        wid->add_recv_msg({target,source,time_to,type,content});
-    });
-    connect(wc,&qweb_client::sn_ac_status,
-            this,[=](int64 ac_friends,string nickname,string icon,string remarks,bool online)
     {
-        vlogi($(ac_friends) $(nickname) $(icon) $(online));
-        ct_login_status ct_status{online,ac_friends,nickname,icon,remarks};
-        wid_friend_list::ct_friend ct{ct_status,nullptr,nullptr };
-        wid->add_friend(ct);
-    });
-    connect(wc,&qweb_client::sn_ac_info_all,this,[=]
-            (int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon){
-        ct_ac_info ct{account,phone,age,sex,nickname,location,icon};
-        wid->add_account_person(ct);
-    });
-    connect(wc,&qweb_client::sn_update_info,this,[=] (bool ok){
-        if(ok == false)
-        { wid_dialog_box().make_box("修改信息失败","服务器更新信息失败，请检查信息合理性",wid_dialog_box::e_error); }
-        wid->get_info()->show_extend();
-    });
-    connect(wc,&qweb_client::sn_update_remarks,this,[=] (int64 friends,bool ok){
-        if(ok == false)
-        { wid_dialog_box().make_box("修改备注失败","服务器更新改备失败，请检查网络状态",wid_dialog_box::e_error); }
-    });
-    connect(wc,&qweb_client::sn_ac_info_remarks,this,[=] (int64 friends,string remarks){
-        wid->add_friend_remarks(friends,remarks);
-    });
+        auto ok = s.is_can_read(ss1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.is_exists(s1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.is_file(s1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.get_file_size(s1);
+        vlogi($(ok));
+    }
+    {
+        auto ok = s.get_filename(s1);
+        vlogi($(ok));
+    }
+//    {
+//        auto ok = s.copy_file(s1,ss2);
+//        vlogi($(ok));
+//    }
 
-    //==
-    connect(wid,&wid_friend_list::sn_send_msg,this,[=](ct_swap_msg ct){
-        bool ok = wc->ask_swap_msg(ct.target,ct.source,ct.time_to,ct.types,ct.content);
-        vlogfaile(ok,"sn_send_msg failed");
-    });
-    connect(wid,&wid_friend_list::sn_download_icon,this,[=](int64 account){
-        auto fn_icon = [=](bool ok,int64 account,string save_path){
-            if(ok) wid->update_ac_icon(account,stoqs(save_path));
-        };
-        qweb_ac_download *wcf = new qweb_ac_download(this);
-        wcf->download_icon_ac(account,fn_icon);
-        wcf->open();
-    });
-    connect(wid,&wid_friend_list::sn_history_read_ac,this,[=](int64 account,bool is_non_read){
-        vector<ct_msg_type> vec;
-        if(is_non_read) phistory->read_history_non_read(account,vec);
-        else phistory->read_history(account,vec);
 
-        wid->set_history_msg(account,vec);
-    });
+
+//    //==
+//    qweb_client *wc = new qweb_client(this);
+
+//    sqlite_read_history *phistory = new sqlite_read_history(this);
+//    phistory->init_db(wc->get_db());
+
+//    wid_friend_list *wid = new wid_friend_list(this);
+//    wid->hide();
+
+//    {
+//        //登陆：史强 798315362  796304805 607037441 535181553
+//        int64 account = 798315362;
+//        string passwd = "123456";
+//        wid->set_login_info(account,passwd);
+//    }
+
+
+
+//    //==
+//    connect(wc,&qweb_client::sn_open,this,[=](){
+//        wc->ask_login(wid->get_account(),wid->get_passwd());
+//    });
+//    connect(wc,&qweb_client::sn_close,this,[=](){
+//        vlogw("sn_close");
+//    });
+////    connect(wc,&qweb_client::sn_ac_info,this,[=](int64 account,string nickname,string icon){
+////        vlogi($(nickname)$(icon));
+
+////        wid->init_login(account,stoqs(nickname),stoqs(icon));
+////        wid->show();
+////    });
+//    connect(wc,&qweb_client::sn_recv_msg,this,[=](int64 target, int64 source, int64 time_to, string type, string content){
+//        vlogi($(target) $(source) $(time_to) $(type) $(content));
+
+//        wid->add_recv_msg({target,source,time_to,type,content});
+//    });
+////    connect(wc,&qweb_client::sn_ac_status,
+////            this,[=](int64 ac_friends,string nickname,string icon,string remarks,bool online)
+////    {
+////        vlogi($(ac_friends) $(nickname) $(icon) $(online));
+////        ct_friends_init ct_status{online,ac_friends,nickname,icon,remarks};
+////        wid_friend_list::ct_friend ct{ct_status,nullptr,nullptr };
+////        wid->add_friend(ct);
+////    });
+//    connect(wc,&qweb_client::sn_ac_info_all,this,[=]
+//            (int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon){
+//        ct_ac_info ct{account,phone,age,sex,nickname,location,icon};
+//        wid->add_account_person(ct);
+//    });
+//    connect(wc,&qweb_client::sn_update_info,this,[=] (bool ok){
+//        if(ok == false)
+//        { wid_dialog_box().make_box("修改信息失败","服务器更新信息失败，请检查信息合理性",wid_dialog_box::e_error); }
+//        wid->get_info()->show_extend();
+//    });
+//    connect(wc,&qweb_client::sn_update_remarks,this,[=] (int64 friends,bool ok){
+//        if(ok == false)
+//        { wid_dialog_box().make_box("修改备注失败","服务器更新改备失败，请检查网络状态",wid_dialog_box::e_error); }
+//    });
+//    connect(wc,&qweb_client::sn_ac_info_remarks,this,[=] (int64 friends,string remarks){
+//        wid->add_friend_remarks(friends,remarks);
+//    });
+
+
+//    connect(wc,&qweb_client::sn_ac_login,this,[=]
+//            (int64 account,string nickname,string icon,vector<ct_friends_init> vec_friends)
+//    {
+//        //初始化登陆
+//        wid->init_login(account,stoqs(nickname),stoqs(icon));
+//        wid->show();
+
+//        //加入好友信息
+//        for(const auto &a:vec_friends)
+//        {
+//            wid_friend_list::ct_friend ct {a,nullptr,nullptr};
+//            wid->add_friend(ct);
+//        }
+//    });
+
+//    //==
+//    connect(wid,&wid_friend_list::sn_send_msg,this,[=](ct_swap_msg ct){
+//        bool ok = wc->ask_swap_msg(ct.target,ct.source,ct.time_to,ct.types,ct.content);
+//        vlogfaile(ok,"sn_send_msg failed");
+//    });
+//    connect(wid,&wid_friend_list::sn_download_icon,this,[=](int64 account){
+//        auto fn_icon = [=](bool ok,int64 account,string save_path){
+//            if(ok) wid->update_ac_icon(account,stoqs(save_path));
+//        };
+//        qweb_ac_download *wcf = new qweb_ac_download(this);
+//        wcf->download_icon_ac(account,fn_icon);
+//        wcf->open();
+//    });
 //    connect(wid,&wid_friend_list::sn_history_read_ac,this,[=](int64 account,bool is_non_read){
+//        vector<ct_msg_type> vec;
+//        if(is_non_read) phistory->read_history_non_read(account,vec);
+//        else phistory->read_history(account,vec);
+
+//        wid->set_history_msg(account,vec);
+//    });
+////    connect(wid,&wid_friend_list::sn_history_read_ac,this,[=](int64 account,bool is_non_read){
+//////        vector<ct_msg_type> vec;
+//////        if(is_non_read) phistory->read_history_non_read(account,vec);
+//////        else phistory->read_history(account,vec);
+
+//////        wid->set_history_msg(account,vec);
+////    });
+//    connect(wid,&wid_friend_list::sn_account_info,this,[=](int64 friends){
+//        bool ok = wc->ask_info_all(friends);
+//        vlogfaile(ok,$(ok));
+
+////        wid->set_history_msg(account,vec);
+
 ////        vector<ct_msg_type> vec;
 ////        if(is_non_read) phistory->read_history_non_read(account,vec);
 ////        else phistory->read_history(account,vec);
 
 ////        wid->set_history_msg(account,vec);
 //    });
-    connect(wid,&wid_friend_list::sn_account_info,this,[=](int64 friends){
-        bool ok = wc->ask_info_all(friends);
-        vlogfaile(ok,$(ok));
 
-//        wid->set_history_msg(account,vec);
-
-//        vector<ct_msg_type> vec;
-//        if(is_non_read) phistory->read_history_non_read(account,vec);
-//        else phistory->read_history(account,vec);
-
-//        wid->set_history_msg(account,vec);
-    });
-
-    //==
-    connect(wid->get_info()->get_person(),&wid_person_info::sn_save_info,this,[=](ct_ac_info ct){
-        bool ok = wc->ask_update_info(ct.account,ct.phone,ct.age,ct.sex,ct.nickname,ct.location,ct.icon);
-        vlogfaile(ok,$(ok));
-    });
-    connect(wid->get_person(),&wid_person_info::sn_save_remarks,this,[=](string remarks){
-        int64 account = wid->get_account();
-        int64 ac_friend = wid->get_person()->get_edit_info().account;
-        bool ok = wc->ask_update_remarks(account,ac_friend,remarks);
-        vlogfaile(ok,$("ask_update_remarks") $(remarks));
-    });
+//    //==
+//    connect(wid->get_info()->get_person(),&wid_person_info::sn_save_info,this,[=](ct_ac_info ct){
+//        bool ok = wc->ask_update_info(ct.account,ct.phone,ct.age,ct.sex,ct.nickname,ct.location,ct.icon);
+//        vlogfaile(ok,$(ok));
+//    });
+//    connect(wid->get_person(),&wid_person_info::sn_save_remarks,this,[=](string remarks){
+//        int64 account = wid->get_account();
+//        int64 ac_friend = wid->get_person()->get_edit_info().account;
+//        bool ok = wc->ask_update_remarks(account,ac_friend,remarks);
+//        vlogfaile(ok,$("ask_update_remarks") $(remarks));
+//    });
 
 
-    //==
-    wc->open();
+//    //==
+//    wc->open();
 }
 
 void wid_test::test_26(QWidget *parent)
@@ -2127,21 +2184,21 @@ void wid_test::test_27(QWidget *parent)
 //    Tweb::get()->init_web(th);
 
 
-    connect(wfs,&qweb_files::sn_finish_upload,this,[=](){
-        //更新信息
-        vlogw("sn_finish_upload" $(th->is_online()));
-        if(th->is_online()) th->ask_update_info(account,phone,age,sex,nickname,location,icon);
-    });
+//    connect(wfs,&qweb_files::sn_finish_upload,this,[=](){
+//        //更新信息
+//        vlogw("sn_finish_upload" $(th->is_online()));
+//        if(th->is_online()) th->ask_update_info(account,phone,age,sex,nickname,location,icon);
+//    });
 
     connect(th,&qweb_client::sn_open,this,[=](){
         //登陆
         th->ask_login(account,"123456");
     });
-    connect(th,&qweb_client::sn_ac_info,this,[=](){
-        //上传图片
-        bool ok = wfs->upload_icon(file,account);
-        vlogw("upload_icon" $(ok));
-    });
+//    connect(th,&qweb_client::sn_ac_info,this,[=](){
+//        //上传图片
+//        bool ok = wfs->upload_icon(file,account);
+//        vlogw("upload_icon" $(ok));
+//    });
     connect(th,&qweb_client::sn_update_info,this,[=](){
         vloge("sn_close");
         th->close();

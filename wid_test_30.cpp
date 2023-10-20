@@ -21,16 +21,30 @@ using namespace typedef_struct;
 
 void wid_test::test_30(QWidget *parent)
 {
-    qbutt_line *bu = new qbutt_line(this);
-    bu->move(400,100);
+//    qbutt_line *bu = new qbutt_line(this);
+//    bu->move(400,100);t
+    this->resize(1200,800);
 
-    wid_person_info *in = new wid_person_info(this);
-    in->set_info({123456789,110122,19,1,"你好","中国广西"});
-    in->set_info_remarks("埃及和三等奖和");
+    {
+        wid_person_info *in = new wid_person_info(this);
+        in->set_info({123456789,110122,19,1,"你好","中国广西"});
+//        in->set_info_remarks("埃及和三等奖和");
 
-    in->init_edit();
-//    in->init_show();
-    in->show();
+        in->init_edit();
+        //    in->init_show();
+        in->show();
+    }
+    {
+        wid_person_info *in = new wid_person_info(this);
+        in->move(400,400);
+        in->set_info({123456789,110122,19,1,"你好","中国广西"});
+        in->set_info_remarks("埃及和三等奖和","../pic/icon2.jpg");
+
+//        in->init_edit();
+        in->init_show();
+        in->show();
+    }
+
 
 //    connect(in,&wid_person_info::sn_change_info,[=](bool save,bool remarks){
 //        vlogd($(save) $(remarks));

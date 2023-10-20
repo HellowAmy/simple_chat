@@ -6,7 +6,7 @@ wid_friend_butt::wid_friend_butt(QWidget *parent)
     _space = 5;
 }
 
-void wid_friend_butt::set_status(ct_login_status ct)
+void wid_friend_butt::set_status(ct_friends_init ct)
 {
     _status = ct;
 }
@@ -69,7 +69,7 @@ void wid_friend_butt::init_size(QSize size)
     }
 
     connect(_img,&qlab_img::sn_clicked,[=](){
-        emit sn_account_info(_status.account);
+        emit sn_account_info(_status.friends);
     });
 }
 
@@ -94,7 +94,7 @@ qbutt_line *wid_friend_butt::get_butt()
     return _wid_butt;
 }
 
-ct_login_status *wid_friend_butt::get_status()
+ct_friends_init *wid_friend_butt::get_status()
 {
     return &_status;
 }

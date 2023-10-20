@@ -40,8 +40,12 @@ public:
     static bool remove_file(const string &path)
     { return std::filesystem::remove(path); }
 
+    static bool copy_file(const string &from,const string &to)
+    { return std::filesystem::copy_file(from,to,std::filesystem::copy_options::overwrite_existing); }
+
     static int64 get_file_size(const string &path)
     { return std::filesystem::file_size(path); }
+
 
     static string get_filename_none(const string &path)
     {

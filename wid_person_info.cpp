@@ -19,12 +19,23 @@ wid_person_info::wid_person_info(QWidget *parent)
     _save->set_text("确认");
     _save->resize(size_butt);
 
+    _add = new qbutt_line(this);
+    _add->set_text("添加");
+    _add->resize(QSize(size_butt.width()*2 +_space,size_butt.height()));
+    _add->hide();
+
+    _img = nullptr;
+
     connect(_cancel,&qbutt_line::sn_clicked,[=](){
         emit sn_save(false);
     });
 
     connect(_save,&qbutt_line::sn_clicked,[=](){
         emit sn_save(true);
+    });
+
+    connect(_add,&qbutt_line::sn_clicked,[=](){
+        emit sn_add_friend(get_edit_info(),get_edit_remarks(),get_edit_notes());
     });
 
     connect(this,&wid_person_info::sn_save,[=](bool save){
@@ -66,10 +77,11 @@ void wid_person_info::set_info(const ct_ac_info &info)
     _ct_save.location   = stoqs(info.location);
 }
 
-void wid_person_info::set_info_remarks(QString remarks,QString icon)
+void wid_person_info::set_info_remarks(QString remarks,QString icon,QString notes)
 {
-    _ct_save.remarks = remarks;
+    if(remarks != "") _ct_save.remarks = remarks;
     if(icon != "") _ct_save.icon = icon;
+    if(notes != "") _ct_save.notes = notes;
 }
 
 void wid_person_info::init_edit()
@@ -133,7 +145,7 @@ void wid_person_info::init_edit()
     this->resize(size + QSize(_space*2,_space*2));
 }
 
-void wid_person_info::init_show()
+void wid_person_info::init_friends()
 {
     qmove_pos move;
     {
@@ -208,6 +220,188 @@ void wid_person_info::init_show()
     }
 }
 
+void wid_person_info::init_add_ask()
+{
+    qmove_pos move;
+    {
+        auto [a,b] = fn_Label(this,"账号",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.account,_size_edit);
+
+        _edit.account = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"昵称",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.nickname,_size_edit);
+
+        _edit.nickname = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"电话",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.phone,_size_edit);
+
+        _edit.phone = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"年龄",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.age,_size_edit);
+
+        _edit.age = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"性别",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.sex,_size_edit);
+
+        _edit.sex = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"地址",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.location,_size_edit);
+
+        _edit.location = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"好友备注",_size_lab);
+        auto [c,d] = fn_LineEdit_txt(this,_ct_save.remarks,_size_edit);
+
+        _edit.remarks = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"申请信息",_size_lab);
+        auto [c,d] = fn_qedit_txt(this,_size_edit + QSize(200 + _space*3,50));
+        move.add_wid(a);
+        move.add_wid(c);
+
+        _edit.notes = d;
+        _edit.notes->show();
+        _edit.notes->setText("你好,如果想认识一下请交个朋友吧!");
+    }
+
+    _cancel->hide();
+    _save->hide();
+    _add->show();
+    move.add_wid(_add);
+
+    auto size = move.move_group({_space,_space},_space,2,-1);
+    this->resize(size + QSize(_space*2,_space*2));
+
+    {
+        auto [a,b] = fn_fimg(this,_ct_save.icon,QSize(200 + _space*2,200 + _space*2));
+        qframe_line *f = a;
+        _img = b;
+        f->move(_size_lab.width() + _size_edit.width() + _space*3,_space);
+    }
+}
+
+void wid_person_info::init_add_recv()
+{
+    qmove_pos move;
+    {
+        auto [a,b] = fn_Label(this,"账号",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.account,_size_edit);
+
+        _edit.account = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"昵称",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.nickname,_size_edit);
+
+        _edit.nickname = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"电话",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.phone,_size_edit);
+
+        _edit.phone = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"年龄",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.age,_size_edit);
+
+        _edit.age = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"性别",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.sex,_size_edit);
+
+        _edit.sex = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"地址",_size_lab);
+        auto [c,d] = fn_LineEdit_non(this,_ct_save.location,_size_edit);
+
+        _edit.location = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"好友备注",_size_lab);
+        auto [c,d] = fn_LineEdit_txt(this,_ct_save.remarks,_size_edit);
+
+        _edit.remarks = d;
+        move.add_wid(a);
+        move.add_wid(c);
+    }
+    {
+        auto [a,b] = fn_Label(this,"申请信息",_size_lab);
+        auto [c,d] = fn_qedit_txt(this,_size_edit + QSize(200 + _space*3,50));
+
+        _edit.notes = d;
+        move.add_wid(a);
+        move.add_wid(c);
+
+        qframe_line* f = c;
+        f->set_col(QColor(0xaa0000));
+
+        _edit.notes->setFocusPolicy(Qt::NoFocus);
+        _edit.notes->setText(_ct_save.notes);
+    }
+
+//    _cancel->hide();
+//    _save->hide();
+//    _add->show();
+    _cancel->set_text("拒绝");
+    _save->set_text("同意");
+    move.add_wid(_cancel);
+    move.add_wid(_save);
+
+//    auto size = move.move_group({_space,_space},_space,2,-1);
+//    this->resize(size + QSize(_space*2,_space*2));
+
+    auto size = move.move_group({_space,_space},_space,2,-1);
+    this->resize(size + QSize(_space*2,_space*2));
+
+    {
+        auto [a,b] = fn_fimg(this,_ct_save.icon,QSize(200 + _space*2,200 + _space*2));
+        qframe_line *f = a;
+        _img = b;
+        f->move(_size_lab.width() + _size_edit.width() + _space*3,_space);
+    }
+}
+
 bool wid_person_info::not_change_info()
 {
     if(_ct_save.account     != _edit.account->text())   return false;
@@ -246,6 +440,7 @@ bool wid_person_info::is_verification_info()
 void wid_person_info::update_info()
 {
     if(_edit.remarks) _edit.remarks->setText(_ct_save.remarks);
+    if(_edit.notes) _edit.notes->setText(_ct_save.notes);
     if(_img)
     {
         _img->set_img(_ct_save.icon);
@@ -280,5 +475,12 @@ string wid_person_info::get_edit_remarks()
 {
     QString str;
     if(_edit.remarks) str = _edit.remarks->text();
+    return str.toStdString();
+}
+
+string wid_person_info::get_edit_notes()
+{
+    QString str;
+    if(_edit.notes) str = _edit.notes->get_send_text();
     return str.toStdString();
 }

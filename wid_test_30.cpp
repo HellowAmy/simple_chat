@@ -8,6 +8,7 @@
 #include "qbutt_line.h"
 #include "wid_person_info.h"
 #include "wid_dialog_box.h"
+#include "wid_friend_add.h"
 
 #include <QPushButton>
 #include <QLineEdit>
@@ -21,68 +22,78 @@ using namespace typedef_struct;
 
 void wid_test::test_30(QWidget *parent)
 {
-//    qbutt_line *bu = new qbutt_line(this);
-//    bu->move(400,100);t
     this->resize(1200,800);
 
     {
         wid_person_info *in = new wid_person_info(this);
         in->set_info({123456789,110122,19,1,"你好","中国广西"});
-//        in->set_info_remarks("埃及和三等奖和");
-
         in->init_edit();
-        //    in->init_show();
         in->show();
     }
     {
         wid_person_info *in = new wid_person_info(this);
-        in->move(400,400);
+        in->move(400,0);
         in->set_info({123456789,110122,19,1,"你好","中国广西"});
         in->set_info_remarks("埃及和三等奖和","../pic/icon2.jpg");
-
-//        in->init_edit();
-        in->init_show();
+        in->init_friends();
         in->show();
     }
+    {
+        wid_person_info *in = new wid_person_info(this);
+        in->move(0,400);
+        in->init_add_ask();
+
+        in->set_info({123456789,110122,19,1,"你好","中国广西"});
+        in->set_info_remarks("","../pic/icon2.jpg");
 
 
-//    connect(in,&wid_person_info::sn_change_info,[=](bool save,bool remarks){
-//        vlogd($(save) $(remarks));
+        in->update_info();
+        in->show();
+        qlog(in->size());
 
-//        if(save)
-//        {
-//            if(remarks)
-//            {
-//                QString str = in->get_edit_remarks();
-//                vlogd($(qstos(str)));
-//            }
-//            else
-//            {
-//                auto ct = in->get_edit_info();
-//                vlogd($(ct.account)  $(ct.phone) $(ct.age) $(ct.sex)
-//                      $(ct.location) $(ct.nickname) $(ct.icon));
-//            }
-//        }
-//    });
+        connect(in,&wid_person_info::sn_add_friend,[=](ct_ac_info ct,string remarks,string notes){
+            vlogi($(ct.account) $(ct.age) $(ct.icon) $(ct.location)
+                  $(ct.nickname) $(ct.phone) $(ct.sex));
+            vlogi($(remarks) $(notes));
+        });
+    }
+
+    {
+        wid_person_info *in = new wid_person_info(this);
+        in->move(600,400);
+        in->init_add_recv();
+
+        in->set_info({123456789,110122,19,1,"你好","中国广西"});
+        in->set_info_remarks("","../pic/icon2.jpg","阿含经比vsd");
+
+        in->update_info();
+        in->show();
+        qlog(in->size());
+
+        connect(in,&wid_person_info::sn_save,[=](bool save){
+            auto ct = in->get_edit_info();
+            vlogi($(save) $(ct.account));
+        });
+    }
 }
 
 void wid_test::test_31(QWidget *parent)
 {
-    //    QSize max_show = QSize(500,500);
-    //    QSize max_info = QSize(240,140);
-    //    QString file = "/home/red/open/github/simple_chat/pic/icon1.jpg";
+    QSize max_show = QSize(500,500);
+    this->resize(max_show);
+    wid_frame(this);
 
-    //    wid_friend_info *wid = new wid_friend_info(this);
-    //    wid->resize(max_info);
-    //    wid->set_name("Pajhisd");
-    //    wid->set_icon(file);
-    //    wid->init_info();
+    wid_friend_add *in = new wid_friend_add(this);
 
-    //    qframe_line *wex = new qframe_line(this);
-    //    wex->move(QPoint(wid->width() + 10,0));
-    //    wex->resize(max_show);
+    in->get_person()->set_info({123456789,110122,19,1,"你好","中国广西"});
+    in->get_person()->set_info_remarks("","../pic/icon2.jpg");
+    in->get_person()->update_info();
+    in->show();
 
-    //    wid->set_extend_wid(wex);
+
+    connect(in->get_person(),&wid_person_info::sn_add_friend,[=](ct_ac_info ct,string remarks,string notes){
+        vlogi($(ct.account) $(ct.nickname) $(remarks) $(notes));
+    });
 }
 
 void wid_test::test_32(QWidget *parent)

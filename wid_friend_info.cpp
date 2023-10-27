@@ -43,9 +43,13 @@ wid_friend_info::wid_friend_info(QWidget *parent)
     _wid_person->init_edit();
     _wid_person->hide();
 
+    _wid_add = new wid_friend_add(this);
+    _wid_add->hide();
+
     //加入到显示管理
     _vec_extend.push_back(_wid_extend);
     _vec_extend.push_back(_wid_person);
+    _vec_extend.push_back(_wid_add);
 
 
     //扩展
@@ -54,14 +58,14 @@ wid_friend_info::wid_friend_info(QWidget *parent)
     _butt_extend->set_text(">>");
 
     QVector<QString> vec_extend_str {
-                                "个人资料",
-                                "搜索好友",
-                                "添加好友",
-                                "分组管理",
-                                "切换账号",
-                                "设置",
-                                "退出"
-    };
+                            "个人资料",
+                            "搜索好友",
+                            "添加好友",
+                            "分组管理",
+                            "切换账号",
+                            "设置",
+                            "退出"
+                        };
 
 
     //扩展区按钮
@@ -115,6 +119,11 @@ wid_friend_info::wid_friend_info(QWidget *parent)
             emit sn_info_all();
             show_wid_extend(_wid_person);
         }
+        else if(tips == "添加好友")
+        {
+//            emit sn_info_all();
+            show_wid_extend(_wid_add);
+        }
     });
 
     //退出个人信息修改
@@ -124,6 +133,15 @@ wid_friend_info::wid_friend_info(QWidget *parent)
 
 
 
+    connect(_wid_add->get_person(),&wid_person_info::sn_add_friend,[=](ct_ac_info ct){
+//        show_wid_extend(_wid_extend);
+    });
+
+//    connect(_wid_add->get_person(),&wid_person_info::sn_add_friend,[=](ct_ac_info ct){
+//        show_wid_extend(_wid_extend);
+//    });
+
+
 
     //更改头像
     connect(_wid_img,&qlab_img::sn_clicked,[=](){
@@ -131,16 +149,6 @@ wid_friend_info::wid_friend_info(QWidget *parent)
         QString file = QFileDialog::getOpenFileName(this,"Open File","../pic/");
 
         if(is_img(file)) emit sn_change_icon(file);
-
-
-////        QPixmap::isQBitmap()
-////        QFileInfo::isRelative()
-
-//        QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-//                                                        "/home",
-//                                                        tr("Images (*.png *.xpm *.jpg)"));
-
-//        show_wid_extend(_wid_extend);
     });
 
 }
@@ -165,6 +173,7 @@ void wid_friend_info::set_extend_wid(QWidget *parent)
 {
     _wid_extend->setParent(parent);
     _wid_person->setParent(parent);
+    _wid_add->setParent(parent);
 }
 
 wid_person_info *wid_friend_info::get_person()

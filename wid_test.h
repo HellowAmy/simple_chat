@@ -16,6 +16,8 @@ public:
     wid_test(QWidget *parent = nullptr);
     ~wid_test();
 
+    void wid_frame(QWidget *wid);
+
     void test_0(QWidget *parent);
     void test_1(QWidget *parent);
     void test_2(QWidget *parent);

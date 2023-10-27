@@ -16,6 +16,7 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter
 
 SOURCES += \
     include/sqlist3/sqlite3.c \
+#    include/wid_friend_add.cpp \
     main.cpp \
 #    make_json.cpp \
     qarea_wid.cpp \
@@ -34,6 +35,7 @@ SOURCES += \
     wid_chat.cpp \
     wid_chat_input.cpp \
     wid_chat_output.cpp \
+    wid_friend_add.cpp \
     wid_friend_butt.cpp \
     wid_friend_info.cpp \
     wid_friend_list.cpp \
@@ -120,6 +122,7 @@ HEADERS += \
     include/nlohmann/json.hpp \
     include/nlohmann/json_fwd.hpp \
     include/sqlist3/sqlite3.h \
+#    include/wid_friend_add.h \
     inter_client.h \
 #    make_json.h \
     qarea_wid.h \
@@ -135,6 +138,7 @@ HEADERS += \
 #    qweb_socket.h \
     qweb_files.h \
 #    swap_files.h \
+    sn_connect.h \
     sqlite_op.h \
     sqlite_read_history.h \
     typedef_struct.h \
@@ -144,6 +148,7 @@ HEADERS += \
     wid_chat_input.h \
     wid_chat_output.h \
     wid_dialog_box.h \
+    wid_friend_add.h \
     wid_friend_butt.h \
     wid_friend_info.h \
     wid_friend_list.h \

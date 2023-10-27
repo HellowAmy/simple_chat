@@ -31,9 +31,9 @@ void wid_chat_input::init_size(QSize size)
     butt_send->move(wid_extend->width() - butt_send->width(),0);
 
     //输入框
-    qframe_line *wid_frame = new qframe_line(wid);
-    qedit_txt *edit_text = new qedit_txt(wid_frame);
-    wid_frame->resize_center(edit_text,QSize(wid->width(),wid->height() - size_extend - padding),padding);
+    auto [a,b] = fn_qedit_txt(wid,QSize(wid->width(),wid->height() - size_extend - padding),padding);
+    qframe_line *wid_frame = a;
+    qedit_txt *edit_text = b;
 
     //显示区布局
     {

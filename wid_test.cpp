@@ -39,26 +39,23 @@
 #include <QDebug>
 
 
-void wid_frame(QWidget *wid)
-{
-    QLabel *lab = new QLabel(wid);
-    lab->setAttribute(Qt::WA_TransparentForMouseEvents);
-    lab->resize(wid->size());
-    lab->setFrameShape(QFrame::Box);
-    lab->show();
-}
+//void wid_frame(QWidget *wid)
+//{
+//    QLabel *lab = new QLabel(wid);
+//    lab->setAttribute(Qt::WA_TransparentForMouseEvents);
+//    lab->resize(wid->size());
+//    lab->setFrameShape(QFrame::Box);
+//    lab->show();
+//}
 
 wid_test::wid_test(QWidget *parent)
     : QWidget(parent)
 {
     this->show();
-    {
-        this->resize(750,500);
-//        this->setFixedSize(750,500);
-//        wid_frame(this);
-    }
+    this->resize(750,500);
 
     Tvlogs::get()->set_level(vlevel4::e_info);
+    sn_connect_t::get();
     vlogd("== begin ==");
 
 
@@ -97,7 +94,7 @@ wid_test::wid_test(QWidget *parent)
     else if(val == 28)   test_28(parent);   //个人资料
 
     else if(val == 30)   test_30(parent);   //资料界面
-    else if(val == 31)   test_31(parent);   //个人资料
+    else if(val == 31)   test_31(parent);   //添加窗口
     else if(val == 32)   test_32(parent);   //提示窗口
 
 
@@ -106,6 +103,15 @@ wid_test::wid_test(QWidget *parent)
 
 wid_test::~wid_test()
 {
+}
+
+void wid_test::wid_frame(QWidget *wid)
+{
+    QLabel *lab = new QLabel(wid);
+    lab->setAttribute(Qt::WA_TransparentForMouseEvents);
+    lab->resize(wid->size());
+    lab->setFrameShape(QFrame::Box);
+    lab->show();
 }
 
 void wid_test::test_0(QWidget *parent)
@@ -896,6 +902,80 @@ void wid_test::test_13(QWidget *parent)
 
 void wid_test::test_14(QWidget *parent)
 {
+
+    uint account = 123456789;
+    uint friends = 998877665;
+
+    sqlite_record sql;
+    {
+        int ok = sql.open_record(account);
+        vlogif(ok,$(ok));
+    }
+    {
+        int ok = sql.create_record(account);
+        vlogif(ok,$(ok));
+    }
+
+    int64 ti = fn_time_now();
+    //
+    vlogw("insert");
+    {
+        int ok = sql.insert_record(account,ti,friends,"你啊合11","友人1");
+        vlogif(ok,$(ok));
+    }
+    {
+        int ok = sql.insert_record(account,fn_time_now(),friends,"ansdhasd22","友人2");
+        vlogif(ok,$(ok));
+    }
+    {
+        int ok = sql.insert_record(account,fn_time_now(),friends+100,"我是xxx33","友人3");
+        vlogif(ok,$(ok));
+    }
+
+    vlogw("show");
+    {
+        vector<tuple<int64, int64, string, string> > vec_line;
+        int ok = sql.select_record(account,vec_line);
+        vlogif(ok,$(ok) );
+
+        for(auto &a:vec_line)
+        {
+            vlogi($(std::get<0>(a)) $(std::get<1>(a)) $(std::get<2>(a)) $(std::get<3>(a)));
+        }
+    }
+
+    vlogw("change");
+    {
+        int ok = sql.delete_record(account,ti);
+        vlogif(ok,$(ok));
+    }
+
+
+    vlogw("show");
+    {
+        vector<tuple<int64, int64, string , string> > vec_line;
+        int ok = sql.select_record(account,vec_line);
+        vlogif(ok,$(ok) $(sql.get_error()) $(sql.get_error_exec()) );
+
+        for(auto &a:vec_line)
+        {
+            vlogi($(std::get<0>(a)) $(std::get<1>(a)) $(std::get<2>(a)) $(std::get<3>(a)));
+        }
+    }
+
+    vlogw("close");
+    {
+        int ok = sql.drop_db(sql.to_tabel(account));
+        vlogif(ok,$(ok));
+    }
+    {
+        int ok = sql.close_db();
+        vlogif(ok,$(ok));
+    }
+
+
+
+
 //    uint account = 123456789;
 //    uint friends = 123344556;
 

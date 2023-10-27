@@ -13,6 +13,7 @@
 #include "qlab_img.h"
 #include "qmove_pos.h"
 #include "wid_person_info.h"
+#include "wid_friend_add.h"
 
 //!
 //! 类说明： 聊天好友信息，需要调用update_info更新界面
@@ -50,7 +51,8 @@ private:
     qframe_line *_wid_icon;         //头像显示
     qframe_line *_wid_extend;       //扩展显示
     qlab_img *_wid_img;             //头像图片
-    wid_person_info *_wid_person;
+    wid_person_info *_wid_person;   //个人资料
+    wid_friend_add *_wid_add;
 
     std::vector<QWidget*> _vec_extend;
 

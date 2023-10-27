@@ -39,7 +39,10 @@ public:
 
 
     void add_friend_remarks(int64 account,string remarks);
-    void add_account_person(ct_ac_info ct);
+    void add_person_account(ct_ac_info ct);
+    void add_person_friends(ct_ac_info ct);
+
+//    void add_account_person(ct_ac_info ct);
     void add_friend(ct_friend ct);                      //添加好友
     void add_recv_msg(ct_swap_msg ct);                  //接收网络消息
 //    void update_icon(int64 account, bool online);    //更新连接状态
@@ -59,7 +62,8 @@ public:
     QString get_path_icon();
 
 signals:
-    void sn_account_info(int64 account);    //获取好友账号信息
+    void sn_account_info(int64 types,int64 account);    //获取好友账号信息
+
     void sn_send_msg(ct_swap_msg ct);       //发送信息
     void sn_update_msg(int64 account);      //更新界面显示
     void sn_download_icon(int64 account);   //下载头像
@@ -69,8 +73,6 @@ signals:
     //修改信息
     void sn_update_info(ct_ac_info ct);
     void sn_update_remarks(int64 account, int64 friends, string remarks);
-
-
 
     //读取历史记录
     void sn_history_read_ac(int64 account,bool is_non_read = true);
@@ -85,7 +87,7 @@ private:
     QString _path_icon;             //头像路径
     QWidget *_wid_chat;             //聊天区域
     QWidget *_wid_setting;          //设置区域
-    QWidget *_wid_person;           //好友展示区域
+    QWidget *_wid_person;           //好友信息展示区域
     ct_friend *_show_friend;        //当前显示的好友窗口
     qarea_wid *_wid_area;           //好友列表滑动显示
     wid_friend_info *_wid_info;     //显示信息

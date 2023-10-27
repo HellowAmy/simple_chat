@@ -66,7 +66,6 @@ public:
     //!     2.服务器完成修改并下发    [服务器处理]
     //!
     bool ask_update_info(ct_ac_info info);
-//     int64 account,int64 phone,int64 age,int64 sex,string nickname,string location,string icon);
 
     //!
     //! 修改备注：
@@ -81,19 +80,20 @@ public:
     //!     1.提供账号获取所有信息
     //!     2.服务器查询并下发      [服务器处理]
     //!
-    bool ask_info_all(int64 account);
-
-//    //!
-//    //! 获取备注：
-//    //!     1.提供我方与好友账号
-//    //!     2.服务器查询并下发      [服务器处理]
-//    //!
-//    bool ask_info_remarks(int64 account,int64 friends);
+    bool ask_info_all(int64 types,int64 account);
 
 
-
-//    void open_friends_db(int64 friends);
-
+    //!
+    //! 好友申请：
+    //!     1.提供账号,好友账号,备注信息,提交到服务器
+    //!     2.服务器转发到对方
+    //!     3.对方接收并入库
+    //!     4.对方确认或者拒绝,成功则对方提交到服务器
+    //!     5.服务器写入双方好友列表
+    //!     6.如果在线账号在线,服务器主动更新好友列表
+    //!
+    bool ask_swap_friens_add(ct_friend_add ct);
+    bool ask_update_friends(int64 account,int64 friends,string ac_remarks,string fr_remarks);
 
     int64 is_online();
     sqlite_history* get_db();
@@ -103,13 +103,16 @@ signals:
     void sn_close();
     void sn_recv_msg(ct_swap_msg msg);
 
+    void sn_friends_add();
+
     void sn_ac_login(int64 account,string nickname,string icon,vector<ct_friends_init> vec_friends);
 
-    void sn_ac_info_all(ct_ac_info info);
+    void sn_ac_info_all(int64 types,ct_ac_info info);
     void sn_ac_info_remarks(int64 friends,string remarks);
 
     void sn_update_info(string icon,bool ok);
     void sn_update_remarks(int64 friends,string remarks);
+    void sn_update_friends(vector<ct_friends_init> vec);
 
 
 //    void sn_ac_info(int64 account,string nickname,string icon);
@@ -130,7 +133,8 @@ protected:
 private:
     bool _is_online;        //是否连接
     inter_client _wc;       //网络链接
-    sqlite_history _db;     //历史记录
+    sqlite_history _dbh;    //历史记录
+    sqlite_record _dbr;     //申请记录
 
     std::map<string,function<void(const string&)>> _map_fn;
 
@@ -149,16 +153,17 @@ private:
     //== 任务处理函数 ==
     void task_ac_login_back(const string &sjson);
 
-
-
     void task_ac_update_info_back(const string &sjson);
     void task_ac_update_remarks_back(const string &sjson);
-
     void task_ac_info_all_back(const string &sjson);
 
-
-
     void task_ac_register_back(const string &sjson);
+
+    void task_ac_update_friends_back(const string &sjson);
+    void task_swap_friens_add(const string &sjson);
+
+
+//    void task_request_friens_back(const string &sjson);
 
 //    void task_ac_info_back(const string &sjson);
 //    void task_ac_info_remarks_back(const string &sjson);

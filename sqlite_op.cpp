@@ -218,3 +218,92 @@ sqlite_history::data sqlite_history::get_data()
 {
     return _data;
 }
+
+sqlite_record::sqlite_record()
+{
+    _data.time      = "time";
+    _data.account   = "account";
+    _data.notes     = "notes";
+    _data.remarks   = "remarks";
+}
+
+bool sqlite_record::open_record(int64 account)
+{
+    _file = sformat(_file)(account);
+    return open_db(_file);
+}
+
+bool sqlite_record::create_record(int64 account)
+{
+    //! time        : 申请时间
+    //! account     : 对方账号
+    //! notes       : 备注信息
+    string sql (R"(
+        CREATE TABLE IF NOT EXISTS {0} (
+            {1} INTEGER PRIMARY KEY,
+            {2} INTEGER,
+            {3} TEXT,
+            {4} TEXT
+        );
+        )");
+    string table = sformat(_table)(account);
+    sql = sformat(sql)(table,
+                       _data.time ,
+                       _data.account ,
+                       _data.notes,
+                       _data.remarks);
+    return exec_db(sql);
+}
+
+bool sqlite_record::insert_record(int64 account,int64 time, int64 friends, string notes,string remarks)
+{
+    string table = sformat(_table)(account);
+    return insert_db(table,time,friends,notes,remarks);
+}
+
+bool sqlite_record::delete_record(int64 account, int64 time)
+{
+    string table = sformat(_table)(account);
+    return delete_db(table,_data.time,time);
+}
+
+bool sqlite_record::select_record(int64 account, vector<tuple<int64, int64, string,string> > &vec_line)
+{
+    bool ok = false;
+    string sql = "SELECT * FROM {0};";
+    sql = sformat(sql)(to_tabel(account));
+
+    vector<map<string,string>> vec;
+    if(select_line_db("",vec,"",0,sql))
+    {
+        try{
+            for(auto a:vec)
+            {
+                tuple<int64,int64,string,string> tup =
+                    std::make_tuple(std::stoll(a[_data.time]),
+                                    std::stoll(a[_data.account]),
+                                    a[_data.notes],
+                                    a[_data.remarks]);
+                vec_line.push_back(tup);
+            }
+            ok = true;
+        }
+        catch(...){}
+    }
+    return ok;
+}
+
+string sqlite_record::get_file()
+{
+    return _file;
+}
+
+string sqlite_record::get_table()
+{
+    return _table;
+}
+
+string sqlite_record::to_tabel(int64 account)
+{
+    return sformat(_table)(account);
+}

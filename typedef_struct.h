@@ -1,6 +1,9 @@
 #ifndef TYPEDEF_STRUCT_H
 #define TYPEDEF_STRUCT_H
 
+//#include "typedef_struct.h"
+//using namespace typedef_struct;
+
 #include <QString>
 #include <QDateTime>
 #include <string>
@@ -12,6 +15,8 @@
 
 #include "qlab_img.h"
 #include "qframe_line.h"
+#include "qedit_txt.h"
+#include "files_transfer.h"
 
 #define stoqs(s) QString::fromStdString(s)
 #define qstos(s) s.toStdString()
@@ -20,6 +25,8 @@ typedef long long int64;
 using std::string;
 
 namespace typedef_struct {
+
+
 
 //!
 //! 显示区消息类型
@@ -38,12 +45,25 @@ static string _object_AL_     = "AL";
 static string _object_SYS_    = "SYS";
 
 
-//== 带边框界面 ==
-static auto fn_time_now = []()
-    -> int64
+//==
+static bool is_exists_icon(int64 account)
 {
-    return QDateTime::currentMSecsSinceEpoch();
-};
+    string path = "../data/head_icon/icon_";
+    path += std::to_string(account);
+    return files_info::is_exists(path);
+}
+
+static QString to_path_icon(int64 account)
+{
+    string path = "../data/head_icon/icon_";
+    path += std::to_string(account);
+    return stoqs(path);
+}
+
+
+//== 带边框界面 ==
+static auto fn_time_now = []() -> int64
+{ return QDateTime::currentMSecsSinceEpoch(); };
 
 static auto fn_LineEdit = [](QWidget *wid,QSize size = QSize(100,30),QPoint pos = QPoint(0,0))
     -> std::tuple<qframe_line*,QLineEdit*>
@@ -91,6 +111,17 @@ static auto fn_LineEdit_non = [](QWidget *wid,QString txt,QSize size)
     return std::make_tuple(c,d);
 };
 
+static auto fn_qedit_txt = [](QWidget *wid,QSize size,int padding = 5)
+    -> std::tuple<qframe_line*,qedit_txt*>
+{
+    qframe_line *fr = new qframe_line(wid);
+    qedit_txt *ed = new qedit_txt(fr);
+    ed->show();
+    fr->resize_center(ed,size,padding);
+    fr->show();
+    return std::make_tuple(fr,ed);
+};
+
 static auto fn_Label = [](QWidget *wid,QString str, QSize size = QSize(80,30),QPoint pos = QPoint(0,0))
     -> std::tuple<qframe_line*,QLabel*>
 {
@@ -120,8 +151,20 @@ static auto fn_fimg = [](QWidget *wid,QString icon, QSize size = QSize(80,30),QP
     fr->show();
     return std::make_tuple(fr,lab);
 };
+
 //== 带边框界面 ==
 
+
+
+//!
+//! 查询账号信息时的类型
+//!
+enum en_info_all
+{
+    e_account,  //本方账号
+    e_friends,  //好友账号
+    e_ask_ac    //申请好友时信息
+};
 
 
 //!
@@ -151,6 +194,8 @@ static struct
 } _fsize_message_;
 
 
+
+
 //!
 //! 账号信息传递
 //!
@@ -163,6 +208,18 @@ struct ct_ac_info
     string nickname;    //昵称
     string location;    //地址
     string icon;        //头像
+};
+
+//!
+//! 好友申请信息传递
+//!
+struct ct_friend_add
+{
+    int64 time;         //申请时间
+    int64 account;      //申请账号
+    int64 friends;      //接收账号
+    string notes;       //备注信息
+    string remarks;     //备注名称
 };
 
 //!

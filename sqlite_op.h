@@ -187,10 +187,34 @@ private:
     data _data;
 };
 
-//class sqlite_op
-//{
-//public:
-//    sqlite_op();
-//};
+class sqlite_record : public sqlite_base
+{
+public:
+    struct data
+    {
+        string time;
+        string account;
+        string notes;
+        string remarks;
+    };
+
+public:
+    sqlite_record();
+    bool open_record(int64 account);
+    bool create_record(int64 account);
+    bool insert_record(int64 account,int64 time,int64 friends,string notes,string remarks);
+    bool delete_record(int64 account,int64 time);
+    bool select_record(int64 account,vector<tuple<int64,int64,string,string>> &vec_line);
+
+    string get_file();
+    string get_table();
+    string to_tabel(int64 account);
+
+private:
+    string _file = "../data/record_{0}.db";
+    string _table = "record_{0}";
+    data _data;
+};
+
 
 #endif // SQLITE_OP_H

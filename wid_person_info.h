@@ -19,6 +19,7 @@ class wid_person_info : public qframe_line
 public:
     struct ct_person_str
     {
+        QString notes;
         QString icon;
         QString remarks;
         QString account;
@@ -37,14 +38,17 @@ public:
         QLineEdit *sex      = nullptr;
         QLineEdit *nickname = nullptr;
         QLineEdit *location = nullptr;
+        qedit_txt *notes    = nullptr;
     };
 
 public:
     explicit wid_person_info(QWidget *parent = nullptr);
     void set_info(const ct_ac_info &info);
-    void set_info_remarks(QString remarks,QString icon = "");
+    void set_info_remarks(QString remarks = "",QString icon = "",QString notes = "");
     void init_edit();
-    void init_show();
+    void init_friends();
+    void init_add_ask();
+    void init_add_recv();
 
     bool not_change_info();
     bool not_change_remarks();
@@ -53,12 +57,13 @@ public:
 
     ct_ac_info get_edit_info();
     string get_edit_remarks();
+    string get_edit_notes();
 
 signals:
     void sn_save(bool save);
-//    void sn_change_info(bool save,bool remarks);
     void sn_save_info(ct_ac_info ct);
     void sn_save_remarks(string remarks);
+    void sn_add_friend(ct_ac_info ct,string remarks,string notes);
     void sn_not_change();
 
 protected:
@@ -69,7 +74,8 @@ protected:
     ct_person_str _ct_save;
     qbutt_line *_cancel;
     qbutt_line *_save;
-    qlab_img *_img = nullptr;
+    qbutt_line *_add;
+    qlab_img *_img;
 };
 
 #endif // WID_PERSON_INFO_H

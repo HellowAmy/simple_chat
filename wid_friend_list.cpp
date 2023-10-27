@@ -62,7 +62,7 @@ wid_friend_list::wid_friend_list(QWidget *parent)
 
     //好友信息展示
     _wid_fd_info = new wid_person_info(_wid_person);
-    _wid_fd_info->init_show();
+    _wid_fd_info->init_friends();
 
     //管理显示界面
     _vec_extend.push_back(_wid_chat);
@@ -98,7 +98,7 @@ wid_friend_list::wid_friend_list(QWidget *parent)
 //    });
 
     connect(_wid_info,&wid_friend_info::sn_info_all,this,[=](){
-        emit sn_account_info(_account);
+        emit sn_account_info(en_info_all::e_account,_account);
     });
 
 
@@ -164,29 +164,50 @@ void wid_friend_list::add_friend_remarks(int64 account, string remarks)
     }
 }
 
-void wid_friend_list::add_account_person(ct_ac_info ct)
+void wid_friend_list::add_person_account(ct_ac_info ct)
 {
-    int64 account = ct.account;
-    if(account == _account) //登陆账号信息
-    {
-        _wid_info->get_person()->set_info(ct);
-        _wid_info->get_person()->update_info();
-    }
-    else //好友信息
-    {
-        auto it =_map_friends.find(account);
-        if(it != _map_friends.end())
-        {
-            QString remarks = stoqs(it->second->status.remarks);
-            QString icon = stoqs(it->second->status.icon);
+    _wid_info->get_person()->set_info(ct);
+    _wid_info->get_person()->update_info();
+}
 
-            _wid_fd_info->set_info(ct);
-            _wid_fd_info->set_info_remarks(remarks,icon);
-            _wid_fd_info->update_info();
-            show_wid_extend(_wid_person);
-        }
+void wid_friend_list::add_person_friends(ct_ac_info ct)
+{
+    auto it =_map_friends.find(ct.account);
+    if(it != _map_friends.end())
+    {
+        QString remarks = stoqs(it->second->status.remarks);
+        QString icon = stoqs(it->second->status.icon);
+
+        _wid_fd_info->set_info(ct);
+        _wid_fd_info->set_info_remarks(remarks,icon);
+        _wid_fd_info->update_info();
+        show_wid_extend(_wid_person);
     }
 }
+
+//void wid_friend_list::add_account_person(ct_ac_info ct)
+//{
+//    int64 account = ct.account;
+//    if(account == _account) //登陆账号信息
+//    {
+//        _wid_info->get_person()->set_info(ct);
+//        _wid_info->get_person()->update_info();
+//    }
+//    else //好友信息
+//    {
+//        auto it =_map_friends.find(account);
+//        if(it != _map_friends.end())
+//        {
+//            QString remarks = stoqs(it->second->status.remarks);
+//            QString icon = stoqs(it->second->status.icon);
+
+//            _wid_fd_info->set_info(ct);
+//            _wid_fd_info->set_info_remarks(remarks,icon);
+//            _wid_fd_info->update_info();
+//            show_wid_extend(_wid_person);
+//        }
+//    }
+//}
 
 
 void wid_friend_list::update_ac_icon(int64 account,QString path)
@@ -305,7 +326,7 @@ void wid_friend_list::add_friend(ct_friend ct)
 
     //获取好友状态信息
     connect(butt,&wid_friend_butt::sn_account_info,this,[=](int64 account){
-        emit sn_account_info(account);
+        emit sn_account_info(en_info_all::e_friends,account);
         vlogi($(account));
     });
 }
